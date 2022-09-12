@@ -1,32 +1,58 @@
-import { StyleSheet } from 'react-native';
+import { Button, Modal, StyleSheet } from "react-native";
 
-import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
-import { RootTabScreenProps } from '../types';
+import EditScreenInfo from "../components/EditScreenInfo";
+import { Text, View } from "../components/Themed";
+import NavigationCard from "../components/NavigationCard";
+import { RootTabScreenProps } from "../types";
 
-export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabOneScreen.tsx" />
-    </View>
-  );
+export default function TabOneScreen({
+   navigation,
+}: RootTabScreenProps<"TabOne">) {
+   return (
+      <View style={styles.container}>
+         <Text style={styles.title}>Tab One</Text>
+
+         <View
+            style={styles.separator}
+            lightColor="#eee"
+            darkColor="rgba(255,255,255,0.1)"
+         />
+         <EditScreenInfo path="/screens/TabOneScreen.tsx" />
+         <NavigationCard navigation={navigation} destination="TabTwo">
+            hi
+         </NavigationCard>
+         <NavigationCard navigation={navigation} destination="ClientList">
+            Clients
+         </NavigationCard>
+         <NavigationCard navigation={navigation} destination="">
+            Customers
+         </NavigationCard>
+         <NavigationCard navigation={navigation} destination="">
+            Orders
+         </NavigationCard>
+         <NavigationCard navigation={navigation} destination="">
+            Stock
+         </NavigationCard>
+         <NavigationCard navigation={navigation} destination="">
+            Finance
+         </NavigationCard>
+      </View>
+   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+   container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+   },
+   title: {
+      fontSize: 20,
+      fontWeight: "bold",
+   },
+   separator: {
+      marginVertical: 30,
+      height: 1,
+      width: "80%",
+   },
 });
