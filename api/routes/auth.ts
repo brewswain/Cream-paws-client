@@ -2,17 +2,53 @@ import axios from "axios";
 import { baseUrl } from "../api";
 
 export const signUp = async (email: string, password: string) => {
-   axios.post(`${baseUrl}/users/signup`, { body: { email, password } });
+   try {
+      const response = await axios.post(
+         "http://ticketing.dev/api/users/signup",
+         {
+            email,
+            password,
+         }
+      );
+
+      return response.data;
+   } catch (error) {
+      alert(error);
+   }
 };
 
 export const signIn = async (email: string, password: string) => {
-   axios.post(`${baseUrl}/users/signin`, { body: { email, password } });
+   try {
+      const response = await axios.post(
+         `http://ticketing.dev/api/users/signin`,
+         {
+            email,
+            password,
+         }
+      );
+
+      return response.data;
+   } catch (error) {
+      alert(error);
+   }
 };
 
 export const signOut = async () => {
-   axios.post(`${baseUrl}/users/signout`);
+   try {
+      const response = await axios.post(
+         `http://ticketing.dev/api/users/signout`
+      );
+
+      return response.data;
+   } catch (error) {
+      alert(error);
+   }
 };
 
 export const getCurrentUser = async () => {
-   axios.get(`${baseUrl}/users/currentuser`);
+   const response = await axios.get(
+      `http://ticketing.dev/api/users/currentuser`
+   );
+   return response.data;
 };
+// http://192.168.100.193:3000/api/users/currentuser

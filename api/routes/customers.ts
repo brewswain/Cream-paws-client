@@ -1,9 +1,11 @@
 import axios from "axios";
-import { baseUrl } from "../api";
 
-export const createCustomer = async (pets = []) => {
+export const createCustomer = async (name: string) => {
    try {
-      axios.post(`${baseUrl}/customer`, { body: { pets } });
+      const response = await axios.post(`http://ticketing.dev/api/customer`, {
+         name,
+      });
+      return response.data;
    } catch (error) {
       alert(error);
    }
@@ -11,7 +13,7 @@ export const createCustomer = async (pets = []) => {
 
 export const deleteCustomer = async (id: string) => {
    try {
-      axios.delete(`${baseUrl}/customer/:${id}`);
+      await axios.delete(`http://ticketing.dev/api/customer/${id}`);
    } catch (error) {
       // TODO: use toasts instead of alerts
       alert(error);
@@ -24,12 +26,17 @@ export const deleteCustomer = async (id: string) => {
 // };
 
 export const getAllCustomers = async () => {
-   axios.get(`${baseUrl}/customer`);
+   try {
+      const response = await axios.get("http://ticketing.dev/api/customer");
+      return response.data;
+   } catch (error) {
+      console.error(error);
+   }
 };
 
-export const updateCustomer = async (id: string) => {
+export const updateCustomer = async (id: string, name: string) => {
    try {
-      axios.put(`${baseUrl}/customer/:${id}`);
+      await axios.put(`http://ticketing.dev/api/customer/${id}`, { name });
    } catch (error) {
       alert(error);
    }
