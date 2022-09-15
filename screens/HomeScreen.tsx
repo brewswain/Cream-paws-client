@@ -9,6 +9,9 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
       <View style={styles.container}>
          <Text style={styles.title}>Home</Text>
 
+         <NavigationCard navigation={navigation} destination="Auth">
+            Auth
+         </NavigationCard>
          <NavigationCard navigation={navigation} destination="Customers">
             Customers
          </NavigationCard>
@@ -20,9 +23,6 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
          </NavigationCard>
          <NavigationCard navigation={navigation} destination="Finance">
             Finance
-         </NavigationCard>
-         <NavigationCard navigation={navigation} destination="Auth">
-            Auth
          </NavigationCard>
       </View>
    );
