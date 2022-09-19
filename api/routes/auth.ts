@@ -1,17 +1,14 @@
 import axios from "axios";
-import { baseUrl } from "../api";
+import { axiosInstance } from "../api";
 
 export const signUp = async (email: string, password: string) => {
    try {
-      const response = await axios.post(
-         "http://ticketing.dev/api/users/signup",
-         {
-            email,
-            password,
-         }
-      );
+      const response = await axiosInstance.post("/users/signup", {
+         email,
+         password,
+      });
 
-      return response.data;
+      return response;
    } catch (error) {
       alert(error);
    }
@@ -19,15 +16,12 @@ export const signUp = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
    try {
-      const response = await axios.post(
-         `http://ticketing.dev/api/users/signin`,
-         {
-            email,
-            password,
-         }
-      );
+      const response = await axiosInstance.post("/users/signin", {
+         email,
+         password,
+      });
 
-      return response.data;
+      return response;
    } catch (error) {
       alert(error);
    }
@@ -35,9 +29,7 @@ export const signIn = async (email: string, password: string) => {
 
 export const signOut = async () => {
    try {
-      const response = await axios.post(
-         `http://ticketing.dev/api/users/signout`
-      );
+      const response = await axiosInstance.post("/users/signout");
 
       return response.data;
    } catch (error) {
@@ -46,9 +38,7 @@ export const signOut = async () => {
 };
 
 export const getCurrentUser = async () => {
-   const response = await axios.get(
-      `http://ticketing.dev/api/users/currentuser`
-   );
-   return response.data;
+   const response = await axiosInstance.get("/users/currentuser");
+   return response;
 };
 // http://192.168.100.193:3000/api/users/currentuser

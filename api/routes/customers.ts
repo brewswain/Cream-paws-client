@@ -1,8 +1,9 @@
 import axios from "axios";
+import { axiosInstance } from "../api";
 
 export const createCustomer = async (name: string) => {
    try {
-      const response = await axios.post(`http://ticketing.dev/api/customer`, {
+      const response = await axiosInstance.post(`/customer`, {
          name,
       });
       return response.data;
@@ -13,7 +14,7 @@ export const createCustomer = async (name: string) => {
 
 export const deleteCustomer = async (id: string) => {
    try {
-      await axios.delete(`http://ticketing.dev/api/customer/${id}`);
+      await axiosInstance.delete(`/customer/${id}`);
    } catch (error) {
       // TODO: use toasts instead of alerts
       alert(error);
@@ -27,7 +28,8 @@ export const deleteCustomer = async (id: string) => {
 
 export const getAllCustomers = async () => {
    try {
-      const response = await axios.get("http://ticketing.dev/api/customer");
+      const response = await axiosInstance.get("/customer");
+      console.log(response.data);
       return response.data;
    } catch (error) {
       console.error(error);
@@ -36,7 +38,7 @@ export const getAllCustomers = async () => {
 
 export const updateCustomer = async (id: string, name: string) => {
    try {
-      await axios.put(`http://ticketing.dev/api/customer/${id}`, { name });
+      await axiosInstance.put(`/customer/${id}`, { name });
    } catch (error) {
       alert(error);
    }
