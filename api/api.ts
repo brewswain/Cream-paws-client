@@ -1,2 +1,5 @@
-//TODO: assign proper API URL for prod
-export let baseUrl = "192.168.100.193:3000/api";
+import axios from "axios";
+
+export const axiosInstance = axios.create({
+   baseURL: "http://ticketing.dev/api",
+});
