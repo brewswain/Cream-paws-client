@@ -5,22 +5,19 @@ import { getCurrentUser, signIn, signOut, signUp } from "../api/routes/auth";
 
 const AuthScreen = () => {
    const [currentUser, setCurrentUser] = useState();
-   const [user, setUser] = useState();
+   const [user, setUser] = useState<User>();
 
    const signInTest = async () => {
-      const response = await signIn("test13@test.com", "password");
+      const response = await signIn("test@test.com", "password");
 
-      setUser(response);
+      setUser(response?.data);
+      console.log(response?.headers);
    };
-
-   useEffect(() => {
-      console.log({ user });
-   }, [user]);
 
    const getCurrentUserTest = async () => {
       const response = await getCurrentUser();
-      console.log(response);
-      setCurrentUser(response.currentUser);
+      console.log(response.data);
+      setCurrentUser(response.data.currentUser);
    };
 
    const signOutTest = async () => {
