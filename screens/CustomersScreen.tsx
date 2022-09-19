@@ -9,20 +9,14 @@ import {
 } from "../api/routes/customers";
 
 const CustomersScreen = () => {
-   const [customers, setCustomers] = useState([]);
-   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+   const [customers, setCustomers] = useState<Customer[]>();
+   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
 
    const getCustomersTest = async () => {
       const response = await getAllCustomers();
-      console.log(response.currentUser);
-      // setCustomers(response.data);
+      setCustomers(response);
    };
 
-   useEffect(() => {
-      console.log({ selectedCustomerId });
-   }, [selectedCustomerId]);
-
-   // getCustomersTest();
    return (
       <View>
          <Text>Welcome to the list of clients</Text>
