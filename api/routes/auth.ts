@@ -41,4 +41,3 @@ export const getCurrentUser = async () => {
    const response = await axiosInstance.get("/users/currentuser");
    return response;
 };
-// http://192.168.100.193:3000/api/users/currentuser
