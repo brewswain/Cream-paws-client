@@ -8,7 +8,7 @@ import {
 } from "../api/routes/stock";
 
 const StockScreen = () => {
-   const [chow, setChow] = useState([]);
+   const [chow, setChow] = useState<Chow[]>([]);
    const [chowId, setChowid] = useState("");
 
    const chowPayload: Chow = {
@@ -87,21 +87,6 @@ const StockScreen = () => {
                getAllChowTest();
             }}
          />
-
-         <Text>List of Chow Ids: </Text>
-         <View>
-            {chow &&
-               chow.map((item) => (
-                  <Text
-                     key={item.id}
-                     onPress={() => {
-                        setChowid(item.id);
-                     }}
-                  >
-                     {item.id}
-                  </Text>
-               ))}
-         </View>
 
          <Text>List of Chow:</Text>
          <View>
