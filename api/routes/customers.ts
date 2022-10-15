@@ -1,10 +1,12 @@
 import axios from "axios";
 import { axiosInstance } from "../api";
 
-export const createCustomer = async (name: string) => {
+// Creating default param in case we don't have any pets added
+export const createCustomer = async (name: string, pets: string[] = []) => {
    try {
       const response = await axiosInstance.post(`/customer`, {
          name,
+         pets,
       });
       return response.data;
    } catch (error) {
