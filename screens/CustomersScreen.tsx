@@ -15,7 +15,6 @@ import CreateCustomerModal from "../components/modals/CreateCustomerModal";
 
 const CustomersScreen = () => {
    const [customers, setCustomers] = useState<Customer[]>();
-   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
    const [showModal, setShowModal] = useState<boolean>(false);
 
    const populateCustomersList = async () => {
@@ -23,17 +22,8 @@ const CustomersScreen = () => {
       setCustomers(response);
    };
 
-   const openCreateCustomerModal = () => {};
-
-   const handlePress = () => {
-      //TODO: create Customer flow
-      // Open customer Modal
+   const openModal = () => {
       setShowModal(true);
-      openCreateCustomerModal();
-
-      // After creation, call API to get new customer data
-      // Actually, we want to run this inside of our customer Modal itself after awaiting customer
-      populateCustomersList();
    };
 
    useEffect(() => {
@@ -47,10 +37,14 @@ const CustomersScreen = () => {
                <CustomerCard customer={customer} key={customer.id} />
             ))}
 
-         <Pressable style={styles.buttonContainer} onPress={handlePress}>
+         <Pressable style={styles.buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
          </Pressable>
-         <CreateCustomerModal isOpen={showModal} setShowModal={setShowModal} />
+         <CreateCustomerModal
+            isOpen={showModal}
+            setShowModal={setShowModal}
+            populateCustomerList={populateCustomersList}
+         />
       </View>
    );
 };
