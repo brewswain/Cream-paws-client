@@ -2,18 +2,6 @@ import { getParsedCommandLineOfConfigFile } from "typescript";
 import { axiosInstance } from "../api";
 
 export const createChow = async (chow: Chow) => {
-   //    const {
-   //       brand,
-   //       target_group,
-   //       flavour,
-   //       size,
-   //       unit,
-   //       quantity,
-   //       wholesale_price,
-   //       retail_price,
-   //       is_paid_for,
-   //    } = chow;
-
    try {
       const response = await axiosInstance.post("/stock", chow);
 
