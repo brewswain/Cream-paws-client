@@ -1,22 +1,24 @@
-import { useState, useEffect } from "react";
-import {
-   NativeSyntheticEvent,
-   TextInputChangeEventData,
-   TextInput,
-} from "react-native";
+import { useState } from "react";
+import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
+
 import { Button, FormControl, Input, Modal } from "native-base";
-import { createCustomer } from "../../api/routes/customers";
 import Icon from "react-native-vector-icons/AntDesign";
+
+import { createCustomer } from "../../api";
 
 interface CreateCustomerModalProps {
    isOpen: boolean;
    setShowModal(booleanStatus: boolean): void;
+   populateCustomerList(): void;
 }
 
 const CreateCustomerModal = ({
    isOpen,
    setShowModal,
+   populateCustomerList,
 }: CreateCustomerModalProps) => {
+   // Used for dynamically rendering a new input for each pet
+   const [petFields, setPetFields] = useState([0]);
    const [name, setName] = useState("");
    const [pets, setPets] = useState<any[]>([
       {
@@ -24,8 +26,10 @@ const CreateCustomerModal = ({
          breed: "",
       },
    ]);
-   // Used for dynamically rendering a new input for each pet
-   const [petFields, setPetFields] = useState([0]);
+
+   const closeModal = () => {
+      setShowModal(false);
+   };
 
    const addField = (fieldId: number) => {
       let fieldsArray = [];
@@ -42,26 +46,32 @@ const CreateCustomerModal = ({
 
    // Typing is ultra specific here to avoid solving TS errors by using Casting as I think that's a bit heavyhanded for this problem
    // This way, while not being the most attractive, is explicit and easy to tell what's happening type-wise.
-   // That being said, this is using React Native specific Types (to my event), so us not using event.target.value can be a bit odd
+   // That being said, this is using React Native specific Types (to my knowledge), so us not using event.target.value can be a bit odd
    const handleNameChange = (
       event: NativeSyntheticEvent<TextInputChangeEventData>
    ) => {
       setName(event.nativeEvent.text);
    };
+
    const handlePetsChange = (
       event: NativeSyntheticEvent<TextInputChangeEventData>,
       index: number,
       name: string
    ) => {
       let data = [...pets];
-
       data[index][name] = event.nativeEvent.text;
 
       setPets(data);
    };
 
+   const handleCustomerCreation = () => {
+      createCustomer(name, pets);
+      populateCustomerList();
+      closeModal();
+   };
+
    return (
-      <Modal isOpen={isOpen} onClose={() => setShowModal(false)}>
+      <Modal isOpen={isOpen} onClose={closeModal}>
          <Modal.Content>
             <Modal.CloseButton />
             <Modal.Header>Create Customer</Modal.Header>
@@ -76,7 +86,7 @@ const CreateCustomerModal = ({
                      return (
                         <>
                            <Input
-                              key={field}
+                              key={`name index: ${field}`}
                               placeholder="Name"
                               onChange={(event) =>
                                  handlePetsChange(event, index, "name")
@@ -85,6 +95,7 @@ const CreateCustomerModal = ({
 
                            <Input
                               placeholder="Breed"
+                              key={`breed index: ${field}`}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "breed")
                               }
@@ -104,10 +115,10 @@ const CreateCustomerModal = ({
                </FormControl>
             </Modal.Body>
             <Button.Group space={2}>
-               <Button variant="ghost" onPress={() => setShowModal(false)}>
+               <Button variant="ghost" onPress={closeModal}>
                   Cancel
                </Button>
-               <Button onPress={() => createCustomer(name, pets)}>Save</Button>
+               <Button onPress={() => handleCustomerCreation()}>Save</Button>
             </Button.Group>
          </Modal.Content>
       </Modal>
