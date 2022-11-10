@@ -1,7 +1,12 @@
 interface Customer {
    name: string;
    id: string;
-   pets?: string[];
+   pets?: [
+      {
+         name: string;
+         breed: string;
+      }
+   ];
    orders?: [
       {
          delivery_date: string;
