@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, Touchable, View } from "react-native";
 
 interface CustomerCardProps {
    customer: Customer;
@@ -11,42 +11,44 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
    const { name, id, pets, orders } = customer;
    const { container, heading, subHeading } = styles;
 
-   const renderPets = () => {};
-   const renderOrders = () => {};
+   const renderPets = () => (
+      <View>
+         {pets!.length > 1 ? <Text>Pets</Text> : <Text>Pet</Text>}
+         {pets?.map((pet) => (
+            <View>
+               <Text>Name: {pet.name}</Text>
+               <Text>Breed: {pet.breed}</Text>
+            </View>
+         ))}
+      </View>
+   );
 
-   const expandCard = () => {
-      setIsExpanded(true);
-   };
+   const renderOrders = () => (
+      <View>
+         {orders!.length > 1 ? <Text>Orders</Text> : <Text>Order</Text>}
 
-   const contractCard = () => {
-      setIsExpanded(false);
-   };
+         {orders?.map((order) => (
+            <View>
+               <Text>Order</Text>
+            </View>
+         ))}
+      </View>
+   );
 
    const handleClick = (id: string) => {
-      setCustomerId(id);
+      setIsExpanded(!isExpanded);
    };
 
-   useEffect(() => {
-      console.log({
-         customerId,
-         isExpanded,
-      });
-   }, [customerId, isExpanded]);
-
-   console.log({ customer, isExpanded });
    return (
-      <View style={container}>
-         <Text style={heading} onPress={() => handleClick(customer.id)}>
-            {name}
-         </Text>
-         <Text onPress={expandCard}>View details</Text>
-         {isExpanded && (
-            <>
-               <Text style={subHeading}>{pets}</Text>
-               <Text style={subHeading}>{orders}</Text>
-            </>
-         )}
-      </View>
+      <Pressable onPress={() => handleClick(customer.id)}>
+         <View style={container}>
+            <Text style={heading}>{name}</Text>
+            <View>
+               {isExpanded && pets && pets?.length > 0 && renderPets()}
+               {isExpanded && orders && orders?.length > 0 && renderOrders()}
+            </View>
+         </View>
+      </Pressable>
    );
 };
 
