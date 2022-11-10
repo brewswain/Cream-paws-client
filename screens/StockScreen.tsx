@@ -1,102 +1,66 @@
 import { useState, useEffect } from "react";
-import { Text, View, Button } from "react-native";
-import {
-   createChow,
-   deleteChow,
-   getAllChow,
-   updateChow,
-} from "../api/routes/stock";
+import { Text, View, Pressable, StyleSheet } from "react-native";
+
+import Icon from "react-native-vector-icons/AntDesign";
+
+import { getAllChow } from "../api/routes/stock";
+import CreateChowModal from "../components/modals/CreateChowModal";
 
 const StockScreen = () => {
+   const [showModal, setShowModal] = useState<boolean>(false);
+
    const [chow, setChow] = useState<Chow[]>([]);
-   const [chowId, setChowid] = useState("");
 
-   const chowPayload: Chow = {
-      brand: "Taste of The Wild",
-      target_group: "Puppy",
-      flavour: "Puppy",
-      size: 20,
-      unit: "kg",
-      quantity: 5,
-      wholesale_price: 20,
-      retail_price: 30,
-      is_paid_for: false,
-   };
-   const updatedChowPayload: Chow = {
-      brand: "Taste of The Wild",
-      target_group: "Puppy",
-      flavour: "Puppy",
-      size: 30,
-      unit: "lb",
-      quantity: 5,
-      wholesale_price: 100,
-      retail_price: 200,
-      is_paid_for: false,
+   const openModal = () => {
+      setShowModal(true);
    };
 
-   const createChowTest = async () => {
-      const response = await createChow(chowPayload);
-      return response;
-   };
-
-   const deleteChowTest = async () => {
-      const response = await deleteChow(chowId);
-
-      return response;
-   };
-
-   const updateChowTest = async () => {
-      const response = await updateChow(chowId, updatedChowPayload);
-      return response;
-   };
-
-   const getAllChowTest = async () => {
+   const populateChowList = async () => {
       const response = await getAllChow();
-      console.log(response);
-      response ? setChow(response) : alert("Sorry, no Chow exists");
+      setChow(response);
    };
 
    useEffect(() => {
-      console.log(chowId);
-   }, [chowId]);
+      populateChowList();
+   }, []);
 
    return (
-      <View>
-         <Button
-            title="Create Chow"
-            onPress={() => {
-               createChowTest();
-            }}
-         />
-         <Button
-            title="Delete Chow"
-            onPress={() => {
-               deleteChowTest();
-            }}
-         />
-         <Button
-            title="Update Chow"
-            onPress={() => {
-               updateChowTest();
-            }}
-         />
-
-         <Button
-            title="Get All Chow"
-            onPress={() => {
-               getAllChowTest();
-            }}
-         />
-
-         <Text>List of Chow:</Text>
+      <View style={styles.container}>
          <View>
             {chow &&
                chow.map((item) => (
                   <Text key={item.id}>{item.retail_price}</Text>
                ))}
          </View>
+
+         <Pressable style={styles.buttonContainer} onPress={openModal}>
+            <Icon name="plus" size={20} />
+         </Pressable>
+         <CreateChowModal
+            isOpen={showModal}
+            setShowModal={setShowModal}
+            populateChowList={populateChowList}
+         />
       </View>
    );
 };
+
+const styles = StyleSheet.create({
+   container: {
+      flex: 1,
+   },
+   buttonContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      position: "absolute",
+      height: 40,
+      width: 40,
+      bottom: 20,
+      right: 10,
+      borderRadius: 50,
+      backgroundColor: "#8099c1",
+   },
+});
 
 export default StockScreen;
