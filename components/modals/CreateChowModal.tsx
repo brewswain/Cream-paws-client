@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
 
-import { Button, FormControl, Input, Modal } from "native-base";
+import { Button, FormControl, Input, Modal, Radio } from "native-base";
 
 import { createChow } from "../../api";
 
@@ -18,10 +18,18 @@ const CreateChowModal = ({
 }: CreateChowProps) => {
    // Using Chow Interface located at '../models'
    const [chowPayload, setChowPayload] = useState<Chow>();
+   const [unit, setUnit] = useState<string>("");
+   const [isPaidFor, setIsPaidFor] = useState<string | boolean>("false");
+   const [errors, setErrors] = useState({});
 
    const closeModal = () => {
       setShowModal(false);
    };
+
+   // Naive solution at checking to make sure that our form isn't incomplete--This solution
+   // Assumes a static length of attributes, and should thus be the first place to refactor
+   // when we have time.
+   const isIncomplete = chowPayload && Object.values(chowPayload!).length < 9;
 
    const handleChowChange = (
       event: NativeSyntheticEvent<TextInputChangeEventData>,
@@ -29,29 +37,54 @@ const CreateChowModal = ({
    ) => {
       // TODO: fix type
       let data: any = { ...chowPayload };
-      // if (data[index][name] === 'is_paid_for' {
-      //    data[index][name] = whatever boolean value
-      // })
-      //TODO: make this approach work for object. Maybe we use Object.Keys method then
-      // remap to an object after
-      // data[name] = event.nativeEvent.text;
-
       data[name] = event.nativeEvent.text;
 
       setChowPayload(data);
    };
 
-   const handleChowCreation = () => {
-      // Heavyhanded, but we should never have undefined here
-      createChow(chowPayload!);
+   const validateFormEntry = () => {
+      if (chowPayload?.brand === undefined) {
+         setErrors({ ...errors, message: "Brand is required" });
+         return false;
+      } else if (chowPayload?.flavour === undefined) {
+         setErrors({ ...errors, message: "Flavour is required" });
+         return false;
+      }
+      return true;
+   };
 
-      //TODO: create this endpoint in our Chow Page(call to getAllChow)
+   const handleChowCreation = () => {
+      // Heavyhanded use of !, but we should never have undefined here
+      createChow(chowPayload!);
       populateChowList();
       closeModal();
    };
 
+   const convertStringToBoolean = () => {
+      if (isPaidFor === "true") {
+         setIsPaidFor(true);
+      } else {
+         setIsPaidFor(false);
+      }
+   };
+
+   const handleSubmit = () => {
+      let data: any = { ...chowPayload };
+      convertStringToBoolean();
+      data["unit"] = unit;
+      data["is_paid_for"] = isPaidFor;
+
+      setChowPayload(data);
+
+      validateFormEntry()
+         ? handleChowCreation()
+         : alert(
+              "Error creating chow! This is a form validation Error, so please check to make sure that no fields are empty"
+           );
+   };
+
    return (
-      <Modal isOpen={isOpen} onClose={closeModal}>
+      <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
          <Modal.Content>
             <Modal.CloseButton />
             <Modal.Header>Create Chow</Modal.Header>
@@ -77,11 +110,29 @@ const CreateChowModal = ({
                   />
                </FormControl>
                <FormControl isRequired>
-                  <FormControl.Label>Size/Unit</FormControl.Label>
+                  <FormControl.Label>Size</FormControl.Label>
                   <Input
                      onChange={(event) => handleChowChange(event, "size")}
                   />
                   {/* Find way to allow both a size and unit(kg/lb) selector by same input */}
+               </FormControl>
+               <FormControl isRequired>
+                  <FormControl.Label>Unit</FormControl.Label>
+                  <Radio.Group
+                     name="SizeGroup"
+                     value={unit}
+                     onChange={(nextValue) => {
+                        setUnit(nextValue);
+                     }}
+                  >
+                     <Radio value="lb" my={1} size="sm">
+                        lb
+                     </Radio>
+                     <Radio value="kg" my={1} size="sm">
+                        kg
+                     </Radio>
+                  </Radio.Group>
+                  {/* We just need a checkbox as this is purely a boolean*/}
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Quantity</FormControl.Label>
@@ -107,6 +158,18 @@ const CreateChowModal = ({
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Is Paid For</FormControl.Label>
+                  <Radio.Group
+                     name="IsPaidForGroup"
+                     value={isPaidFor as string}
+                     onChange={(nextValue) => setIsPaidFor(nextValue)}
+                  >
+                     <Radio value="false" my={1} colorScheme="red" size="sm">
+                        False
+                     </Radio>
+                     <Radio value="true" my={1} colorScheme="green" size="sm">
+                        True
+                     </Radio>
+                  </Radio.Group>
                   {/* We just need a checkbox as this is purely a boolean*/}
                </FormControl>
             </Modal.Body>
@@ -114,7 +177,12 @@ const CreateChowModal = ({
                <Button variant="ghost" onPress={closeModal}>
                   Cancel
                </Button>
-               <Button onPress={() => handleChowCreation()}>Save</Button>
+               <Button
+                  onPress={() => handleSubmit()}
+                  isDisabled={!validateFormEntry}
+               >
+                  Save
+               </Button>
             </Button.Group>
          </Modal.Content>
       </Modal>
