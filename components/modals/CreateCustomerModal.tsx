@@ -1,7 +1,12 @@
-import { useState } from "react";
-import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
+import { useState, useEffect } from "react";
+import {
+   NativeSyntheticEvent,
+   StyleSheet,
+   TextInput,
+   TextInputChangeEventData,
+} from "react-native";
 
-import { Button, FormControl, Input, Modal } from "native-base";
+import { Button, FormControl, Modal } from "native-base";
 import Icon from "react-native-vector-icons/AntDesign";
 
 import { createCustomer } from "../../api";
@@ -18,30 +23,22 @@ const CreateCustomerModal = ({
    populateCustomerList,
 }: CreateCustomerModalProps) => {
    // Used for dynamically rendering a new input for each pet
-   const [petFields, setPetFields] = useState([0]);
    const [name, setName] = useState("");
-   const [pets, setPets] = useState<any[]>([
-      {
-         name: "",
-         breed: "",
-      },
-   ]);
+   const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
 
    const closeModal = () => {
       setShowModal(false);
    };
 
-   const addField = (fieldId: number) => {
-      let fieldsArray = [];
-      fieldsArray = [...petFields, fieldId + 1];
-
-      setPetFields(fieldsArray);
+   const addField = () => {
+      let newField = { name: "", breed: "" };
+      setPets([...pets, newField]);
    };
 
-   const removeField = (fieldId: number) => {
-      const filteredFields = petFields.filter((field) => field != fieldId);
-
-      setPetFields(filteredFields);
+   const removeField = (index: number) => {
+      let data = [...pets];
+      data.splice(index, 1);
+      setPets(data);
    };
 
    // Typing is ultra specific here to avoid solving TS errors by using Casting as I think that's a bit heavyhanded for this problem
@@ -66,46 +63,53 @@ const CreateCustomerModal = ({
 
    const handleCustomerCreation = () => {
       createCustomer(name, pets);
-      populateCustomerList();
       closeModal();
    };
 
    return (
-      <Modal isOpen={isOpen} onClose={closeModal}>
+      <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
          <Modal.Content>
             <Modal.CloseButton />
             <Modal.Header>Create Customer</Modal.Header>
             <Modal.Body>
                <FormControl isRequired>
                   <FormControl.Label>Name</FormControl.Label>
-                  <Input onChange={handleNameChange} />
+                  <TextInput
+                     style={styles.input}
+                     placeholder="Name"
+                     onChange={(event) => handleNameChange(event)}
+                     value={name}
+                  />
                </FormControl>
                <FormControl mt={3}>
                   <FormControl.Label>Pets</FormControl.Label>
-                  {petFields.map((field, index) => {
+                  {pets.map((pet, index) => {
                      return (
                         <>
-                           <Input
-                              key={`name index: ${field}`}
+                           <TextInput
+                              style={styles.input}
                               placeholder="Name"
                               onChange={(event) =>
                                  handlePetsChange(event, index, "name")
                               }
+                              value={pet.name}
                            />
 
-                           <Input
+                           <TextInput
+                              style={styles.input}
                               placeholder="Breed"
-                              key={`breed index: ${field}`}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "breed")
                               }
+                              value={pet.breed}
                            />
-                           <Button onPress={() => addField(index)}>
+
+                           <Button onPress={() => addField()}>
                               <Icon name="plus" size={10} />
                            </Button>
                            <Button
-                              isDisabled={petFields.length <= 1}
-                              onPress={() => removeField(field)}
+                              isDisabled={pets.length <= 1}
+                              onPress={() => removeField(index)}
                            >
                               <Icon name="minus" size={10} />
                            </Button>
@@ -124,5 +128,18 @@ const CreateCustomerModal = ({
       </Modal>
    );
 };
+
+const styles = StyleSheet.create({
+   input: {
+      margin: 5,
+      marginBottom: 2,
+      marginTop: 0,
+      paddingLeft: 5,
+      borderColor: "#9f9f9f",
+      width: 270,
+      borderRadius: 4,
+      borderWidth: 1,
+   },
+});
 
 export default CreateCustomerModal;
