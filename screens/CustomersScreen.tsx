@@ -28,7 +28,7 @@ const CustomersScreen = () => {
 
    useEffect(() => {
       populateCustomersList();
-   }, []);
+   }, [showModal]);
 
    return (
       <View style={styles.container}>
