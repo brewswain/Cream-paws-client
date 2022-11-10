@@ -19,6 +19,7 @@ const CustomersScreen = () => {
 
    const populateCustomersList = async () => {
       const response = await getAllCustomers();
+
       setCustomers(response);
    };
 
@@ -28,7 +29,7 @@ const CustomersScreen = () => {
 
    useEffect(() => {
       populateCustomersList();
-   }, [showModal]);
+   }, []);
 
    return (
       <View style={styles.container}>

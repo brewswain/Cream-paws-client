@@ -63,6 +63,7 @@ const CreateCustomerModal = ({
 
    const handleCustomerCreation = () => {
       createCustomer(name, pets);
+      populateCustomerList();
       closeModal();
    };
 
