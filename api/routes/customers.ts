@@ -31,7 +31,6 @@ export const deleteCustomer = async (id: string) => {
 export const getAllCustomers = async () => {
    try {
       const response = await axiosInstance.get("/customer");
-      console.log(response.data);
       return response.data;
    } catch (error) {
       console.error(error);
