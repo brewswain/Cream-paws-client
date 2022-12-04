@@ -1,83 +1,112 @@
-import { Button, Text, View } from "react-native";
+import { useState, useEffect } from "react";
+import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+
+import Icon from "react-native-vector-icons/AntDesign";
+
 import {
    createOrder,
+   updateOrder,
    deleteOrder,
    getAllOrders,
-   updateOrder,
-} from "../api/routes/orders";
+   getAllChow,
+   getAllCustomers,
+} from "../api";
+
+import CreateOrderModal from "../components/modals/CreateOrderModal";
 
 const OrdersScreen = () => {
-   // Test payload
-   const orderPayload: Order = {
-      delivery_date: "test_delivery_date",
-      payment_made: true,
-      payment_date: "test_payment_date",
-      is_delivery: true,
-      driver_paid: true,
-      warehouse_paid: false,
-      customer_id: "632af554efd6cbb9858a5157",
-      chow_id: "632af56a806f2af148eba268",
-   };
+   const [showModal, setShowModal] = useState<boolean>(false);
+   const [chow, setChow] = useState<Chow[]>();
+   const [orders, setOrders] = useState<Order[]>();
+   const [customers, setCustomers] = useState<Customer[]>();
 
-   const updatedOrderPayload: Order = {
-      delivery_date: "updated date",
-      payment_made: true,
-      payment_date: "test_payment_date 2",
-      is_delivery: true,
-      driver_paid: true,
-      warehouse_paid: false,
-      customer_id: "632af554efd6cbb9858a5157",
-      chow_id: "632af56a806f2af148eba268",
-   };
-
-   const createOrderTest = async () => {
-      await createOrder(orderPayload);
-   };
-
-   const deleteOrderTest = async (id: string) => {
-      await deleteOrder(id);
-   };
-
-   // TODO: fix types
-   const updateOrderTest = async (id: string, order: Order) => {
-      await updateOrder(id, order);
-   };
-
-   const getAllOrdersTest = async () => {
+   const populateOrdersList = async () => {
       const response = await getAllOrders();
-      console.log({ response });
+      setOrders(response);
    };
+
+   const populateChowList = async () => {
+      const response = await getAllChow();
+      setChow(response);
+   };
+
+   const populateCustomersList = async () => {
+      const response = await getAllCustomers();
+      setCustomers(response);
+   };
+
+   const populateData = async () => {
+      populateChowList();
+      populateCustomersList();
+      populateOrdersList();
+   };
+
+   const openModal = () => {
+      setShowModal(true);
+   };
+
+   useEffect(() => {
+      populateData();
+   }, []);
+
+   // Test payload
+   // const orderPayload: Order = {
+   //    delivery_date: "test_delivery_date",
+   //    payment_made: true,
+   //    payment_date: "test_payment_date",
+   //    is_delivery: true,
+   //    driver_paid: true,
+   //    warehouse_paid: false,
+   //    customer_id: "632af554efd6cbb9858a5157",
+   //    chow_id: "632af56a806f2af148eba268",
+   // };
+
+   // const updatedOrderPayload: Order = {
+   //    delivery_date: "updated date",
+   //    payment_made: true,
+   //    payment_date: "test_payment_date 2",
+   //    is_delivery: true,
+   //    driver_paid: true,
+   //    warehouse_paid: false,
+   //    customer_id: "632af554efd6cbb9858a5157",
+   //    chow_id: "632af56a806f2af148eba268",
+   // };
 
    return (
-      <View>
-         <Button
-            title="Create Order"
-            onPress={() => {
-               createOrderTest();
-            }}
+      <View style={styles.container}>
+         <View>
+            {orders && orders.map((item) => <Text>{item.customer_id}</Text>)}
+         </View>
+         <Pressable style={styles.buttonContainer} onPress={openModal}>
+            <Icon name="plus" size={20} />
+         </Pressable>
+         <CreateOrderModal
+            isOpen={showModal}
+            setShowModal={setShowModal}
+            populateOrdersList={populateOrdersList}
+            chow={chow}
+            customers={customers}
          />
-         <Button
-            title="Delete Order"
-            onPress={() => {
-               deleteOrderTest("632af6adc540b867a3243042");
-            }}
-         />
-         <Button
-            title="Update Order"
-            onPress={() => {
-               updateOrderTest("632af6adc540b867a3243042", updatedOrderPayload);
-            }}
-         />
-
-         <Button
-            title="Get All Orders"
-            onPress={() => {
-               getAllOrdersTest();
-            }}
-         />
-         {/* <Button title="Get Customer's Order" onPress={() => {}} /> */}
       </View>
    );
 };
+
+const styles = StyleSheet.create({
+   container: {
+      flex: 1,
+   },
+   buttonContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      position: "absolute",
+      height: 40,
+      width: 40,
+      bottom: 20,
+      right: 10,
+      borderRadius: 50,
+      backgroundColor: "#8099c1",
+   },
+});
 
 export default OrdersScreen;
