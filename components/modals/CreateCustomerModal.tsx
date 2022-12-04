@@ -4,6 +4,7 @@ import {
    StyleSheet,
    TextInput,
    TextInputChangeEventData,
+   View,
 } from "react-native";
 
 import { Button, FormControl, Modal } from "native-base";
@@ -86,10 +87,11 @@ const CreateCustomerModal = ({
                   <FormControl.Label>Pets</FormControl.Label>
                   {pets.map((pet, index) => {
                      return (
-                        <>
+                        <View key={`${pet.name} - ${pet.breed}`}>
                            <TextInput
                               style={styles.input}
                               placeholder="Name"
+                              key={`${index} name`}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "name")
                               }
@@ -99,22 +101,35 @@ const CreateCustomerModal = ({
                            <TextInput
                               style={styles.input}
                               placeholder="Breed"
+                              key={`${name} name`}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "breed")
                               }
                               value={pet.breed}
                            />
 
-                           <Button onPress={() => addField()}>
-                              <Icon name="plus" size={10} />
+                           <Button
+                              key={`${index} AddButton`}
+                              onPress={() => addField()}
+                           >
+                              <Icon
+                                 name="plus"
+                                 size={10}
+                                 key={`${index} PlusIcon`}
+                              />
                            </Button>
                            <Button
+                              key={`${index} RemoveButton`}
                               isDisabled={pets.length <= 1}
                               onPress={() => removeField(index)}
                            >
-                              <Icon name="minus" size={10} />
+                              <Icon
+                                 name="minus"
+                                 size={10}
+                                 key={`${index} MinusIcon`}
+                              />
                            </Button>
-                        </>
+                        </View>
                      );
                   })}
                </FormControl>

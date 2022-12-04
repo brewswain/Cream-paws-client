@@ -16,8 +16,8 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
          {pets!.length > 1 ? <Text>Pets</Text> : <Text>Pet</Text>}
          {pets?.map((pet) => (
             <View>
-               <Text>Name: {pet.name}</Text>
-               <Text>Breed: {pet.breed}</Text>
+               <Text key={pet.name}>Name: {pet.name}</Text>
+               <Text key={pet.breed}>Breed: {pet.breed}</Text>
             </View>
          ))}
       </View>
@@ -29,7 +29,7 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
 
          {orders?.map((order) => (
             <View>
-               <Text>Order</Text>
+               <Text key={order.customer_id}>Order</Text>
             </View>
          ))}
       </View>
