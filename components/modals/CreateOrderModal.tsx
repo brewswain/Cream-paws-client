@@ -103,6 +103,7 @@ const CreateOrderModal = ({
       is_delivery: false,
       driver_paid: false,
       warehouse_paid: false,
+      quantity: 0,
       // add chow object
       // Make it work when making multiple calls. Maybe a loop, or something like Promise.all()
       // This is so that we can make multiple orders of separate chow for one client.
@@ -196,7 +197,7 @@ const CreateOrderModal = ({
       // reference
 
       orderPayload.chow_array.map((chow_details: ChowDetails) => {
-         const { chow_id, quantity } = chow_details;
+         const { chow_id } = chow_details;
          const {
             customer_id,
             delivery_date,
@@ -205,6 +206,7 @@ const CreateOrderModal = ({
             is_delivery,
             driver_paid,
             warehouse_paid,
+            quantity,
          } = orderPayload;
 
          console.log({ orderPayload });
@@ -216,6 +218,7 @@ const CreateOrderModal = ({
             payment_date,
             is_delivery,
             driver_paid,
+            quantity,
             warehouse_paid,
             chow_id,
             customer_id,
@@ -326,6 +329,7 @@ const CreateOrderModal = ({
                            <TextInput
                               style={styles.input}
                               placeholder="Quantity"
+                              keyboardType="numeric"
                               onChange={(event) =>
                                  handleChowChange(event, index, "quantity")
                               }
