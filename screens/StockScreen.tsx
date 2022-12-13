@@ -48,12 +48,12 @@ const StockScreen = () => {
             <Text>Stock in Warehouse</Text>
          </View>
          {/* Simply reduce their price and show total after showing truncated list */}
-         <Text>{customerChow}</Text>
+         {/* <Text>{customerChow}</Text> */}
          <View>
             <Text>Stock called for by Customer</Text>
          </View>
          {/* Simply reduce their price and show total after showing truncated list */}
-         <Text> {warehouseChow}</Text>
+         {/* <Text> {warehouseChow}</Text> */}
          <Pressable style={styles.buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
          </Pressable>
