@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ScrollView } from "native-base";
 import { useEffect, useState } from "react";
 import { Button, Text, View, StyleSheet, Pressable } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -30,22 +31,22 @@ const CustomersScreen = () => {
    useEffect(() => {
       populateCustomersList();
    }, []);
-
    return (
       <View style={styles.container}>
-         {customers &&
-            customers.map((customer) => (
-               <CustomerCard customer={customer} key={customer.id} />
-            ))}
-
+         <ScrollView>
+            {customers &&
+               customers.map((customer) => (
+                  <CustomerCard customer={customer} key={customer.id} />
+               ))}
+            <CreateCustomerModal
+               isOpen={showModal}
+               setShowModal={setShowModal}
+               populateCustomerList={populateCustomersList}
+            />
+         </ScrollView>
          <Pressable style={styles.buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
          </Pressable>
-         <CreateCustomerModal
-            isOpen={showModal}
-            setShowModal={setShowModal}
-            populateCustomerList={populateCustomersList}
-         />
       </View>
    );
 };
