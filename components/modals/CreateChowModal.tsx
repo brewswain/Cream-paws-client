@@ -17,8 +17,20 @@ const CreateChowModal = ({
    populateChowList,
 }: CreateChowProps) => {
    // Using Chow Interface located at '../models'
-   const [chowPayload, setChowPayload] = useState<Chow>();
-   const [unit, setUnit] = useState<string>("");
+   // TODO: Fix our default params so that this is less bulky
+   const [chowPayload, setChowPayload] = useState<Chow>({
+      brand: "",
+      id: "",
+      target_group: "",
+      flavour: "",
+      size: 0,
+      unit: "lb",
+      quantity: 1,
+      wholesale_price: 0,
+      retail_price: 0,
+      is_paid_for: false,
+   });
+   const [unit, setUnit] = useState<string>("lb");
    const [isPaidFor, setIsPaidFor] = useState<string | boolean>("false");
    const [errors, setErrors] = useState({});
 
@@ -53,9 +65,12 @@ const CreateChowModal = ({
       return true;
    };
 
-   const handleChowCreation = () => {
+   const handleChowCreation = async () => {
       // Heavyhanded use of !, but we should never have undefined here
-      createChow(chowPayload!);
+      // TODO: figure out why removing console.log causes API call to fail...most likely some async/sync problems here, where payload isn't
+      // being updated properly before it gets sent over
+      console.log({ chowPayload });
+      await createChow(chowPayload!);
       populateChowList();
       closeModal();
    };
@@ -120,7 +135,8 @@ const CreateChowModal = ({
                   <FormControl.Label>Unit</FormControl.Label>
                   <Radio.Group
                      name="SizeGroup"
-                     value={unit}
+                     // value={unit}
+                     defaultValue="lb"
                      onChange={(nextValue) => {
                         setUnit(nextValue);
                      }}
@@ -134,12 +150,12 @@ const CreateChowModal = ({
                   </Radio.Group>
                   {/* We just need a checkbox as this is purely a boolean*/}
                </FormControl>
-               <FormControl isRequired>
+               {/* <FormControl isRequired>
                   <FormControl.Label>Quantity</FormControl.Label>
                   <Input
                      onChange={(event) => handleChowChange(event, "quantity")}
                   />
-               </FormControl>
+               </FormControl> */}
                <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <Input
@@ -156,7 +172,7 @@ const CreateChowModal = ({
                      }
                   />
                </FormControl>
-               <FormControl isRequired>
+               {/* <FormControl isRequired>
                   <FormControl.Label>Is Paid For</FormControl.Label>
                   <Radio.Group
                      name="IsPaidForGroup"
@@ -170,8 +186,8 @@ const CreateChowModal = ({
                         True
                      </Radio>
                   </Radio.Group>
-                  {/* We just need a checkbox as this is purely a boolean*/}
                </FormControl>
+                   */}
             </Modal.Body>
             <Button.Group space={2}>
                <Button variant="ghost" onPress={closeModal}>
