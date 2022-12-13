@@ -32,13 +32,14 @@ const OrdersScreen = () => {
 
    const populateCustomersList = async () => {
       const response = await getAllCustomers();
+      console.log({ response });
       setCustomers(response);
    };
 
    const populateData = async () => {
-      populateChowList();
-      populateCustomersList();
-      populateOrdersList();
+      await populateChowList();
+      await populateCustomersList();
+      await populateOrdersList();
    };
 
    const openModal = () => {
@@ -72,10 +73,18 @@ const OrdersScreen = () => {
    //    chow_id: "632af56a806f2af148eba268",
    // };
 
+   const testArray = customers && customers[0];
+
    return (
       <View style={styles.container}>
          <View>
-            {orders && orders.map((item) => <Text>{item.customer_id}</Text>)}
+            {testArray &&
+               testArray!.orders!.map((order) => (
+                  <Text>
+                     WIP Warehouse Price:{" "}
+                     {order.chow_details.wholesale_price * order.quantity}
+                  </Text>
+               ))}
          </View>
          <Pressable style={styles.buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
