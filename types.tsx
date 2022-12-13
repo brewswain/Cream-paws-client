@@ -26,6 +26,7 @@ export type RootStackParamList = {
    Stock: undefined;
    Finance: undefined;
    Auth: undefined;
+   CustomerDetails: Customer;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -40,6 +41,7 @@ export type RootTabParamList = {
    Stock: undefined;
    Finance: undefined;
    Auth: undefined;
+   CustomerDetails: Customer;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
