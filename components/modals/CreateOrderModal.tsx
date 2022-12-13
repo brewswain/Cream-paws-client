@@ -42,7 +42,7 @@ const CreateOrderModal = ({
    const [chowInputs, setChowInputs] = useState<any[]>([
       {
          chow_id: "",
-         quantity: 0,
+         quantity: 1,
       },
    ]);
    const [orderInputs, setOrderInputs] = useState<any>({
@@ -103,7 +103,6 @@ const CreateOrderModal = ({
       is_delivery: false,
       driver_paid: false,
       warehouse_paid: false,
-      quantity: 0,
       // add chow object
       // Make it work when making multiple calls. Maybe a loop, or something like Promise.all()
       // This is so that we can make multiple orders of separate chow for one client.
@@ -153,18 +152,28 @@ const CreateOrderModal = ({
       setOrderInputs(data);
    };
 
-   const handleChowChange = (
+   // const handleChowChange = (
+   //    event: NativeSyntheticEvent<TextInputChangeEventData>,
+   //    index: number,
+   //    name: string
+   // ) => {
+   //    let data = [...chowInputs];
+   //    // TODO: clean up elifs
+
+   //    data[index][name] = event.nativeEvent.text;
+
+   //    setChowInputs(data);
+   // };
+
+   const handleQuantityChange = (
       event: NativeSyntheticEvent<TextInputChangeEventData>,
       index: number,
       name: string
    ) => {
       let data = [...chowInputs];
-      // TODO: clean up elifs
-      if (name === "quantity") {
-         data[index][name] = parseInt(event.nativeEvent.text);
-      } else {
-         data[index][name] = event.nativeEvent.text;
-      }
+      console.log({ event: event.nativeEvent.text, data_name: name });
+
+      data[index][name] = parseInt(event.nativeEvent.text);
       setChowInputs(data);
    };
 
@@ -189,43 +198,89 @@ const CreateOrderModal = ({
       // console.log({ location: "handleCustomerSelected", data });
    };
 
-   const handleOrderCreation = () => {
+   const handleOrderCreation = async () => {
       // TODO: Keep as last function before return statement, should take a payload and
       // do stuff™️.
       // Goals: use form inputs to construct a payload which is sent to our api. should lessen
       // code sprawl. Check <CreateCustomerModal /> -- handlePetsChange() (line 56) for
       // reference
 
-      orderPayload.chow_array.map((chow_details: ChowDetails) => {
-         const { chow_id } = chow_details;
-         const {
-            customer_id,
-            delivery_date,
-            payment_made,
-            payment_date,
-            is_delivery,
-            driver_paid,
-            warehouse_paid,
-            quantity,
-         } = orderPayload;
+      const chowArray = orderPayload.chow_array;
 
-         console.log({ orderPayload });
+      // Promise.all(
+      //    chowArray.map(async (chowDetails: ChowDetails) => {
+      //       const { chow_id, quantity } = chowDetails;
+      //       const {
+      //          customer_id,
+      //          delivery_date,
+      //          payment_made,
+      //          payment_date,
+      //          is_delivery,
+      //          driver_paid,
+      //          warehouse_paid,
+      //       } = orderPayload;
 
-         // Add quantity here to Payload
-         createOrder({
-            delivery_date,
-            payment_made,
-            payment_date,
-            is_delivery,
-            driver_paid,
-            quantity,
-            warehouse_paid,
-            chow_id,
-            customer_id,
-         });
-         populateOrdersList();
-         closeModal();
-      });
+      //       const newOrderPayload = {
+      //          delivery_date,
+      //          payment_made,
+      //          payment_date,
+      //          is_delivery,
+      //          quantity,
+      //          driver_paid,
+      //          warehouse_paid,
+      //          customer_id,
+      //          chow_id,
+      //       };
+
+      //       createOrder(newOrderPayload);
+      //       populateOrdersList();
+      //    })
+      // );
+
+      const { chow_id, quantity } = chowArray[0];
+      const {
+         customer_id,
+         delivery_date,
+         payment_made,
+         payment_date,
+         is_delivery,
+         driver_paid,
+         warehouse_paid,
+      } = orderPayload;
+
+      const newOrderPayload = {
+         delivery_date,
+         payment_made,
+         payment_date,
+         is_delivery,
+         quantity,
+         driver_paid,
+         warehouse_paid,
+         customer_id,
+         chow_id,
+      };
+      await createOrder(newOrderPayload);
+      populateOrdersList();
+      closeModal();
+
+      // await orderPayload.chow_array.map(async (chow_details: ChowDetails) => {
+
+      //    console.log({ newOrderPayload });
+      //    // Add quantity here to Payload
+      //    // await createOrder({
+      //    //    delivery_date,
+      //    //    payment_made,
+      //    //    payment_date,
+      //    //    is_delivery,
+      //    //    quantity,
+      //    //    driver_paid,
+      //    //    warehouse_paid,
+      //    //    customer_id,
+      //    //    chow_id,
+      //    // });
+      //    // populateOrdersList();
+      //    // closeModal();
+      // });
    };
 
    // const testPayload = {
@@ -331,7 +386,7 @@ const CreateOrderModal = ({
                               placeholder="Quantity"
                               keyboardType="numeric"
                               onChange={(event) =>
-                                 handleChowChange(event, index, "quantity")
+                                 handleQuantityChange(event, index, "quantity")
                               }
                               value={field.quantity}
                               key={`index: ${index} Quantity `}
