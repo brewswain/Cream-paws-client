@@ -8,10 +8,12 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
 import { ColorSchemeName, Pressable } from "react-native";
+import CustomerDetails from "../components/CustomerDetails";
 
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import AuthScreen from "../screens/AuthScreen";
+import CustomerDetailsScreen from "../screens/CustomerDetailsScreen";
 import CustomersScreen from "../screens/CustomersScreen";
 import ClientListScreen from "../screens/CustomersScreen";
 import FinanceScreen from "../screens/FinanceScreen";
@@ -92,6 +94,11 @@ function RootNavigator() {
             name="NotFound"
             component={NotFoundScreen}
             options={{ title: "Oops!" }}
+         />
+         <Stack.Screen
+            name="CustomerDetails"
+            component={CustomerDetailsScreen}
+            options={{ title: "Customer Details" }}
          />
 
          <Stack.Group screenOptions={{ presentation: "modal" }}>
