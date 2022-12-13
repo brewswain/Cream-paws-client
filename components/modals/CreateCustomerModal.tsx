@@ -58,12 +58,13 @@ const CreateCustomerModal = ({
    ) => {
       let data = [...pets];
       data[index][name] = event.nativeEvent.text;
+      console.log({ event: event.nativeEvent.text, data_name: name });
 
       setPets(data);
    };
 
-   const handleCustomerCreation = () => {
-      createCustomer(name, pets);
+   const handleCustomerCreation = async () => {
+      await createCustomer(name, pets);
       populateCustomerList();
       closeModal();
    };
@@ -87,11 +88,11 @@ const CreateCustomerModal = ({
                   <FormControl.Label>Pets</FormControl.Label>
                   {pets.map((pet, index) => {
                      return (
-                        <View key={`${pet.name} - ${pet.breed}`}>
+                        <View key={index}>
                            <TextInput
                               style={styles.input}
                               placeholder="Name"
-                              key={`${index} name`}
+                              key={`index: ${index} name `}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "name")
                               }
@@ -101,7 +102,7 @@ const CreateCustomerModal = ({
                            <TextInput
                               style={styles.input}
                               placeholder="Breed"
-                              key={`${name} name`}
+                              key={`index: ${index} breed `}
                               onChange={(event) =>
                                  handlePetsChange(event, index, "breed")
                               }
