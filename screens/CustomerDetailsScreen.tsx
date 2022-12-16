@@ -1,15 +1,26 @@
-import { View, StyleSheet, Text, useWindowDimensions } from "react-native";
+import {
+   View,
+   StyleSheet,
+   Text,
+   ScrollView,
+   useWindowDimensions,
+} from "react-native";
 import { RootTabScreenProps } from "../types";
 
 interface CustomerDetailProps {
    navigation: RootTabScreenProps<"CustomerDetails">;
    route: any;
 }
+
 const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
    console.log({ navigation, route });
    const { pets, orders, name, id } = route.params;
    const { container, heading, subHeading } = styles;
+
    const { height, width } = useWindowDimensions();
+
+   const petsExist = pets && pets.length > 0;
+   const ordersExist = orders && orders.length > 0;
 
    const renderPets = () => (
       <View>
@@ -29,32 +40,37 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       <View>
          {orders!.length > 1 ? <Text>Orders</Text> : <Text>Order</Text>}
 
-         {orders?.map((order: any) => (
-            <View key={order.chow_details.id}>
-               <Text key={order.customer_id}>Order</Text>
+         {orders?.map((order: any, index: number) => (
+            <View key={`${index} Chow ID:${order.chow_details.id}`}>
+               <Text
+                  key={`${index} Customer ID:${order.chow_details.warehouse_paid}`}
+               >
+                  Warehouse Paid
+               </Text>
             </View>
          ))}
       </View>
    );
 
    return (
-      <View style={[container, { height: height }]}>
+      <ScrollView style={[container, { minHeight: height, width: width }]}>
          <Text>{name}</Text>
          <Text>{id}</Text>
-         {pets && renderPets()}
-         {orders && renderOrders()}
-      </View>
+         {petsExist && renderPets()}
+         {ordersExist && renderOrders()}
+      </ScrollView>
    );
 };
 
 const styles = StyleSheet.create({
-   container: {
-      backgroundColor: "white",
-      position: "absolute",
-      top: 0,
-      left: 0,
-      bottom: 0,
-   },
+   container: {},
+   // container: {
+   //    backgroundColor: "white",
+   //    position: "absolute",
+   //    top: 0,
+   //    left: 0,
+   //    bottom: 0,
+   // },
 
    heading: {
       fontSize: 14,
