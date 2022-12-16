@@ -207,61 +207,63 @@ const CreateOrderModal = ({
 
       const chowArray = orderPayload.chow_array;
 
-      // Promise.all(
-      //    chowArray.map(async (chowDetails: ChowDetails) => {
-      //       const { chow_id, quantity } = chowDetails;
-      //       const {
-      //          customer_id,
-      //          delivery_date,
-      //          payment_made,
-      //          payment_date,
-      //          is_delivery,
-      //          driver_paid,
-      //          warehouse_paid,
-      //       } = orderPayload;
+      Promise.all(
+         chowArray.map(async (chowDetails: ChowDetails) => {
+            const { chow_id, quantity } = chowDetails;
+            const {
+               customer_id,
+               delivery_date,
+               payment_made,
+               payment_date,
+               is_delivery,
+               driver_paid,
+               warehouse_paid,
+            } = orderPayload;
 
-      //       const newOrderPayload = {
-      //          delivery_date,
-      //          payment_made,
-      //          payment_date,
-      //          is_delivery,
-      //          quantity,
-      //          driver_paid,
-      //          warehouse_paid,
-      //          customer_id,
-      //          chow_id,
-      //       };
+            const newOrderPayload = {
+               delivery_date,
+               payment_made,
+               payment_date,
+               is_delivery,
+               quantity,
+               driver_paid,
+               warehouse_paid,
+               customer_id,
+               chow_id,
+            };
 
-      //       createOrder(newOrderPayload);
-      //       populateOrdersList();
-      //    })
-      // );
+            await createOrder(newOrderPayload);
+         })
+      ).then(() => {
+         populateOrdersList();
+         closeModal();
+      });
 
-      const { chow_id, quantity } = chowArray[0];
-      const {
-         customer_id,
-         delivery_date,
-         payment_made,
-         payment_date,
-         is_delivery,
-         driver_paid,
-         warehouse_paid,
-      } = orderPayload;
+      // const { chow_id, quantity } = chowArray[0];
+      // const {
+      //    customer_id,
+      //    delivery_date,
+      //    payment_made,
+      //    payment_date,
+      //    is_delivery,
+      //    driver_paid,
+      //    warehouse_paid,
+      // } = orderPayload;
 
-      const newOrderPayload = {
-         delivery_date,
-         payment_made,
-         payment_date,
-         is_delivery,
-         quantity,
-         driver_paid,
-         warehouse_paid,
-         customer_id,
-         chow_id,
-      };
-      await createOrder(newOrderPayload);
-      populateOrdersList();
-      closeModal();
+      // const newOrderPayload = {
+      //    delivery_date,
+      //    payment_made,
+      //    payment_date,
+      //    is_delivery,
+      //    quantity,
+      //    driver_paid,
+      //    warehouse_paid,
+      //    customer_id,
+      //    chow_id,
+      // };
+      // await createOrder(newOrderPayload);
+      // populateOrdersList();
+      // closeModal();
 
       // await orderPayload.chow_array.map(async (chow_details: ChowDetails) => {
 
