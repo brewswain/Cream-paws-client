@@ -6,6 +6,8 @@ import CreateCustomerModal from "./modals/CreateCustomerModal";
 import CreateOrderModal from "./modals/CreateOrderModal";
 
 import EditScreenInfo from "./EditScreenInfo";
+import DetailsText from "./DetailsText";
+import FilteredOrderDetails from "./FilteredOrderDetails";
 
 export {
    CustomerCard,
@@ -14,4 +16,6 @@ export {
    CreateCustomerModal,
    CreateOrderModal,
    EditScreenInfo,
+   DetailsText,
+   FilteredOrderDetails,
 };
