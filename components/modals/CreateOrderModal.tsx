@@ -233,9 +233,9 @@ const CreateOrderModal = ({
             };
 
             await createOrder(newOrderPayload);
+            populateOrdersList();
          })
       ).then(() => {
-         populateOrdersList();
          closeModal();
       });
 
