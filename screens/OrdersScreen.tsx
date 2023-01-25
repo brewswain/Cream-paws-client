@@ -79,8 +79,10 @@ const OrdersScreen = () => {
       <View style={styles.container}>
          <View>
             {testArray &&
-               testArray!.orders!.map((order) => (
-                  <Text>
+               testArray!.orders!.map((order, index) => (
+                  <Text
+                     key={`Index: ${index}, customer_id:${order.customer_id}`}
+                  >
                      WIP Warehouse Price:{" "}
                      {order.chow_details.wholesale_price * order.quantity}
                   </Text>
