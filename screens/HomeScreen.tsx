@@ -24,6 +24,9 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
          <NavigationCard navigation={navigation} destination="Finance">
             Finance
          </NavigationCard>
+         <NavigationCard navigation={navigation} destination="CustomerDetails">
+            Test Customer Details
+         </NavigationCard>
       </View>
    );
 }
