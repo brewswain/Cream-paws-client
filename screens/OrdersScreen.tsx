@@ -32,7 +32,7 @@ const OrdersScreen = () => {
 
    const populateCustomersList = async () => {
       const response = await getAllCustomers();
-      console.log({ response });
+      // console.log({ response });
       setCustomers(response);
    };
 

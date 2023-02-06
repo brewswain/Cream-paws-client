@@ -69,7 +69,7 @@ const CreateChowModal = ({
       // Heavyhanded use of !, but we should never have undefined here
       // TODO: figure out why removing console.log causes API call to fail...most likely some async/sync problems here, where payload isn't
       // being updated properly before it gets sent over
-      console.log({ chowPayload });
+      // console.log({ chowPayload });
       await createChow(chowPayload!);
       populateChowList();
       closeModal();

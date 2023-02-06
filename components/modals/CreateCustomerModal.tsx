@@ -58,7 +58,7 @@ const CreateCustomerModal = ({
    ) => {
       let data = [...pets];
       data[index][name] = event.nativeEvent.text;
-      console.log({ event: event.nativeEvent.text, data_name: name });
+      // console.log({ event: event.nativeEvent.text, data_name: name });
 
       setPets(data);
    };

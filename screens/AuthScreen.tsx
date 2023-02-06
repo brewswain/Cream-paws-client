@@ -11,12 +11,12 @@ const AuthScreen = () => {
       const response = await signIn("test@test.com", "password");
 
       setUser(response?.data);
-      console.log(response?.headers);
+      // console.log(response?.headers);
    };
 
    const getCurrentUserTest = async () => {
       const response = await getCurrentUser();
-      console.log(response.data);
+      // console.log(response.data);
       setCurrentUser(response.data.currentUser);
    };
 

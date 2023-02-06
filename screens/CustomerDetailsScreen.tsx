@@ -12,7 +12,11 @@ import Collapsible from "react-native-collapsible";
 import { RootTabScreenProps } from "../types";
 
 import { testCustomerDetails } from "../data/test_data";
-import { DetailsText, FilteredOrderDetails } from "../components";
+import {
+   CollapsibleOrder,
+   DetailsText,
+   FilteredOrderDetails,
+} from "../components";
 
 interface CustomerDetailProps {
    navigation: RootTabScreenProps<"CustomerDetails">;
@@ -54,6 +58,10 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
    //TODO: remove test payload
 
+   const capitalizedName = (name: string) => {
+      return name[0].toUpperCase() + name.substring(1);
+   };
+
    const renderPets = () => (
       <View>
          <Text style={[subHeader]}>{pets!.length > 1 ? "Pets" : "Pet"}</Text>
@@ -72,46 +80,37 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       const outstandingOrders = orders.filter(
          (order) => order.payment_made === false
       );
+      // console.log({ outstandingOrders });
       const completedOrders = orders.filter(
          (order) => order.payment_made === true
       );
       return (
-         <View>
+         <View style={container}>
             <Text style={subHeader}>
                {orders!.length > 1 ? "Orders" : "Order"}
             </Text>
 
-            <View>
-               <Text
-                  style={collapsibleHeader}
-                  onPress={() =>
-                     setOutstandingCollapsible(!outstandingCollapsible)
-                  }
-               >
-                  Outstanding Orders
-               </Text>
-               <Collapsible collapsed={outstandingCollapsible}>
-                  <FilteredOrderDetails orders={outstandingOrders} />
-               </Collapsible>
-            </View>
-            <View>
-               <Text
-                  style={collapsibleHeader}
-                  onPress={() => setCompletedCollapsible(!completedCollapsible)}
-               >
-                  Completed Orders
-               </Text>
-               <Collapsible collapsed={completedCollapsible}>
-                  <FilteredOrderDetails orders={completedOrders} />
-               </Collapsible>
-            </View>
+            <CollapsibleOrder
+               outstandingCollapsible={outstandingCollapsible}
+               setOutstandingCollapsible={setOutstandingCollapsible}
+               outstandingOrders={outstandingOrders}
+            >
+               Outstanding Orders
+            </CollapsibleOrder>
+            <CollapsibleOrder
+               outstandingCollapsible={completedCollapsible}
+               setOutstandingCollapsible={setCompletedCollapsible}
+               outstandingOrders={completedOrders}
+            >
+               Completed Orders
+            </CollapsibleOrder>
          </View>
       );
    };
 
    return (
       <ScrollView style={[container, { height: height, width: width }]}>
-         <Text style={header}>{name}</Text>
+         <Text style={header}>{capitalizedName(name)}</Text>
          <Text style={totalCost}>
             Total Outstanding Cost:{" "}
             {mappedCostArray.reduce(
@@ -129,19 +128,23 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 };
 
 const styles = StyleSheet.create({
-   container: {},
+   container: {
+      backgroundColor: "hsl(225,6%,13%)",
+   },
    header: {
       fontSize: 24,
       fontWeight: "600",
       textAlign: "center",
       margin: 8,
+      color: "rgb(148, 163, 184)",
    },
    collapsibleHeader: {
       paddingLeft: 20,
    },
    subHeader: {
       fontSize: 20,
-      color: "hsl(186,63%,30%)",
+      color: "hsl(186, 52%, 61%)",
+      // color: "hsl(186,63%,30%)",
       fontWeight: "600",
       marginTop: 4,
       marginBottom: 4,

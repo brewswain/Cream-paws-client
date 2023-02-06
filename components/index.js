@@ -9,6 +9,9 @@ import EditScreenInfo from "./EditScreenInfo";
 import DetailsText from "./DetailsText";
 import FilteredOrderDetails from "./FilteredOrderDetails";
 
+import CollapsibleOrder from "./Dropdowns/CollapsibleOrder";
+import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
+
 export {
    CustomerCard,
    NavigationCard,
@@ -18,4 +21,6 @@ export {
    EditScreenInfo,
    DetailsText,
    FilteredOrderDetails,
+   CollapsibleOrder,
+   CollapsibleChowDetails,
 };

@@ -97,7 +97,7 @@ const FinanceScreen = () => {
    }, []);
 
    useEffect(() => {
-      console.log(orders?.map((order) => order));
+      // console.log(orders?.map((order) => order));
    }, [orders]);
    return (
       <View>

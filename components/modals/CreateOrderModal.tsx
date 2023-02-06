@@ -148,7 +148,7 @@ const CreateOrderModal = ({
          data[name] = event.nativeEvent.text;
       }
 
-      console.log({ event: event.nativeEvent.text, data_name: name });
+      // console.log({ event: event.nativeEvent.text, data_name: name });
       setOrderInputs(data);
    };
 
@@ -171,7 +171,7 @@ const CreateOrderModal = ({
       name: string
    ) => {
       let data = [...chowInputs];
-      console.log({ event: event.nativeEvent.text, data_name: name });
+      // console.log({ event: event.nativeEvent.text, data_name: name });
 
       data[index][name] = parseInt(event.nativeEvent.text);
       setChowInputs(data);

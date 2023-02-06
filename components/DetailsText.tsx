@@ -18,14 +18,16 @@ const DetailsText = ({ header, details }: DetailsTextProps) => {
 
 const styles = StyleSheet.create({
    bold: {
-      fontWeight: "600",
+      fontWeight: "500",
       paddingLeft: 20,
       fontSize: 16,
+      color: "grey",
    },
    regular: {
       fontWeight: "400",
       paddingLeft: 20,
       fontSize: 14,
+      color: "white",
    },
 });
 
