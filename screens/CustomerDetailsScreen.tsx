@@ -18,6 +18,7 @@ import {
    FilteredOrderDetails,
 } from "../components";
 
+import { updateOrder } from "../api";
 interface CustomerDetailProps {
    navigation: RootTabScreenProps<"CustomerDetails">;
    route: any;
@@ -30,27 +31,26 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
    const [completedCollapsible, setCompletedCollapsible] =
       useState<boolean>(true);
 
-   // const { pets, orders, name, id } = route.params;
-   const { pets, orders, name, id } = testCustomerDetails;
-   const {
-      container,
-      header,
-      subHeader,
-      collapsibleHeader,
-      deEmphasis,
-      bold,
-      regular,
-      totalCost,
-   } = styles;
+   const { pets, orders, name, id } = route.params;
+   // const { pets, orders, name, id } = testCustomerDetails;
+   const { container, header, subHeader, deEmphasis, outstandingCosts } =
+      styles;
 
    const { height, width } = useWindowDimensions();
 
-   const TEST_PETS_EXIST =
-      testCustomerDetails.pets && testCustomerDetails.pets.length > 0;
-   const TEST_ORDERS_EXIST =
-      testCustomerDetails.orders && testCustomerDetails.orders.length > 0;
-   // const petsExist = pets && pets.length > 0;
-   // const ordersExist = orders && orders.length > 0;
+   // const TEST_PETS_EXIST =
+   //    testCustomerDetails.pets && testCustomerDetails.pets.length > 0;
+   // const TEST_ORDERS_EXIST =
+   //    testCustomerDetails.orders && testCustomerDetails.orders.length > 0;
+   const petsExist = pets && pets.length > 0;
+   const ordersExist = orders && orders.length > 0;
+   const outstandingOrders = orders.filter(
+      (order) => order.payment_made === false
+   );
+   // console.log({ outstandingOrders });
+   const completedOrders = orders.filter(
+      (order) => order.payment_made === true
+   );
 
    const mappedCostArray = orders
       .filter((order) => order.payment_made === false)
@@ -60,6 +60,18 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
    const capitalizedName = (name: string) => {
       return name[0].toUpperCase() + name.substring(1);
+   };
+
+   const handleMassOrderPayment = () => {
+      outstandingOrders.map(async (order) => {
+         const paidOrder = {
+            ...order,
+            payment_made: true,
+            payment_date: new Date().toString(),
+         };
+
+         await updateOrder(order.id, paidOrder);
+      });
    };
 
    const renderPets = () => (
@@ -77,18 +89,14 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
    const renderOrders = () => {
       // Using explicit boolean verification here for DX purposes
-      const outstandingOrders = orders.filter(
-         (order) => order.payment_made === false
-      );
-      // console.log({ outstandingOrders });
-      const completedOrders = orders.filter(
-         (order) => order.payment_made === true
-      );
+
       return (
          <View style={container}>
             <Text style={subHeader}>
                {orders!.length > 1 ? "Orders" : "Order"}
             </Text>
+
+            <Text onPress={handleMassOrderPayment}>Clear All Orders</Text>
 
             <CollapsibleOrder
                outstandingCollapsible={outstandingCollapsible}
@@ -111,16 +119,24 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
    return (
       <ScrollView style={[container, { height: height, width: width }]}>
          <Text style={header}>{capitalizedName(name)}</Text>
-         <Text style={totalCost}>
-            Total Outstanding Cost:{" "}
-            {mappedCostArray.reduce(
-               (accumulator, currentValue) => accumulator + currentValue,
-               0
-            )}
-         </Text>
+         {outstandingOrders.length > 0 ? (
+            <Text style={outstandingCosts}>
+               Total Outstanding Cost:{" "}
+               {mappedCostArray.reduce(
+                  (accumulator, currentValue) => accumulator + currentValue,
+                  0
+               )}
+            </Text>
+         ) : (
+            <Text style={[outstandingCosts, { color: "green" }]}>
+               No outstanding Orders!
+            </Text>
+         )}
          <View>
-            {TEST_PETS_EXIST && renderPets()}
-            {TEST_ORDERS_EXIST && renderOrders()}
+            {petsExist && renderPets()}
+            {ordersExist && renderOrders()}
+            {/* {TEST_PETS_EXIST && renderPets()}
+            {TEST_ORDERS_EXIST && renderOrders()} */}
          </View>
          <Text style={deEmphasis}>Customer ID: {id}</Text>
       </ScrollView>
@@ -148,12 +164,13 @@ const styles = StyleSheet.create({
       fontWeight: "600",
       marginTop: 4,
       marginBottom: 4,
-      paddingLeft: 20,
+      marginLeft: 20,
    },
-   totalCost: {
+   outstandingCosts: {
       fontSize: 16,
       color: "red",
       marginBottom: 4,
+      paddingLeft: 20,
    },
    deEmphasis: {
       color: "hsla(222,31%,66%, 0.7)",

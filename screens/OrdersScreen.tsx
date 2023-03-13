@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+
 import Icon from "react-native-vector-icons/AntDesign";
 
 import {
@@ -19,6 +22,8 @@ const OrdersScreen = () => {
    const [chow, setChow] = useState<Chow[]>();
    const [orders, setOrders] = useState<Order[]>();
    const [customers, setCustomers] = useState<Customer[]>();
+
+   const { orderDetails, orderHeader, orderContainer } = styles;
 
    const populateOrdersList = async () => {
       const response = await getAllOrders();
@@ -45,6 +50,8 @@ const OrdersScreen = () => {
    const openModal = () => {
       setShowModal(true);
    };
+
+   const uuid = uuidv4();
 
    useEffect(() => {
       populateData();
@@ -73,20 +80,60 @@ const OrdersScreen = () => {
    //    chow_id: "632af56a806f2af148eba268",
    // };
 
-   const testArray = customers && customers[0];
+   const customersArray = customers && customers;
 
+   const renderOrders = (customer: Customer, index: number) => {
+      return;
+   };
    return (
       <View style={styles.container}>
          <View>
-            {testArray &&
-               testArray!.orders!.map((order, index) => (
-                  <Text
-                     key={`Index: ${index}, customer_id:${order.customer_id}`}
-                  >
-                     WIP Warehouse Price:{" "}
-                     {order.chow_details.wholesale_price * order.quantity}
-                  </Text>
-               ))}
+            {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
+            {customersArray?.map((customer) => {
+               const mappedCostArray = customer.orders
+                  ?.filter((order) => order.payment_made === false)
+                  .map(
+                     (order) => order.chow_details.retail_price * order.quantity
+                  );
+
+               return (
+                  <View style={orderContainer} key={customer.id}>
+                     <Text style={orderHeader}>{customer.name}</Text>
+
+                     {/*  WIP, need to separate tax and delivery costs properly */}
+                     {mappedCostArray ? (
+                        <Text style={orderDetails}>
+                           Total outstanding cost:{" "}
+                           {mappedCostArray.reduce(
+                              (accumulator, currentValue) =>
+                                 accumulator + currentValue,
+                              0
+                           )}
+                        </Text>
+                     ) : null}
+                     <Text style={orderDetails}>
+                        Quantity of orders: {customer.orders?.length}
+                     </Text>
+                     <View>
+                        {customer.orders?.map((order) => {
+                           return (
+                              <View>
+                                 <Text
+                                    style={orderDetails}
+                                 >{`${order.chow_details.brand}-${order.chow_details.size} ${order.chow_details.unit} x ${order.quantity}`}</Text>
+                                 <Text style={orderDetails}>
+                                    WIP Warehouse Price:{" "}
+                                    {order.chow_details.wholesale_price *
+                                       order.quantity}
+                                 </Text>
+                                 <Text style={orderDetails}></Text>
+                              </View>
+                           );
+                        })}
+                     </View>
+                  </View>
+               );
+            })}
          </View>
          <Pressable style={styles.buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
@@ -117,6 +164,24 @@ const styles = StyleSheet.create({
       right: 10,
       borderRadius: 50,
       backgroundColor: "#8099c1",
+   },
+   orderContainer: {
+      display: "flex",
+      flexDirection: "column",
+   },
+   orderHeader: {
+      display: "flex",
+      alignSelf: "center",
+      textAlign: "center",
+      fontSize: 24,
+      width: "100%",
+      borderBottomWidth: 1,
+      borderBottomColor: "black",
+   },
+   orderDetails: {
+      fontSize: 14,
+      // paddingTop: 2,
+      paddingLeft: 4,
    },
 });
 

@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
+import {
+   NativeSyntheticEvent,
+   TextInputChangeEventData,
+   StyleSheet,
+   TextInput,
+} from "react-native";
 
-import { Button, FormControl, Input, Modal, Radio } from "native-base";
+import { Button, FormControl, Modal, Radio } from "native-base";
 
 import { createChow } from "../../api";
 
@@ -33,6 +38,8 @@ const CreateChowModal = ({
    const [unit, setUnit] = useState<string>("lb");
    const [isPaidFor, setIsPaidFor] = useState<string | boolean>("false");
    const [errors, setErrors] = useState({});
+
+   const { input, confirmationButton, confirmationButtonContainer } = styles;
 
    const closeModal = () => {
       setShowModal(false);
@@ -106,13 +113,15 @@ const CreateChowModal = ({
             <Modal.Body>
                <FormControl isRequired>
                   <FormControl.Label>Brand</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) => handleChowChange(event, "brand")}
                   />
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Target Group</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) =>
                         handleChowChange(event, "target_group")
                      }
@@ -120,13 +129,15 @@ const CreateChowModal = ({
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Flavour</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) => handleChowChange(event, "flavour")}
                   />
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) => handleChowChange(event, "size")}
                   />
                   {/* Find way to allow both a size and unit(kg/lb) selector by same input */}
@@ -152,13 +163,14 @@ const CreateChowModal = ({
                </FormControl>
                {/* <FormControl isRequired>
                   <FormControl.Label>Quantity</FormControl.Label>
-                  <Input
+                  <TextInput
                      onChange={(event) => handleChowChange(event, "quantity")}
                   />
                </FormControl> */}
                <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) =>
                         handleChowChange(event, "wholesale_price")
                      }
@@ -166,7 +178,8 @@ const CreateChowModal = ({
                </FormControl>
                <FormControl isRequired>
                   <FormControl.Label>Retail Price</FormControl.Label>
-                  <Input
+                  <TextInput
+                     style={input}
                      onChange={(event) =>
                         handleChowChange(event, "retail_price")
                      }
@@ -189,11 +202,12 @@ const CreateChowModal = ({
                </FormControl>
                    */}
             </Modal.Body>
-            <Button.Group space={2}>
+            <Button.Group space={2} style={confirmationButtonContainer}>
                <Button variant="ghost" onPress={closeModal}>
                   Cancel
                </Button>
                <Button
+                  style={confirmationButton}
                   onPress={() => handleSubmit()}
                   isDisabled={!validateFormEntry}
                >
@@ -204,5 +218,45 @@ const CreateChowModal = ({
       </Modal>
    );
 };
+
+const styles = StyleSheet.create({
+   input: {
+      margin: 5,
+      marginBottom: 8,
+      marginTop: 0,
+      paddingLeft: 10,
+      width: 270,
+      borderRadius: 4,
+      backgroundColor: "hsl(240,57%,97%)",
+   },
+   buttonContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "flex-end",
+   },
+   button: {
+      width: 40,
+      height: 30,
+      marginRight: 4,
+      backgroundColor: "hsl(213,74%,54%)",
+   },
+   confirmationButtonContainer: {
+      marginBottom: 4,
+   },
+   confirmationButton: {
+      backgroundColor: "hsl(213,74%,54%)",
+   },
+   dropdown: {
+      height: 30,
+      paddingLeft: 10,
+   },
+   dropdownContainer: {
+      margin: 5,
+      marginBottom: 8,
+      marginTop: 0,
+      width: 270,
+      borderRadius: 4,
+   },
+});
 
 export default CreateChowModal;

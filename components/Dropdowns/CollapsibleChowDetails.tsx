@@ -1,34 +1,41 @@
-import { View, Text } from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Collapsible from "react-native-collapsible";
+import Icon from "react-native-vector-icons/FontAwesome";
+
 import DetailsText from "../DetailsText";
 
 interface CollapsibleChowDetailsProps {
    chowDetails: Chow;
-   isCollapsed: boolean;
-   setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
    index: number;
 }
 
 const CollapsibleChowDetails = ({
    chowDetails,
-   isCollapsed,
-   setIsCollapsed,
    index,
 }: CollapsibleChowDetailsProps) => {
+   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
    const { brand, target_group, flavour, size, unit, retail_price } =
       chowDetails;
+   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
    return (
       <View>
-         <Text
-            key={`${index} Collapsible`}
+         <TouchableOpacity
+            style={dropdownContainer}
             onPress={() => {
                setIsCollapsed(!isCollapsed);
             }}
-            style={{ paddingLeft: 20 }}
          >
-            {isCollapsed ? "View Chow Details:" : "Close Chow Details:"}
-         </Text>
+            <Text key={`${index} Collapsible`} style={dropdownText}>
+               {isCollapsed ? "View Chow Details: " : "Close Chow Details: "}
+            </Text>
+            <Icon
+               name={`${isCollapsed ? "caret-right" : "caret-down"}`}
+               size={20}
+               style={dropdownIcon}
+            />
+         </TouchableOpacity>
          <Collapsible collapsed={isCollapsed}>
             <View>
                <DetailsText header={"Brand"} details={brand} />
@@ -41,5 +48,24 @@ const CollapsibleChowDetails = ({
       </View>
    );
 };
+
+const styles = StyleSheet.create({
+   dropdownContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-around",
+      backgroundColor: "white",
+      padding: 4,
+      borderRadius: 4,
+      width: "70%",
+   },
+   dropdownText: {
+      // TODO: font family+ aliasing please for the love of god
+      fontSize: 16,
+   },
+   dropdownIcon: {
+      paddingLeft: 20,
+   },
+});
 
 export default CollapsibleChowDetails;

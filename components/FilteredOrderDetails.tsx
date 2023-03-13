@@ -11,8 +11,7 @@ interface FilteredOrderDetailsProps {
 }
 
 const FilteredOrderDetails = ({ orders }: FilteredOrderDetailsProps) => {
-   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-   const { orderContainer } = styles;
+   const { orderContainer, divider } = styles;
 
    return (
       <View>
@@ -68,24 +67,29 @@ const FilteredOrderDetails = ({ orders }: FilteredOrderDetailsProps) => {
                   />
                   <CollapsibleChowDetails
                      chowDetails={order.chow_details}
-                     isCollapsed={isCollapsed}
-                     setIsCollapsed={setIsCollapsed}
                      index={index}
                   />
                </View>
             );
          })}
+         <View style={divider} />
       </View>
    );
 };
 
 const styles = StyleSheet.create({
    orderContainer: {
+      paddingTop: 8,
+      paddingBottom: 20,
+      paddingLeft: 20,
+      alignSelf: "stretch",
+      borderBottomColor: "hsl(186, 52%, 61%)",
+      borderBottomWidth: 1,
+   },
+   divider: {
       borderBottomColor: "grey",
       borderBottomWidth: 1,
-      paddingTop: 8,
-      paddingBottom: 8,
-      alignSelf: "stretch",
+      marginBottom: 12,
    },
 });
 

@@ -1,5 +1,7 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import Collapsible from "react-native-collapsible";
+import Icon from "react-native-vector-icons/FontAwesome";
+
 import FilteredOrderDetails from "../FilteredOrderDetails";
 
 interface CollapsibleOrderProps {
@@ -15,15 +17,23 @@ const CollapsibleOrder = ({
    outstandingOrders,
    children,
 }: CollapsibleOrderProps) => {
-   const { collapsibleHeader } = styles;
+   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
    return (
       <View>
-         <Text
-            style={collapsibleHeader}
-            onPress={() => setOutstandingCollapsible(!outstandingCollapsible)}
+         <TouchableOpacity
+            style={dropdownContainer}
+            onPress={() => {
+               setOutstandingCollapsible(!outstandingCollapsible);
+            }}
          >
-            {children}
-         </Text>
+            <Text style={dropdownText}>{children}</Text>
+            <Icon
+               name={`${outstandingCollapsible ? "caret-right" : "caret-down"}`}
+               size={20}
+               style={dropdownIcon}
+            />
+         </TouchableOpacity>
+
          <Collapsible collapsed={outstandingCollapsible}>
             <FilteredOrderDetails orders={outstandingOrders} />
          </Collapsible>
@@ -32,7 +42,22 @@ const CollapsibleOrder = ({
 };
 
 const styles = StyleSheet.create({
-   collapsibleHeader: {
+   dropdownContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-around",
+      backgroundColor: "white",
+      padding: 4,
+      borderRadius: 4,
+      width: "70%",
+      marginBottom: 10,
+      marginLeft: 20,
+   },
+   dropdownText: {
+      // TODO: font family+ aliasing please for the love of god
+      fontSize: 16,
+   },
+   dropdownIcon: {
       paddingLeft: 20,
    },
 });

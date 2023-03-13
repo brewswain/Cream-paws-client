@@ -26,6 +26,13 @@ const CreateCustomerModal = ({
    // Used for dynamically rendering a new input for each pet
    const [name, setName] = useState("");
    const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
+   const {
+      input,
+      button,
+      buttonContainer,
+      confirmationButton,
+      confirmationButtonContainer,
+   } = styles;
 
    const closeModal = () => {
       setShowModal(false);
@@ -78,7 +85,7 @@ const CreateCustomerModal = ({
                <FormControl isRequired>
                   <FormControl.Label>Name</FormControl.Label>
                   <TextInput
-                     style={styles.input}
+                     style={input}
                      placeholder="Name"
                      onChange={(event) => handleNameChange(event)}
                      value={name}
@@ -90,7 +97,7 @@ const CreateCustomerModal = ({
                      return (
                         <View key={index}>
                            <TextInput
-                              style={styles.input}
+                              style={input}
                               placeholder="Name"
                               key={`index: ${index} name `}
                               onChange={(event) =>
@@ -100,7 +107,7 @@ const CreateCustomerModal = ({
                            />
 
                            <TextInput
-                              style={styles.input}
+                              style={input}
                               placeholder="Breed"
                               key={`index: ${index} breed `}
                               onChange={(event) =>
@@ -109,37 +116,46 @@ const CreateCustomerModal = ({
                               value={pet.breed}
                            />
 
-                           <Button
-                              key={`${index} AddButton`}
-                              onPress={() => addField()}
-                           >
-                              <Icon
-                                 name="plus"
-                                 size={10}
-                                 key={`${index} PlusIcon`}
-                              />
-                           </Button>
-                           <Button
-                              key={`${index} RemoveButton`}
-                              isDisabled={pets.length <= 1}
-                              onPress={() => removeField(index)}
-                           >
-                              <Icon
-                                 name="minus"
-                                 size={10}
-                                 key={`${index} MinusIcon`}
-                              />
-                           </Button>
+                           <View style={buttonContainer}>
+                              <Button
+                                 key={`${index} AddButton`}
+                                 onPress={() => addField()}
+                                 style={button}
+                              >
+                                 <Icon
+                                    name="plus"
+                                    size={10}
+                                    key={`${index} PlusIcon`}
+                                 />
+                              </Button>
+                              <Button
+                                 key={`${index} RemoveButton`}
+                                 isDisabled={pets.length <= 1}
+                                 onPress={() => removeField(index)}
+                                 style={button}
+                              >
+                                 <Icon
+                                    name="minus"
+                                    size={10}
+                                    key={`${index} MinusIcon`}
+                                 />
+                              </Button>
+                           </View>
                         </View>
                      );
                   })}
                </FormControl>
             </Modal.Body>
-            <Button.Group space={2}>
+            <Button.Group space={2} style={confirmationButtonContainer}>
                <Button variant="ghost" onPress={closeModal}>
                   Cancel
                </Button>
-               <Button onPress={() => handleCustomerCreation()}>Save</Button>
+               <Button
+                  onPress={() => handleCustomerCreation()}
+                  style={confirmationButton}
+               >
+                  Save
+               </Button>
             </Button.Group>
          </Modal.Content>
       </Modal>
@@ -149,13 +165,29 @@ const CreateCustomerModal = ({
 const styles = StyleSheet.create({
    input: {
       margin: 5,
-      marginBottom: 2,
+      marginBottom: 8,
       marginTop: 0,
-      paddingLeft: 5,
-      borderColor: "#9f9f9f",
+      paddingLeft: 10,
       width: 270,
       borderRadius: 4,
-      borderWidth: 1,
+      backgroundColor: "hsl(240,57%,97%)",
+   },
+   buttonContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "flex-end",
+   },
+   button: {
+      width: 40,
+      height: 30,
+      marginRight: 4,
+      backgroundColor: "hsl(213,74%,54%)",
+   },
+   confirmationButtonContainer: {
+      marginBottom: 4,
+   },
+   confirmationButton: {
+      backgroundColor: "hsl(213,74%,54%)",
    },
 });
 

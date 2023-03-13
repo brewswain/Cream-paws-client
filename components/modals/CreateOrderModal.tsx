@@ -56,7 +56,6 @@ const CreateOrderModal = ({
    });
    const [selectedChow, setSelectedChow] = useState("");
    const [groupValues, setGroupValues] = useState<string[]>([]);
-
    const [selectedCustomer, setSelectedCustomer] = useState<string>("");
    // Loose typing on purpose for now, type SHOULD be Order.
    const [orders, setOrders] = useState<any[]>([{}]);
@@ -64,6 +63,16 @@ const CreateOrderModal = ({
    const closeModal = () => {
       setShowModal(false);
    };
+
+   const {
+      input,
+      button,
+      buttonContainer,
+      confirmationButton,
+      confirmationButtonContainer,
+      dropdown,
+      dropdownContainer,
+   } = styles;
 
    const addField = () => {
       let newField = { chow_id: "", quantity: 0 };
@@ -344,7 +353,7 @@ const CreateOrderModal = ({
                   <FormControl.Label>Order Information</FormControl.Label>
 
                   <TextInput
-                     style={styles.input}
+                     style={input}
                      placeholder="Delivery Date"
                      onChange={(event) =>
                         handleOrderChange(event, "delivery_date")
@@ -365,26 +374,33 @@ const CreateOrderModal = ({
                   {chowInputs.map((field, index) => {
                      return (
                         <View key={index}>
-                           <Select
-                              minWidth="200"
-                              selectedValue={chowInputs[index].chow_id}
-                              accessibilityLabel="Choose Chow"
-                              placeholder="Choose Chow"
-                              _selectedItem={{
-                                 bg: "teal.600",
-                                 endIcon: <CheckIcon size={5} />,
-                              }}
-                              mt="1"
-                              onValueChange={(itemValue) =>
-                                 handleChowSelected(itemValue, index, "chow_id")
-                              }
-                              key={field.chow_id}
-                           >
-                              {chow && renderChowDropdown()}
-                           </Select>
+                           <View style={dropdownContainer}>
+                              <Select
+                                 minWidth="200"
+                                 selectedValue={chowInputs[index].chow_id}
+                                 accessibilityLabel="Choose Chow"
+                                 placeholder="Choose Chow"
+                                 _selectedItem={{
+                                    bg: "teal.600",
+                                    endIcon: <CheckIcon size={5} />,
+                                 }}
+                                 mt="1"
+                                 onValueChange={(itemValue) =>
+                                    handleChowSelected(
+                                       itemValue,
+                                       index,
+                                       "chow_id"
+                                    )
+                                 }
+                                 key={field.chow_id}
+                                 style={dropdown}
+                              >
+                                 {chow && renderChowDropdown()}
+                              </Select>
+                           </View>
 
                            <TextInput
-                              style={styles.input}
+                              style={input}
                               placeholder="Quantity"
                               keyboardType="numeric"
                               onChange={(event) =>
@@ -393,37 +409,46 @@ const CreateOrderModal = ({
                               value={field.quantity}
                               key={`index: ${index} Quantity `}
                            />
-                           <Button
-                              onPress={() => addField()}
-                              key={`index: ${index} AddField `}
-                           >
-                              <Icon
-                                 name="plus"
-                                 size={10}
-                                 key={`index: ${index} PlusIcon `}
-                              />
-                           </Button>
-                           <Button
-                              isDisabled={chowInputs.length <= 1}
-                              onPress={() => removeField(index)}
-                              key={`index: ${index} RemoveField `}
-                           >
-                              <Icon
-                                 name="minus"
-                                 size={10}
-                                 key={`index: ${index} MinusIcon `}
-                              />
-                           </Button>
+                           <View style={buttonContainer}>
+                              <Button
+                                 style={button}
+                                 onPress={() => addField()}
+                                 key={`index: ${index} AddField `}
+                              >
+                                 <Icon
+                                    name="plus"
+                                    size={10}
+                                    key={`index: ${index} PlusIcon `}
+                                 />
+                              </Button>
+                              <Button
+                                 style={button}
+                                 isDisabled={chowInputs.length <= 1}
+                                 onPress={() => removeField(index)}
+                                 key={`index: ${index} RemoveField `}
+                              >
+                                 <Icon
+                                    name="minus"
+                                    size={10}
+                                    key={`index: ${index} MinusIcon `}
+                                 />
+                              </Button>
+                           </View>
                         </View>
                      );
                   })}
                </FormControl>
             </Modal.Body>
-            <Button.Group space={2}>
+            <Button.Group space={2} style={confirmationButtonContainer}>
                <Button variant="ghost" onPress={closeModal}>
                   Cancel
                </Button>
-               <Button onPress={() => handleOrderCreation()}>Save</Button>
+               <Button
+                  style={confirmationButton}
+                  onPress={() => handleOrderCreation()}
+               >
+                  Save
+               </Button>
             </Button.Group>
          </Modal.Content>
       </Modal>
@@ -433,13 +458,40 @@ const CreateOrderModal = ({
 const styles = StyleSheet.create({
    input: {
       margin: 5,
-      marginBottom: 2,
+      marginBottom: 8,
       marginTop: 0,
-      paddingLeft: 5,
-      borderColor: "#9f9f9f",
+      paddingLeft: 10,
       width: 270,
       borderRadius: 4,
-      borderWidth: 1,
+      backgroundColor: "hsl(240,57%,97%)",
+   },
+   buttonContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "flex-end",
+   },
+   button: {
+      width: 40,
+      height: 30,
+      marginRight: 4,
+      backgroundColor: "hsl(213,74%,54%)",
+   },
+   confirmationButtonContainer: {
+      marginBottom: 4,
+   },
+   confirmationButton: {
+      backgroundColor: "hsl(213,74%,54%)",
+   },
+   dropdown: {
+      height: 30,
+      paddingLeft: 10,
+   },
+   dropdownContainer: {
+      margin: 5,
+      marginBottom: 8,
+      marginTop: 0,
+      width: 270,
+      borderRadius: 4,
    },
 });
 
