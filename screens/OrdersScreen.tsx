@@ -16,6 +16,7 @@ import {
 } from "../api";
 
 import CreateOrderModal from "../components/modals/CreateOrderModal";
+import { OrderCard } from "../components";
 
 const OrdersScreen = () => {
    const [showModal, setShowModal] = useState<boolean>(false);
@@ -89,13 +90,12 @@ const OrdersScreen = () => {
       <View style={styles.container}>
          <View>
             {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-            {customersArray?.map((customer) => {
+            {customersArray?.map((customer: Customer) => {
                const mappedCostArray = customer.orders
                   ?.filter((order) => order.payment_made === false)
                   .map(
                      (order) => order.chow_details.retail_price * order.quantity
                   );
-
                return (
                   <View style={orderContainer} key={customer.id}>
                      <Text style={orderHeader}>{customer.name}</Text>
@@ -115,21 +115,28 @@ const OrdersScreen = () => {
                         Quantity of orders: {customer.orders?.length}
                      </Text>
                      <View>
-                        {customer.orders?.map((order) => {
-                           return (
-                              <View>
-                                 <Text
-                                    style={orderDetails}
-                                 >{`${order.chow_details.brand}-${order.chow_details.size} ${order.chow_details.unit} x ${order.quantity}`}</Text>
-                                 <Text style={orderDetails}>
-                                    WIP Warehouse Price:{" "}
-                                    {order.chow_details.wholesale_price *
-                                       order.quantity}
-                                 </Text>
-                                 <Text style={orderDetails}></Text>
-                              </View>
-                           );
-                        })}
+                        {customer.orders &&
+                           customer.orders.flat().map((order) => {
+                              return (
+                                 <View>
+                                    {order ? (
+                                       <OrderCard
+                                          clientName={customer.name}
+                                          order={order}
+                                       />
+                                    ) : null}
+                                    <Text style={orderDetails}>
+                                       {`${order.chow_details.brand}-${order.chow_details.size} ${order.chow_details.unit} x ${order.quantity}`}
+                                    </Text>
+                                    <Text style={orderDetails}>
+                                       WIP Warehouse Price:{" "}
+                                       {order.chow_details.wholesale_price *
+                                          order.quantity}
+                                    </Text>
+                                    <Text style={orderDetails}></Text>
+                                 </View>
+                              );
+                           })}
                      </View>
                   </View>
                );
@@ -151,6 +158,8 @@ const OrdersScreen = () => {
 
 const styles = StyleSheet.create({
    container: {
+      backgroundColor: "#252526",
+      height: "100%",
       flex: 1,
    },
    buttonContainer: {
