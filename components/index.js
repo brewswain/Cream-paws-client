@@ -1,5 +1,7 @@
 import CustomerCard from "./cards/CustomerCard";
 import NavigationCard from "./cards/NavigationCard";
+import ItemizedBreakdownCard from "./cards/ItemizedBreakdownCard";
+import OrderCard from "./cards/OrderCard";
 
 import CreateChowModal from "./modals/CreateChowModal";
 import CreateCustomerModal from "./modals/CreateCustomerModal";
@@ -15,6 +17,8 @@ import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
 export {
    CustomerCard,
    NavigationCard,
+   ItemizedBreakdownCard,
+   OrderCard,
    CreateChowModal,
    CreateCustomerModal,
    CreateOrderModal,
