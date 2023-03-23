@@ -21,6 +21,7 @@ interface OrderWithChowDetails {
    driver_paid: boolean;
    warehouse_paid: boolean;
    customer_id: string;
+   chow_id: string;
    chow_details: {
       brand: string;
       target_group: string;
@@ -34,5 +35,4 @@ interface OrderWithChowDetails {
       warehouse_paid: boolean;
       id: string;
    };
-   chow_id: string;
 }
