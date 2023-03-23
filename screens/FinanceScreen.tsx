@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { getAllCustomers, getAllOrders } from "../api";
+import { ItemizedBreakdownCard } from "../components";
 import { testCustomerDetails, testCustomersFinances } from "../data/test_data";
 
 const FinanceScreen = () => {
    const [customers, setCustomers] = useState<any[]>();
    const [orders, setOrders] = useState<any[]>();
+   const [outstandingOrders, setOutstandingOrders] = useState<any[]>([]);
    const [warehouseTotal, setWarehouseTotal] = useState(0);
+
+   const { container, header } = styles;
    // getAllOrders
    // Reduce sum of every single order's warehouse price
    // Calculate Tax on the sum, not individual chow
@@ -23,37 +27,19 @@ const FinanceScreen = () => {
       //   This approach is obviously incredibly expensive and incredibly naive. However, it IS a solution and should be seen as nothing more than a framework for getting our mindMap under control.
       /* - Make a call to getAllCustomers(). From here, we filter those that have an orders[] length of 1 or higher, while extracting  our wholesale_price x quantity. This method still isn't good but it's better than the above.
        */
+      const orderResponse: Order[] = await getAllOrders();
+      const customerResponse: Customer[] = await getAllCustomers();
 
-      const TEST_CUSTOMERS_WITH_ORDERS = testCustomersFinances
-         .map((orderArray) => orderArray)
-         .flat();
-
-      // const TEST_UNPAID_WAREHOUSE_ORDERS = TEST_CUSTOMERS_WITH_ORDERS.filter(
-      //    (order) => order.warehouse_paid === false
-      // );
-
-      // const TEST_WAREHOUSE_PRICE_TOTAL = TEST_CUSTOMERS_WITH_ORDERS.map(
-      //    (order) =>
-      //       order && order?.chow_details.wholesale_price * order?.quantity
-      // ).reduce((accumulator, currentValue) => accumulator! + currentValue!, 0);
-
-      // const TEST_TOTAL_WITH_TAX =
-      //    TEST_WAREHOUSE_PRICE_TOTAL &&
-      //    TEST_WAREHOUSE_PRICE_TOTAL * 0.125 + TEST_WAREHOUSE_PRICE_TOTAL;
-
-      // console.log({
-      //    TEST_CUSTOMERS_WITH_ORDERS,
-      //    testFilter,
-      //    TEST_WAREHOUSE_PRICE_TOTAL,
-      //    TEST_TOTAL_WITH_TAX,
-      // });
+      const filteredOutstandingOrders = customerResponse.map(
+         (customer: any) => {
+            return customer.orders?.filter(
+               (order: OrderWithChowDetails) => order.payment_made === false
+            );
+         }
+      );
       // const mappedOrders = response
       //    .map((orderArray) => orderArray.orders)
       //    .flat();
-
-      // const UnpaidWarehouseOrders = mappedOrders.filter(
-      //    (order) => order.warehouse_paid === false
-      // );
 
       // const warehousePriceTotal = mappedOrders
       //    .map(
@@ -77,9 +63,12 @@ const FinanceScreen = () => {
 
       // TEST_TOTAL_WITH_TAX && setWarehouseTotal(TEST_TOTAL_WITH_TAX);
       // setCustomers(testCustomersFinances);
-      setOrders(TEST_CUSTOMERS_WITH_ORDERS);
+      // setOrders(TEST_CUSTOMERS_WITH_ORDERS);
       // setCustomers(response)
       // setOrders(mappedOrders)
+
+      // TODO: change order object so that it includes chow_details by default, since passing a customer down to get chow info is inefficient
+      setOutstandingOrders(filteredOutstandingOrders);
    };
 
    // const getSum = (costs) => {
@@ -96,38 +85,30 @@ const FinanceScreen = () => {
       //    console.log({ orders });
    }, []);
 
-   useEffect(() => {
-      // console.log(orders?.map((order) => order));
-   }, [orders]);
    return (
-      <View>
-         <Text>Finances</Text>
-         {/* Have list of relevant orders */}
-         <Text>Amount owed Troy (Tax Inclusive):</Text>
-         <Text>{warehouseTotal}</Text>
-         {/* <Text>{warehouseTotal}</Text> */}
-         <View>
-            <Text>Stock Breakdown:</Text>
-         </View>
-         {/* Show stock unpaid */}
-         <Text>Amount owed Josh:</Text>
-         <Text>
-            WIP, but mirrors a lot of logic as Warehouse price calculation.{" "}
-         </Text>
-         <Text>Outstanding Orders:</Text>
+      <View style={container}>
+         {/* TODO: Remove this block */}
+         <Text style={header}>Finances</Text>
 
-         {orders &&
-            orders?.map((order) => (
-               <Text>
-                  {order.name}
-                  <Text>
-                     {/* {order.quantity * order.chow_details.retail_price} */}
-                     {order.quantity}
-                  </Text>
-               </Text>
-            ))}
+         {outstandingOrders ? (
+            <ItemizedBreakdownCard outstandingOrders={outstandingOrders} />
+         ) : null}
+
+         {/* New Card Block */}
       </View>
    );
 };
 
+const styles = StyleSheet.create({
+   container: {
+      backgroundColor: "#434949",
+      height: "100%",
+   },
+   header: {
+      color: "white",
+      fontSize: 40,
+      textAlign: "center",
+      margin: 2,
+   },
+});
 export default FinanceScreen;
