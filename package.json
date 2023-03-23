@@ -28,6 +28,7 @@
     "@types/react-native": "^0.67.14",
     "@types/react-native-vector-icons": "^6.4.12",
     "axios": "^0.27.2",
+    "dinero.js": "^1.9.1",
     "expo": "^45.0.8",
     "expo-asset": "~8.5.0",
     "expo-constants": "~13.1.1",
@@ -56,6 +57,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
+    "@types/dinero.js": "^1.9.0",
     "@types/uuid": "^9.0.1",
     "react-test-renderer": "17.0.2"
   },
