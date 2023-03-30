@@ -23,10 +23,14 @@ export const deleteCustomer = async (id: string) => {
    }
 };
 
-// TODO: decide if we need this in frontend, prob use a search bar style approach instead
-// export const findCustomer = async () => {
-//    axios.post(`${baseUrl}/customer`);
-// };
+export const findCustomer = async (id: string) => {
+   try {
+      const response = await axiosInstance.get(`/customer/${id}`);
+      return response.data;
+   } catch (error) {
+      console.error(error);
+   }
+};
 
 export const getAllCustomers = async () => {
    try {
