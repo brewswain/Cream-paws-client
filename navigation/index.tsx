@@ -17,7 +17,6 @@ import CustomersScreen from "../screens/CustomersScreen";
 import ClientListScreen from "../screens/CustomersScreen";
 import FinanceScreen from "../screens/FinanceScreen";
 import HomeScreen from "../screens/HomeScreen";
-import ModalScreen from "../screens/ModalScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import OrdersScreen from "../screens/OrdersScreen";
 import StockScreen from "../screens/StockScreen";
@@ -54,11 +53,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
    return (
       <Stack.Navigator>
-         <Stack.Screen
+         {/* <Stack.Screen
             name="Root"
             component={BottomTabNavigator}
-            options={{ headerShown: false }}
-         />
+            options={{ title: "Home" }}
+         /> */}
+
          <Stack.Screen
             name="Home"
             component={HomeScreen}
@@ -69,6 +69,7 @@ function RootNavigator() {
             component={CustomersScreen}
             options={{ title: "Customers" }}
          />
+
          <Stack.Screen
             name="Auth"
             component={AuthScreen}
@@ -100,9 +101,9 @@ function RootNavigator() {
             options={{ title: "Customer Details" }}
          />
 
-         <Stack.Group screenOptions={{ presentation: "modal" }}>
+         {/* <Stack.Group screenOptions={{ presentation: "modal" }}>
             <Stack.Screen name="Modal" component={ModalScreen} />
-         </Stack.Group>
+         </Stack.Group> */}
       </Stack.Navigator>
    );
 }
@@ -113,7 +114,7 @@ function RootNavigator() {
  */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
-function BottomTabNavigator() {
+export function BottomTabNavigator() {
    const colorScheme = useColorScheme();
 
    return (
@@ -131,26 +132,11 @@ function BottomTabNavigator() {
                tabBarIcon: ({ color }) => (
                   <TabBarIcon name="code" color={color} />
                ),
-               headerRight: () => (
-                  <Pressable
-                     onPress={() => navigation.navigate("Modal")}
-                     style={({ pressed }) => ({
-                        opacity: pressed ? 0.5 : 1,
-                     })}
-                  >
-                     <FontAwesome
-                        name="info-circle"
-                        size={25}
-                        color={Colors[colorScheme].text}
-                        style={{ marginRight: 15 }}
-                     />
-                  </Pressable>
-               ),
             })}
          />
          <BottomTab.Screen
-            name="TabTwo"
-            component={TabTwoScreen}
+            name="Customers"
+            component={CustomersScreen}
             options={{
                title: "Tab Two",
                tabBarIcon: ({ color }) => (
