@@ -45,16 +45,19 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
    const petsExist = pets && pets.length > 0;
    const ordersExist = orders && orders.length > 0;
    const outstandingOrders = orders.filter(
-      (order) => order.payment_made === false
+      (order: Order) => order.payment_made === false
    );
    // console.log({ outstandingOrders });
    const completedOrders = orders.filter(
-      (order) => order.payment_made === true
+      (order: Order) => order.payment_made === true
    );
 
    const mappedCostArray = orders
-      .filter((order) => order.payment_made === false)
-      .map((order) => order.chow_details.retail_price * order.quantity);
+      .filter((order: Order) => order.payment_made === false)
+      .map(
+         (order: OrderWithChowDetails) =>
+            order.chow_details.retail_price * order.quantity
+      );
 
    //TODO: remove test payload
 
@@ -63,7 +66,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
    };
 
    const handleMassOrderPayment = () => {
-      outstandingOrders.map(async (order) => {
+      outstandingOrders.map(async (order: OrderWithChowDetails) => {
          const paidOrder = {
             ...order,
             payment_made: true,
@@ -123,7 +126,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
             <Text style={outstandingCosts}>
                Total Outstanding Cost:{" "}
                {mappedCostArray.reduce(
-                  (accumulator, currentValue) => accumulator + currentValue,
+                  (accumulator: number, currentValue: number) =>
+                     accumulator + currentValue,
                   0
                )}
             </Text>
