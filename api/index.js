@@ -5,6 +5,7 @@ import { getCurrentUser } from "./routes/auth";
 
 import { createCustomer } from "./routes/customers";
 import { deleteCustomer } from "./routes/customers";
+import { findCustomer } from "./routes/customers";
 import { getAllCustomers } from "./routes/customers";
 import { updateCustomer } from "./routes/customers";
 
@@ -27,6 +28,7 @@ export {
    getCurrentUser,
    createCustomer,
    deleteCustomer,
+   findCustomer,
    getAllCustomers,
    updateCustomer,
    createOrder,
