@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 import "react-native-get-random-values";
+import Dinero from "dinero.js";
 import { v4 as uuidv4 } from "uuid";
 
 import Icon from "react-native-vector-icons/AntDesign";
@@ -24,7 +25,7 @@ const OrdersScreen = () => {
    const [orders, setOrders] = useState<Order[]>();
    const [customers, setCustomers] = useState<Customer[]>();
 
-   const { orderDetails, orderHeader, orderContainer } = styles;
+   const { orderHeader, orderContainer, totalOrderDetails } = styles;
 
    const populateOrdersList = async () => {
       const response = await getAllOrders();
@@ -58,29 +59,6 @@ const OrdersScreen = () => {
       populateData();
    }, []);
 
-   // Test payload
-   // const orderPayload: Order = {
-   //    delivery_date: "test_delivery_date",
-   //    payment_made: true,
-   //    payment_date: "test_payment_date",
-   //    is_delivery: true,
-   //    driver_paid: true,
-   //    warehouse_paid: false,
-   //    customer_id: "632af554efd6cbb9858a5157",
-   //    chow_id: "632af56a806f2af148eba268",
-   // };
-
-   // const updatedOrderPayload: Order = {
-   //    delivery_date: "updated date",
-   //    payment_made: true,
-   //    payment_date: "test_payment_date 2",
-   //    is_delivery: true,
-   //    driver_paid: true,
-   //    warehouse_paid: false,
-   //    customer_id: "632af554efd6cbb9858a5157",
-   //    chow_id: "632af56a806f2af148eba268",
-   // };
-
    const customersArray = customers && customers;
 
    const renderOrders = (customer: Customer, index: number) => {
@@ -90,7 +68,8 @@ const OrdersScreen = () => {
       <View style={styles.container}>
          <View>
             {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-            {customersArray?.map((customer: Customer) => {
+            {customersArray?.map((customer: Customer, index: number) => {
+               console.log({ index });
                const mappedCostArray = customer.orders
                   ?.filter((order) => order.payment_made === false)
                   .map(
@@ -100,43 +79,51 @@ const OrdersScreen = () => {
                   <View style={orderContainer} key={customer.id}>
                      <Text style={orderHeader}>{customer.name}</Text>
 
-                     {/*  WIP, need to separate tax and delivery costs properly */}
-                     {mappedCostArray ? (
-                        <Text style={orderDetails}>
-                           Total outstanding cost:{" "}
-                           {mappedCostArray.reduce(
-                              (accumulator, currentValue) =>
-                                 accumulator + currentValue,
-                              0
-                           )}
+                     <View>
+                        {mappedCostArray ? (
+                           <Text style={totalOrderDetails}>
+                              Total outstanding cost: $
+                              {Dinero({
+                                 amount: mappedCostArray.reduce(
+                                    (accumulator, currentValue) =>
+                                       accumulator + currentValue,
+                                    0
+                                 ),
+                                 precision: 2,
+                              }).toFormat("$0,0.00")}
+                           </Text>
+                        ) : null}
+                        <Text style={totalOrderDetails}>
+                           Total outstanding orders: {customer.orders?.length}
                         </Text>
-                     ) : null}
-                     <Text style={orderDetails}>
-                        Quantity of orders: {customer.orders?.length}
-                     </Text>
+                     </View>
+
+                     {/*  WIP, need to separate tax and delivery costs properly */}
+
                      <View>
                         {customer.orders &&
-                           customer.orders.flat().map((order) => {
-                              return (
-                                 <View>
-                                    {order ? (
-                                       <OrderCard
-                                          clientName={customer.name}
-                                          order={order}
-                                       />
-                                    ) : null}
-                                    <Text style={orderDetails}>
-                                       {`${order.chow_details.brand}-${order.chow_details.size} ${order.chow_details.unit} x ${order.quantity}`}
-                                    </Text>
-                                    <Text style={orderDetails}>
-                                       WIP Warehouse Price:{" "}
-                                       {order.chow_details.wholesale_price *
-                                          order.quantity}
-                                    </Text>
-                                    <Text style={orderDetails}></Text>
-                                 </View>
-                              );
-                           })}
+                           customer.orders
+                              .flat()
+                              .filter((order) => order.payment_made === false)
+                              .map((order, index) => {
+                                 return (
+                                    <View
+                                       key={order.id}
+                                       style={
+                                          index === 0
+                                             ? { paddingTop: 20 }
+                                             : null
+                                       }
+                                    >
+                                       {order ? (
+                                          <OrderCard
+                                             clientName={customer.name}
+                                             order={order}
+                                          />
+                                       ) : null}
+                                    </View>
+                                 );
+                              })}
                      </View>
                   </View>
                );
@@ -182,14 +169,15 @@ const styles = StyleSheet.create({
       display: "flex",
       alignSelf: "center",
       textAlign: "center",
-      fontSize: 24,
+      color: "white",
+      fontSize: 28,
       width: "100%",
       borderBottomWidth: 1,
       borderBottomColor: "black",
    },
-   orderDetails: {
-      fontSize: 14,
-      // paddingTop: 2,
+   totalOrderDetails: {
+      color: "white",
+      fontSize: 16,
       paddingLeft: 4,
    },
 });
