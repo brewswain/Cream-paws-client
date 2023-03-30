@@ -14,14 +14,15 @@ const NavigationCard = ({
    navigation,
    ...otherProps
 }: NavigationCardProps) => {
+   const { container, borderBottom } = styles;
    return (
       <View
-         style={styles.container}
+         style={container}
          onTouchStart={() => {
             navigation.navigate(destination);
          }}
       >
-         <Text>{children}</Text>
+         <Text style={borderBottom}>{children}</Text>
       </View>
    );
 };
@@ -29,14 +30,25 @@ const NavigationCard = ({
 const styles = StyleSheet.create({
    container: {
       padding: 20,
-      borderRadius: 4,
-      borderColor: "black",
-      borderWidth: 1,
-      width: 200,
+      borderRadius: 8,
+      // shadowColor: "#000000",
+      // shadowOffset: {
+      //    width: 0,
+      //    height: 0,
+      // },
+      // shadowOpacity: 0.07,
+      // shadowRadius: 0.05,
+      // elevation: 4,
+      width: 140,
       height: 75,
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
+      margin: 8,
+   },
+   borderBottom: {
+      borderBottomColor: "black",
+      borderBottomWidth: 2,
    },
 });
 

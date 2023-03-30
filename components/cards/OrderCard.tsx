@@ -1,5 +1,6 @@
-import Dinero from "dinero.js";
 import { View, Text, StyleSheet } from "react-native";
+
+import Dinero from "dinero.js";
 
 interface OrderCardProps {
    clientName: string;
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
       borderRadius: 4,
       width: "80%",
       backgroundColor: "#434949",
+      marginBottom: 8,
    },
    detailsContainer: {
       display: "flex",

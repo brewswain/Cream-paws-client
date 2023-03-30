@@ -6,7 +6,14 @@ interface CustomerCardProps {
 }
 const CustomerCard = ({ customer }: CustomerCardProps) => {
    const { name } = customer;
-   const { container, heading } = styles;
+   const {
+      openOrdersContainer,
+      noOrdersContainer,
+      clientNameHeader,
+      detailsContainer,
+      priceContainer,
+      price,
+   } = styles;
 
    const navigation = useNavigation();
 
@@ -29,30 +36,76 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
 
    return (
       <Pressable onPress={() => handleClick(customer.id)}>
-         <View style={container}>
-            <Text style={heading}>{name}</Text>
-         </View>
+         {customer.orders && customer.orders.length > 0 && (
+            <View style={openOrdersContainer}>
+               <View style={detailsContainer}>
+                  <Text style={clientNameHeader}>{name}</Text>
+               </View>
+               <View style={priceContainer}>
+                  <Text style={price}>
+                     {` Open Orders:${customer.orders?.length}`}
+                  </Text>
+               </View>
+            </View>
+         )}
+
+         {customer.orders && customer.orders?.length < 1 && (
+            <View style={noOrdersContainer}>
+               <View style={detailsContainer}>
+                  <Text style={[clientNameHeader, { color: "black" }]}>
+                     {name}
+                  </Text>
+               </View>
+            </View>
+         )}
       </Pressable>
    );
 };
 
 const styles = StyleSheet.create({
-   container: {
-      padding: 20,
-      borderBottomColor: "grey",
-      borderBottomWidth: 1,
-      alignSelf: "stretch",
-      height: 75,
+   openOrdersContainer: {
       display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignSelf: "center",
+      borderRadius: 4,
+      width: "90%",
+      backgroundColor: "#434949",
+      marginBottom: 8,
+      padding: 8,
    },
-
-   heading: {
-      fontSize: 14,
-      fontWeight: "400",
+   noOrdersContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignSelf: "center",
+      borderRadius: 4,
+      width: "90%",
+      backgroundColor: "#BFBFBF",
+      marginBottom: 8,
+      padding: 8,
    },
-   subHeading: {
+   detailsContainer: {
+      display: "flex",
+      flexDirection: "column",
+      marginLeft: 8,
+      paddingBottom: 4,
+   },
+   clientNameHeader: {
+      fontSize: 20,
+      color: "white",
+      paddingBottom: 4,
+   },
+   orderDetails: {
+      color: "white",
+   },
+   priceContainer: {
+      display: "flex",
+      alignSelf: "center",
+      marginRight: 8,
+   },
+   price: {
+      color: "#14F800",
       fontSize: 14,
    },
 });
