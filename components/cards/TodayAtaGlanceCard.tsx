@@ -1,51 +1,105 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
+import { useFocusEffect } from "@react-navigation/native";
 import Collapsible from "react-native-collapsible";
 
 import { getAllOrders, findCustomer } from "../../api";
 
+interface ChowInfo {
+   quantity: number;
+   details: {
+      brand: string;
+      flavour: string;
+      size: number;
+      unit: string;
+      order_id: string;
+   };
+}
+
 const TodayAtaGlanceCard = () => {
    const [orderCollapsed, setOrderCollapsed] = useState<boolean>(true);
    const [stockCollapsed, setStockCollapsed] = useState<boolean>(true);
-   const [orders, setOrders] = useState<Order[]>();
+   const [orders, setOrders] = useState<Order[]>([]);
    const [customers, setCustomers] = useState<Customer[]>();
+   const [chowInfo, setChowInfo] = useState<ChowInfo[] | []>([]);
 
    const { container, highlight, header, subHeader, deemphasis } = styles;
 
-   const populateOrders = async () => {
-      const response = await getAllOrders();
+   // TODO: P0--Perform this logic in the backend--major refactor MUST be done once alpha of app is released.
+   const populateData = async () => {
+      // Orders Block
+      const orderData = await getAllOrders();
+      setOrders(orderData);
 
-      setOrders(response);
-      populateCustomers(response);
-   };
-
-   const populateCustomers = async (response: Order[]) => {
+      // Customers Block
       const customerList = await Promise.all(
-         response.map(async (order) => {
-            console.log({ customerId: order.customer_id });
+         orderData.map(async (order: Order) => {
             return await findCustomer(order.customer_id);
          })
       );
-      console.log({ customerList });
       setCustomers(customerList);
+
+      // Chow Block
+      const customerChowArray = customerList
+         .map(
+            (customer) =>
+               customer.orders &&
+               customer.orders?.map((order: OrderWithChowDetails) => ({
+                  quantity: order.quantity,
+                  details: {
+                     brand: order.chow_details.brand,
+                     flavour: order.chow_details.flavour,
+                     size: order.chow_details.size,
+                     unit: order.chow_details.unit,
+                     order_id: order.id,
+                  },
+               }))
+         )
+         .flat();
+      const updatedChowArray = [...chowInfo, customerChowArray].flat();
+
+      // Prevents dupes--should be fixed when we do backend refactor:
+      // https://stackoverflow.com/questions/45439961/remove-duplicate-values-from-an-array-of-objects-in-javascript
+      const cleanedChowArray = updatedChowArray.reduce((unique, chowObject) => {
+         if (
+            !unique.some(
+               (obj: ChowInfo) =>
+                  obj.details.order_id === chowObject.details.order_id
+            )
+         ) {
+            unique.push(chowObject);
+         }
+         return unique;
+      }, []);
+
+      setChowInfo(cleanedChowArray);
    };
 
-   useEffect(() => {
-      populateOrders();
-   }, []);
+   useFocusEffect(
+      useCallback(() => {
+         let isFetching = true;
+
+         const getPageData = async () => {
+            try {
+               if (isFetching) {
+                  await populateData();
+
+                  isFetching = false;
+               }
+            } catch (error) {
+               console.error(error);
+            }
+         };
+         getPageData();
+         return () => (isFetching = false);
+      }, [])
+   );
 
    return (
       <View style={container}>
          <Text style={header}>Today at a Glance</Text>
          <View>
-            {/* <Text style={highlight}>
-               3 <Text style={subHeader}>orders</Text>
-            </Text>
-            <Collapsible collapsed={orderCollapsed}>
-               <Text style={deemphasis}>Client name here</Text>
-            </Collapsible> */}
-
             {orders && orders.length > 0 ? (
                <TouchableOpacity
                   onPress={() => setOrderCollapsed(!orderCollapsed)}
@@ -63,23 +117,46 @@ const TodayAtaGlanceCard = () => {
             <Collapsible collapsed={orderCollapsed}>
                {/* <Text style={deemphasis}>Client name here</Text> */}
 
-               {customers?.map((customer) => (
-                  <View>
-                     <Text style={deemphasis}>{customer.name}</Text>
-                  </View>
-               ))}
+               {customers &&
+                  customers?.map((customer, index) => (
+                     <View key={`${customer.id}, index: ${index}`}>
+                        <Text style={deemphasis}>{customer.name}</Text>
+                     </View>
+                  ))}
             </Collapsible>
          </View>
 
-         <TouchableOpacity onPress={() => setStockCollapsed(!stockCollapsed)}>
-            <Text style={highlight}>
-               5 <Text style={subHeader}>bags of Chow</Text>
-            </Text>
-            <Collapsible collapsed={stockCollapsed}>
+         <View>
+            {chowInfo && chowInfo.length > 0 ? (
+               <TouchableOpacity
+                  onPress={() => setStockCollapsed(!stockCollapsed)}
+               >
+                  <Text style={highlight}>
+                     {chowInfo.length}{" "}
+                     <Text style={subHeader}>{`${
+                        chowInfo.length > 1 ? "bags" : "bag"
+                     } of Chow`}</Text>
+                  </Text>
+               </TouchableOpacity>
+            ) : (
+               <Text style={subHeader}>No chow to be delivered</Text>
+            )}
+
+            <Collapsible
+               collapsed={stockCollapsed}
+               style={{ display: "flex", flexDirection: "column" }}
+            >
                {/* TODO: fix this up to use dynamic data */}
-               <Text style={deemphasis}>Client name here</Text>
+               {chowInfo?.map((chow, index) => (
+                  <View key={index}>
+                     {chow ? (
+                        <Text style={deemphasis}>{chow.details.order_id}</Text>
+                     ) : null}
+                  </View>
+                  //   return <Text>{chow.quantity}</Text>;
+               ))}
             </Collapsible>
-         </TouchableOpacity>
+         </View>
       </View>
    );
 };
