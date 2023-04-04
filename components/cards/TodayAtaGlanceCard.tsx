@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+   View,
+   Text,
+   StyleSheet,
+   TouchableOpacity,
+   ScrollView,
+   useWindowDimensions,
+} from "react-native";
 
 import { useFocusEffect } from "@react-navigation/native";
 import Collapsible from "react-native-collapsible";
@@ -98,65 +105,69 @@ const TodayAtaGlanceCard = () => {
 
    return (
       <View style={container}>
-         <Text style={header}>Today at a Glance</Text>
-         <View>
-            {orders && orders.length > 0 ? (
-               <TouchableOpacity
-                  onPress={() => setOrderCollapsed(!orderCollapsed)}
-               >
-                  <Text style={highlight}>
-                     {orders?.length}{" "}
-                     <Text style={subHeader}>
-                        {orders?.length > 1 ? "orders" : "order"}
+         <ScrollView>
+            <Text style={header}>Today at a Glance</Text>
+            <View>
+               {orders && orders.length > 0 ? (
+                  <TouchableOpacity
+                     onPress={() => setOrderCollapsed(!orderCollapsed)}
+                  >
+                     <Text style={highlight}>
+                        {orders?.length}{" "}
+                        <Text style={subHeader}>
+                           {orders?.length > 1 ? "orders" : "order"}
+                        </Text>
                      </Text>
-                  </Text>
-               </TouchableOpacity>
-            ) : (
-               <Text style={subHeader}>No orders left!</Text>
-            )}
-            <Collapsible collapsed={orderCollapsed}>
-               {/* <Text style={deemphasis}>Client name here</Text> */}
+                  </TouchableOpacity>
+               ) : (
+                  <Text style={subHeader}>No orders left!</Text>
+               )}
+               <Collapsible collapsed={orderCollapsed}>
+                  {/* <Text style={deemphasis}>Client name here</Text> */}
 
-               {customers &&
-                  customers?.map((customer, index) => (
-                     <View key={`${customer.id}, index: ${index}`}>
-                        <Text style={deemphasis}>{customer.name}</Text>
+                  {customers &&
+                     customers?.map((customer, index) => (
+                        <View key={`${customer.id}, index: ${index}`}>
+                           <Text style={deemphasis}>{customer.name}</Text>
+                        </View>
+                     ))}
+               </Collapsible>
+            </View>
+
+            <View>
+               {chowInfo && chowInfo.length > 0 ? (
+                  <TouchableOpacity
+                     onPress={() => setStockCollapsed(!stockCollapsed)}
+                  >
+                     <Text style={highlight}>
+                        {chowInfo.length}{" "}
+                        <Text style={subHeader}>{`${
+                           chowInfo.length > 1 ? "bags" : "bag"
+                        } of Chow`}</Text>
+                     </Text>
+                  </TouchableOpacity>
+               ) : (
+                  <Text style={subHeader}>No chow to be delivered</Text>
+               )}
+
+               <Collapsible
+                  collapsed={stockCollapsed}
+                  style={{ display: "flex", flexDirection: "column" }}
+               >
+                  {chowInfo?.map((chow, index) => (
+                     <View key={index}>
+                        {chow ? (
+                           <View>
+                              <Text style={deemphasis}>
+                                 {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
+                              </Text>
+                           </View>
+                        ) : null}
                      </View>
                   ))}
-            </Collapsible>
-         </View>
-
-         <View>
-            {chowInfo && chowInfo.length > 0 ? (
-               <TouchableOpacity
-                  onPress={() => setStockCollapsed(!stockCollapsed)}
-               >
-                  <Text style={highlight}>
-                     {chowInfo.length}{" "}
-                     <Text style={subHeader}>{`${
-                        chowInfo.length > 1 ? "bags" : "bag"
-                     } of Chow`}</Text>
-                  </Text>
-               </TouchableOpacity>
-            ) : (
-               <Text style={subHeader}>No chow to be delivered</Text>
-            )}
-
-            <Collapsible
-               collapsed={stockCollapsed}
-               style={{ display: "flex", flexDirection: "column" }}
-            >
-               {/* TODO: fix this up to use dynamic data */}
-               {chowInfo?.map((chow, index) => (
-                  <View key={index}>
-                     {chow ? (
-                        <Text style={deemphasis}>{chow.details.order_id}</Text>
-                     ) : null}
-                  </View>
-                  //   return <Text>{chow.quantity}</Text>;
-               ))}
-            </Collapsible>
-         </View>
+               </Collapsible>
+            </View>
+         </ScrollView>
       </View>
    );
 };
@@ -165,7 +176,7 @@ const styles = StyleSheet.create({
    container: {
       backgroundColor: "#434949",
       width: "90%",
-      minHeight: "50%",
+      height: "50%",
       marginTop: 24,
       padding: 12,
    },
