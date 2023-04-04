@@ -8,6 +8,8 @@ interface Order {
    warehouse_paid: boolean;
    customer_id: string;
    chow_id: string;
+   id?: string;
+   version?: number;
 }
 
 interface OrderWithChowDetails {
