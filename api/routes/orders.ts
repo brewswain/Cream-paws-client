@@ -50,33 +50,12 @@ export const getAllOrders = async () => {
 };
 
 // TODO: fix typings lol
-export const updateOrder = async (id: string, order: Order) => {
+export const updateOrder = async (order: Order) => {
    try {
-      const {
-         delivery_date,
-         payment_made,
-         payment_date,
-         is_delivery,
-         driver_paid,
-         quantity,
-         warehouse_paid,
-         customer_id,
-         chow_id,
-      } = order;
-      const response = await axiosInstance.put(`/orders/${id}`, {
-         delivery_date,
-         payment_made,
-         payment_date,
-         quantity,
-         is_delivery,
-         driver_paid,
-         warehouse_paid,
-         customer_id,
-         chow_id,
-      });
+      const response = await axiosInstance.put(`/orders/${order.id}`, order);
 
       return response.data;
    } catch (error) {
-      console.error(error);
+      console.error({ error });
    }
 };
