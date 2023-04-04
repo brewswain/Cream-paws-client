@@ -52,16 +52,18 @@ const TodayAtaGlanceCard = () => {
          .map(
             (customer) =>
                customer.orders &&
-               customer.orders?.map((order: OrderWithChowDetails) => ({
-                  quantity: order.quantity,
-                  details: {
-                     brand: order.chow_details.brand,
-                     flavour: order.chow_details.flavour,
-                     size: order.chow_details.size,
-                     unit: order.chow_details.unit,
-                     order_id: order.id,
-                  },
-               }))
+               customer.orders?.map((order: OrderWithChowDetails) => {
+                  return {
+                     quantity: order.quantity,
+                     details: {
+                        brand: order.chow_details.brand,
+                        flavour: order.chow_details.flavour,
+                        size: order.chow_details.size,
+                        unit: order.chow_details.unit,
+                        order_id: order.id,
+                     },
+                  };
+               })
          )
          .flat();
       const updatedChowArray = [...chowInfo, customerChowArray].flat();
@@ -126,6 +128,7 @@ const TodayAtaGlanceCard = () => {
                   {/* <Text style={deemphasis}>Client name here</Text> */}
 
                   {customers &&
+                     customers.length > 0 &&
                      customers?.map((customer, index) => (
                         <View key={`${customer.id}, index: ${index}`}>
                            <Text style={deemphasis}>{customer.name}</Text>
