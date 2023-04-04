@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
 import { clearAllOrders } from "../../utils";
+import { Button, Checkbox } from "native-base";
+import { clearOrders } from "../../utils/orderUtils";
 
 interface ItemizedBreakdownCardProps {
    outstandingOrders: OrderWithChowDetails[];
@@ -13,6 +16,9 @@ const ItemizedBreakdownCard = ({
    outstandingOrders,
    getWarehouseOwedCost,
 }: ItemizedBreakdownCardProps) => {
+   const [groupValues, setGroupValues] = useState([]);
+   const [selectedOrders, setSelectedOrders] = useState([]);
+
    const {
       container,
       header,
@@ -23,6 +29,8 @@ const ItemizedBreakdownCard = ({
       deEmphasis,
       tableChowDescription,
       tablePrice,
+      buttonContainer,
+      button,
       totalsContainer,
       totalWrapper,
       priceWrapper,
@@ -50,40 +58,81 @@ const ItemizedBreakdownCard = ({
       0
    );
 
+   const selectedOrdersArray = groupValues
+      .map((orderId) => orders.filter((order) => order.id === orderId))
+      .flat();
+
+   const handleClearingSelectedOrders = async () => {
+      await clearOrders(selectedOrdersArray);
+
+      getWarehouseOwedCost();
+   };
    const handleClearingAllOrders = async () => {
-      await clearAllOrders(orders);
+      await clearOrders(orders);
 
       getWarehouseOwedCost();
    };
 
+   useEffect(() => {
+      console.log({ groupValues, selectedOrdersArray });
+   }, [groupValues]);
+
    return (
       <View style={container}>
-         <Text onPress={() => clearAllOrders(orders)}>hi</Text>
+         {orders.length > 0 ? (
+            <Text onPress={() => handleClearingAllOrders()}>hi</Text>
+         ) : null}
          <View style={headerWrapper}>
             <Text style={header}>Itemized Breakdown</Text>
          </View>
          <View style={tableContainer}>
-            {orders.map((order) => {
-               const vatExclusivePrice = Dinero({
-                  amount: order.chow_details.wholesale_price * order.quantity,
-               }).toFormat("$0,0.00");
+            <Checkbox.Group onChange={setGroupValues} value={groupValues}>
+               {orders.map((order) => {
+                  const vatExclusivePrice: string = Dinero({
+                     amount:
+                        order.chow_details.wholesale_price * order.quantity,
+                  }).toFormat("$0,0.00");
 
-               return (
-                  <View key={order.id} style={orderContainer}>
-                     <Text style={tableQuantity}>
-                        {order.quantity}
-                        <Text style={deEmphasis}>x </Text>
-                     </Text>
-                     <Text style={tableChowDescription}>
-                        {`${order.chow_details.brand} - ${order.chow_details.flavour}`}
-                        :
-                     </Text>
-                     <Text style={tablePrice}> {vatExclusivePrice}</Text>
-                  </View>
-               );
-            })}
+                  return (
+                     <View key={order.id} style={[orderContainer]}>
+                        <View
+                           style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                           }}
+                        >
+                           <Text style={tableQuantity}>
+                              {order.quantity}
+                              <Text style={deEmphasis}>x </Text>
+                           </Text>
+                           <Text style={tableChowDescription}>
+                              {`${order.chow_details.brand} - ${order.chow_details.flavour}`}
+                              :
+                           </Text>
+                           <Text style={tablePrice}> {vatExclusivePrice}</Text>
+                        </View>
+                        <View>
+                           <Checkbox
+                              value={`${order.id}`}
+                              accessibilityLabel="Checkbox for identifying individual orders to pay"
+                           />
+                        </View>
+                     </View>
+                  );
+               })}
+            </Checkbox.Group>
          </View>
-
+         {orders.length > 0 ? (
+            <View style={buttonContainer}>
+               <Button
+                  onPress={() => handleClearingSelectedOrders()}
+                  isDisabled={groupValues.length < 1}
+                  style={button}
+               >
+                  Set orders to "Paid"
+               </Button>
+            </View>
+         ) : null}
          <View style={totalsContainer}>
             <View style={totalWrapper}>
                <View style={priceWrapper}>
@@ -133,8 +182,9 @@ const styles = StyleSheet.create({
    },
    tableContainer: {
       display: "flex",
-      justifyContent: "center",
       flexDirection: "column",
+      width: "100%",
+      marginTop: 6,
    },
 
    // Fix naming  convention
@@ -142,7 +192,10 @@ const styles = StyleSheet.create({
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "space-between",
+      width: "100%",
+      paddingLeft: 14,
+      paddingRight: 14,
    },
    tableQuantity: {
       color: "white",
@@ -157,7 +210,17 @@ const styles = StyleSheet.create({
    tablePrice: {
       color: "white",
       justifyContent: "flex-end",
+      fontSize: 18,
+      paddingLeft: 12,
    },
+
+   // Button Block
+   buttonContainer: {
+      display: "flex",
+      alignItems: "center",
+      marginTop: 20,
+   },
+   button: { width: "60%" },
 
    // Orders Block
    totalsContainer: {
@@ -165,6 +228,7 @@ const styles = StyleSheet.create({
       justifyContent: "center",
       flexDirection: "column",
       margin: 40,
+      marginTop: 30,
    },
    totalWrapper: {
       display: "flex",
