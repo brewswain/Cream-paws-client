@@ -1,13 +1,15 @@
-FROM node:12.14.1
-
+FROM node:16.17.0
 WORKDIR /app
 
 COPY package.json .
 
 
+# RUN npm install --only=prod
 RUN npm --global config set user root && \
-    npm --global install expo-cli@3.11.9
-    RUN npm install --only=prod 
+    npm --global install @expo/ngrok
+RUN npm install --omit=dev
+# RUN npm install --only=prod 
+
 
 COPY . .
 
