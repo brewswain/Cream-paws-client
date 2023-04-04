@@ -1,12 +1,17 @@
 import { StyleSheet, Text, View } from "react-native";
+
 import Dinero from "dinero.js";
+
+import { clearAllOrders } from "../../utils";
 
 interface ItemizedBreakdownCardProps {
    outstandingOrders: OrderWithChowDetails[];
+   getWarehouseOwedCost(): void;
 }
 
 const ItemizedBreakdownCard = ({
    outstandingOrders,
+   getWarehouseOwedCost,
 }: ItemizedBreakdownCardProps) => {
    const {
       container,
@@ -20,6 +25,7 @@ const ItemizedBreakdownCard = ({
       tablePrice,
       totalsContainer,
       totalWrapper,
+      priceWrapper,
       subTotalCost,
       vatCost,
       totalCost,
@@ -44,10 +50,15 @@ const ItemizedBreakdownCard = ({
       0
    );
 
-   console.log({ mappedCostArray, subTotal, mappedVatArray, totalVat });
+   const handleClearingAllOrders = async () => {
+      await clearAllOrders(orders);
+
+      getWarehouseOwedCost();
+   };
 
    return (
       <View style={container}>
+         <Text onPress={() => clearAllOrders(orders)}>hi</Text>
          <View style={headerWrapper}>
             <Text style={header}>Itemized Breakdown</Text>
          </View>
@@ -57,9 +68,8 @@ const ItemizedBreakdownCard = ({
                   amount: order.chow_details.wholesale_price * order.quantity,
                }).toFormat("$0,0.00");
 
-               console.log({ order });
                return (
-                  <View style={orderContainer}>
+                  <View key={order.id} style={orderContainer}>
                      <Text style={tableQuantity}>
                         {order.quantity}
                         <Text style={deEmphasis}>x </Text>
@@ -68,7 +78,7 @@ const ItemizedBreakdownCard = ({
                         {`${order.chow_details.brand} - ${order.chow_details.flavour}`}
                         :
                      </Text>
-                     <Text style={tablePrice}> ${vatExclusivePrice}</Text>
+                     <Text style={tablePrice}> {vatExclusivePrice}</Text>
                   </View>
                );
             })}
@@ -76,22 +86,27 @@ const ItemizedBreakdownCard = ({
 
          <View style={totalsContainer}>
             <View style={totalWrapper}>
-               <Text style={subTotalCost}>
-                  Subtotal: $
-                  <Text>
+               <View style={priceWrapper}>
+                  <Text style={subTotalCost}>Subtotal:</Text>
+                  <Text style={subTotalCost}>
                      {Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")}
                   </Text>
-               </Text>
-               <Text style={vatCost}>
-                  VAT: ${Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")}
-               </Text>
-               <Text style={totalCost}>
-                  Total: $
-                  {Dinero({
-                     amount: subTotal + totalVat || 0,
-                     precision: 2,
-                  }).toUnit()}
-               </Text>
+               </View>
+               <View style={priceWrapper}>
+                  <Text style={vatCost}>VAT:</Text>
+                  <Text style={vatCost}>
+                     {Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")}
+                  </Text>
+               </View>
+               <View style={priceWrapper}>
+                  <Text style={totalCost}>Total:</Text>
+                  <Text style={totalCost}>
+                     {Dinero({
+                        amount: subTotal + totalVat || 0,
+                        precision: 2,
+                     }).toFormat("$0,0.00")}
+                  </Text>
+               </View>
             </View>
          </View>
       </View>
@@ -110,7 +125,7 @@ const styles = StyleSheet.create({
       fontSize: 24,
       fontWeight: "600",
       color: "white",
-      borderBottomColor: "#FF5E5E",
+      borderBottomColor: "rgba(255,94,94, 1)",
       borderBottomWidth: 3,
       alignSelf: "center",
       marginTop: 8,
@@ -154,6 +169,15 @@ const styles = StyleSheet.create({
    totalWrapper: {
       display: "flex",
       alignItems: "center",
+      paddingTop: 4,
+      justifyContent: "space-between",
+      borderTopColor: "rgba(255,94,94, 0.8)",
+      borderTopWidth: 1,
+   },
+   priceWrapper: {
+      width: "80%",
+      display: "flex",
+      flexDirection: "row",
       justifyContent: "space-between",
    },
    subTotalCost: {
