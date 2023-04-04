@@ -42,7 +42,10 @@ const FinanceScreen = () => {
          <Text style={header}>Finances</Text>
 
          {outstandingOrders ? (
-            <ItemizedBreakdownCard outstandingOrders={outstandingOrders} />
+            <ItemizedBreakdownCard
+               getWarehouseOwedCost={getWarehouseOwedCost}
+               outstandingOrders={outstandingOrders}
+            />
          ) : null}
 
          {/* New Card Block */}
