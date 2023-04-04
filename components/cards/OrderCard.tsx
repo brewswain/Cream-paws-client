@@ -28,7 +28,6 @@ const OrderCard = ({ clientName, order }: OrderCardProps) => {
          </View>
          <View style={priceContainer}>
             <Text style={price}>
-               $
                {Dinero({
                   amount: order.chow_details.retail_price * order.quantity || 0,
                }).toFormat("$0,0.00")}

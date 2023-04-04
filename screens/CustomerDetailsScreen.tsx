@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import Collapsible from "react-native-collapsible";
+import Dinero from "dinero.js";
 
 import { RootTabScreenProps } from "../types";
 
@@ -73,7 +74,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
             payment_date: new Date().toString(),
          };
 
-         await updateOrder(order.id, paidOrder);
+         console.log(JSON.stringify(paidOrder));
+         // await updateOrder(order.id, paidOrder);
       });
    };
 
@@ -125,11 +127,14 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
          {outstandingOrders.length > 0 ? (
             <Text style={outstandingCosts}>
                Total Outstanding Cost:{" "}
-               {mappedCostArray.reduce(
-                  (accumulator: number, currentValue: number) =>
-                     accumulator + currentValue,
-                  0
-               )}
+               {Dinero({
+                  amount: mappedCostArray.reduce(
+                     (accumulator: number, currentValue: number) =>
+                        accumulator + currentValue,
+                     0
+                  ),
+                  precision: 2,
+               }).toFormat("$0,0.00")}
             </Text>
          ) : (
             <Text style={[outstandingCosts, { color: "green" }]}>

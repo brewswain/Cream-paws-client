@@ -39,7 +39,6 @@ const OrdersScreen = () => {
 
    const populateCustomersList = async () => {
       const response = await getAllCustomers();
-      // console.log({ response });
       setCustomers(response);
    };
 
@@ -53,7 +52,7 @@ const OrdersScreen = () => {
       setShowModal(true);
    };
 
-   const uuid = uuidv4();
+   // const uuid = uuidv4();
 
    useEffect(() => {
       populateData();
@@ -69,7 +68,6 @@ const OrdersScreen = () => {
          <View>
             {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
             {customersArray?.map((customer: Customer, index: number) => {
-               console.log({ index });
                const mappedCostArray = customer.orders
                   ?.filter((order) => order.payment_made === false)
                   .map(
@@ -77,12 +75,12 @@ const OrdersScreen = () => {
                   );
                return (
                   <View style={orderContainer} key={customer.id}>
-                     <Text style={orderHeader}>{customer.name}</Text>
+                     {/* <Text style={orderHeader}>{customer.name}</Text> */}
 
-                     <View>
+                     {/* <View>
                         {mappedCostArray ? (
                            <Text style={totalOrderDetails}>
-                              Total outstanding cost: $
+                              Total outstanding cost:
                               {Dinero({
                                  amount: mappedCostArray.reduce(
                                     (accumulator, currentValue) =>
@@ -96,7 +94,7 @@ const OrdersScreen = () => {
                         <Text style={totalOrderDetails}>
                            Total outstanding orders: {customer.orders?.length}
                         </Text>
-                     </View>
+                     </View> */}
 
                      {/*  WIP, need to separate tax and delivery costs properly */}
 
@@ -172,8 +170,8 @@ const styles = StyleSheet.create({
       color: "white",
       fontSize: 28,
       width: "100%",
-      borderBottomWidth: 1,
-      borderBottomColor: "black",
+      // borderBottomWidth: 1,
+      // borderBottomColor: "black",
    },
    totalOrderDetails: {
       color: "white",
