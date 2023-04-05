@@ -73,10 +73,6 @@ const ItemizedBreakdownCard = ({
       getWarehouseOwedCost();
    };
 
-   useEffect(() => {
-      console.log({ groupValues, selectedOrdersArray });
-   }, [groupValues]);
-
    return (
       <View style={container}>
          {orders.length > 0 ? (
