@@ -1,3 +1,3 @@
-import { clearAllOrders } from "./orderUtils";
+import { clearAllOrders, getTodaysOrders } from "./orderUtils";
 
-export { clearAllOrders };
+export { clearAllOrders, getTodaysOrders };
