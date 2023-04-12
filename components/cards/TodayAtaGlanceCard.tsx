@@ -1,17 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
    View,
    Text,
    StyleSheet,
    TouchableOpacity,
    ScrollView,
-   useWindowDimensions,
 } from "react-native";
 
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Collapsible from "react-native-collapsible";
 
 import { getAllOrders, findCustomer } from "../../api";
+import { getTodaysOrders } from "../../utils";
 
 interface ChowInfo {
    quantity: number;
@@ -32,19 +32,27 @@ const TodayAtaGlanceCard = () => {
    const [chowInfo, setChowInfo] = useState<ChowInfo[] | []>([]);
 
    const { container, highlight, header, subHeader, deemphasis } = styles;
+   const navigation = useNavigation();
+
+   const handleClick = (customer: Customer) => {
+      navigation.navigate("CustomerDetails", customer);
+   };
 
    // TODO: P0--Perform this logic in the backend--major refactor MUST be done once alpha of app is released.
    const populateData = async () => {
       // Orders Block
       const orderData = await getAllOrders();
       setOrders(orderData);
-
+      const filteredOutstandingOrders = await getTodaysOrders();
+      // TODO: change order object so that it includes chow_details by default, since passing a customer down to get chow info is inefficient
+      setOrders(filteredOutstandingOrders);
       // Customers Block
       const customerList = await Promise.all(
-         orderData.map(async (order: Order) => {
+         filteredOutstandingOrders.map(async (order: Order) => {
             return await findCustomer(order.customer_id);
          })
       );
+
       setCustomers(customerList);
 
       // Chow Block
@@ -125,14 +133,15 @@ const TodayAtaGlanceCard = () => {
                   <Text style={subHeader}>No orders left!</Text>
                )}
                <Collapsible collapsed={orderCollapsed}>
-                  {/* <Text style={deemphasis}>Client name here</Text> */}
-
                   {customers &&
                      customers.length > 0 &&
                      customers?.map((customer, index) => (
-                        <View key={`${customer.id}, index: ${index}`}>
+                        <TouchableOpacity
+                           key={`${customer.id}, index: ${index}`}
+                           onPress={() => handleClick(customer)}
+                        >
                            <Text style={deemphasis}>{customer.name}</Text>
-                        </View>
+                        </TouchableOpacity>
                      ))}
                </Collapsible>
             </View>
