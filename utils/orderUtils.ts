@@ -1,6 +1,6 @@
-import { updateOrder } from "../api";
+import { getAllCustomers, updateOrder } from "../api";
 
-export const clearOrders = (orders) => {
+export const clearOrders = (orders: Order[]) => {
    try {
       orders.map(async (order) => {
          const updatedOrder = {
@@ -16,7 +16,6 @@ export const clearOrders = (orders) => {
             quantity: order.quantity,
             id: order.id,
          };
-         console.log(JSON.stringify({ updatedOrder }, null, 2));
          await updateOrder(updatedOrder);
       });
 
@@ -24,4 +23,16 @@ export const clearOrders = (orders) => {
    } catch (error) {
       console.error(error);
    }
+};
+
+export const getTodaysOrders = async () => {
+   const customerResponse: Customer[] = await getAllCustomers();
+
+   const filteredOutstandingOrders = customerResponse.map((customer: any) => {
+      return customer.orders?.filter(
+         (order: OrderWithChowDetails) => order.payment_made === false
+      );
+   });
+
+   return filteredOutstandingOrders.flat();
 };
