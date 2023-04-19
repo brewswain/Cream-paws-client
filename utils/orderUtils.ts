@@ -28,7 +28,7 @@ export const clearOrders = (orders: Order[]) => {
 export const getTodaysOrders = async () => {
    const customerResponse: Customer[] = await getAllCustomers();
 
-   const filteredOutstandingOrders = customerResponse.map((customer: any) => {
+   const filteredOutstandingOrders = customerResponse.map((customer) => {
       return customer.orders?.filter(
          (order: OrderWithChowDetails) => order.payment_made === false
       );
