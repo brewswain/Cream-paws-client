@@ -34,6 +34,10 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
       navigation.navigate("CustomerDetails", customer);
    };
 
+   const openOrdersArray = customer.orders?.filter(
+      (order) => order.payment_made === false
+   );
+
    return (
       <Pressable onPress={() => handleClick(customer.id)}>
          {customer.orders && customer.orders.length > 0 && (
@@ -43,7 +47,7 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
                </View>
                <View style={priceContainer}>
                   <Text style={price}>
-                     {` Open Orders:${customer.orders?.length}`}
+                     {` Open Orders:${openOrdersArray?.length}`}
                   </Text>
                </View>
             </View>
