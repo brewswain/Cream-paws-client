@@ -10,8 +10,10 @@ const StockScreen = () => {
    const [showModal, setShowModal] = useState<boolean>(false);
 
    const [chow, setChow] = useState<Chow[]>([]);
-   const [customerChow, setCustomerChow] = useState<Chow[]>([]);
-   const [warehouseChow, setWarehouseChow] = useState<Chow[]>([]);
+   const [customerReservedChow, setCustomerReservedChow] = useState<Chow[]>([]);
+   const [unpaidChow, setUnpaidChow] = useState<Chow[]>([]);
+
+   const { container, buttonContainer, unpaidChowCard, paidChowCard } = styles;
 
    const openModal = () => {
       setShowModal(true);
@@ -27,8 +29,8 @@ const StockScreen = () => {
          (item) => item.is_paid_for === false
       );
 
-      setCustomerChow(customerReservedChow);
-      setWarehouseChow(unpaidForChow);
+      setCustomerReservedChow(customerReservedChow);
+      setUnpaidChow(unpaidForChow);
       setChow(response);
    };
 
@@ -37,24 +39,26 @@ const StockScreen = () => {
    }, []);
 
    return (
-      <View style={styles.container}>
-         <View>
-            {chow &&
-               chow.map((item) => (
-                  <Text key={item.id}>{item.retail_price}</Text>
+      <View style={container}>
+         {unpaidChow.length > 0 ? (
+            <View>
+               {unpaidChow.map((chow) => (
+                  <View style={unpaidChowCard}>
+                     <Text>{`${chow.brand} - ${chow.flavour}`}</Text>
+                  </View>
                ))}
-         </View>
-         <View>
-            <Text>Stock in Warehouse</Text>
-         </View>
-         {/* Simply reduce their price and show total after showing truncated list */}
-         {/* <Text>{customerChow}</Text> */}
-         <View>
-            <Text>Stock called for by Customer</Text>
-         </View>
-         {/* Simply reduce their price and show total after showing truncated list */}
-         {/* <Text> {warehouseChow}</Text> */}
-         <Pressable style={styles.buttonContainer} onPress={openModal}>
+            </View>
+         ) : null}
+         {customerReservedChow.length > 0 ? (
+            <View>
+               {customerReservedChow.map((chow) => (
+                  <View style={paidChowCard}>
+                     <Text>{`${chow.brand} - ${chow.flavour}`}</Text>
+                  </View>
+               ))}
+            </View>
+         ) : null}
+         <Pressable style={buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
          </Pressable>
          <CreateChowModal
@@ -81,6 +85,29 @@ const styles = StyleSheet.create({
       right: 10,
       borderRadius: 50,
       backgroundColor: "#8099c1",
+   },
+   unpaidChowCard: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignSelf: "center",
+      borderRadius: 4,
+      width: "90%",
+      backgroundColor: "#434949",
+      marginBottom: 8,
+      padding: 8,
+      color: "white",
+   },
+   paidChowCard: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignSelf: "center",
+      borderRadius: 4,
+      width: "90%",
+      backgroundColor: "#434949",
+      marginBottom: 8,
+      padding: 8,
    },
 });
 
