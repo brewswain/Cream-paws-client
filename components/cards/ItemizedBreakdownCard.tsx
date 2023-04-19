@@ -11,6 +11,7 @@ const ItemizedBreakdownCard = () => {
    const [groupValues, setGroupValues] = useState([]);
    const [selectedOrders, setSelectedOrders] = useState([]);
    const [outstandingOrders, setOutstandingOrders] = useState<any[]>([]);
+   const [isFetching, setIsFetching] = useState<boolean>(true);
 
    // TODO: Put the heavy logic into our backend once this approach is verified
    const getWarehouseOwedCost = async () => {
@@ -75,19 +76,20 @@ const ItemizedBreakdownCard = () => {
    const handleClearingSelectedOrders = async () => {
       await clearOrders(selectedOrdersArray);
 
-      return getWarehouseOwedCost();
+      setIsFetching(true);
    };
 
    const handleClearingAllOrders = async () => {
       await clearOrders(orders);
-
-      getWarehouseOwedCost();
+      setIsFetching(true);
    };
 
    useEffect(() => {
-      getWarehouseOwedCost();
-      console.log("hi");
-   }, [outstandingOrders]);
+      if (isFetching === true) {
+         getWarehouseOwedCost();
+         setIsFetching(false);
+      }
+   }, [isFetching]);
 
    return (
       <View style={container}>
