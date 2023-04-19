@@ -27,7 +27,7 @@ interface ChowInfo {
 const TodayAtaGlanceCard = () => {
    const [orderCollapsed, setOrderCollapsed] = useState<boolean>(true);
    const [stockCollapsed, setStockCollapsed] = useState<boolean>(true);
-   const [orders, setOrders] = useState<Order[]>([]);
+   const [orders, setOrders] = useState<any[]>([]);
    const [customers, setCustomers] = useState<Customer[]>();
    const [chowInfo, setChowInfo] = useState<ChowInfo[] | []>([]);
 
@@ -41,54 +41,63 @@ const TodayAtaGlanceCard = () => {
    // TODO: P0--Perform this logic in the backend--major refactor MUST be done once alpha of app is released.
    const populateData = async () => {
       // Orders Block
-      const orderData = await getAllOrders();
-      setOrders(orderData);
+      // const orderData = await getAllOrders();
+      // setOrders(orderData);
       const filteredOutstandingOrders = await getTodaysOrders();
       // TODO: change order object so that it includes chow_details by default, since passing a customer down to get chow info is inefficient
       setOrders(filteredOutstandingOrders);
       // Customers Block
       const customerList = await Promise.all(
-         filteredOutstandingOrders.map(async (order: Order) => {
-            return await findCustomer(order.customer_id);
-         })
+         filteredOutstandingOrders.map(
+            async (order: OrderWithChowDetails | undefined) => {
+               if (order) return await findCustomer(order!.customer_id);
+            }
+         )
       );
+
+      // console.log(
+      //    JSON.stringify(
+      //       { customersWithActiveOrders, filteredOutstandingOrders },
+      //       null,
+      //       2
+      //    )
+      // );
 
       setCustomers(customerList);
 
       // Chow Block
-      const customerChowArray = customerList
-         .map(
-            (customer) =>
-               customer.orders &&
-               customer.orders?.map((order: OrderWithChowDetails) => {
-                  return {
-                     quantity: order.quantity,
-                     details: {
-                        brand: order.chow_details.brand,
-                        flavour: order.chow_details.flavour,
-                        size: order.chow_details.size,
-                        unit: order.chow_details.unit,
-                        order_id: order.id,
-                     },
-                  };
-               })
-         )
-         .flat();
+
+      const customerChowArray = filteredOutstandingOrders.map((order) => {
+         if (order)
+            return {
+               quantity: order.quantity,
+               details: {
+                  brand: order.chow_details.brand,
+                  flavour: order.chow_details.flavour,
+                  size: order.chow_details.size,
+                  unit: order.chow_details.unit,
+                  order_id: order.id,
+               },
+            };
+      });
       const updatedChowArray = [...chowInfo, customerChowArray].flat();
 
       // Prevents dupes--should be fixed when we do backend refactor:
       // https://stackoverflow.com/questions/45439961/remove-duplicate-values-from-an-array-of-objects-in-javascript
-      const cleanedChowArray = updatedChowArray.reduce((unique, chowObject) => {
-         if (
-            !unique.some(
-               (obj: ChowInfo) =>
-                  obj.details.order_id === chowObject.details.order_id
-            )
-         ) {
-            unique.push(chowObject);
-         }
-         return unique;
-      }, []);
+      const cleanedChowArray = updatedChowArray.reduce(
+         (unique: any[], chowObject) => {
+            if (
+               !unique.some(
+                  (obj: ChowInfo) =>
+                     obj.details.order_id === chowObject?.details.order_id
+               )
+            ) {
+               unique.push(chowObject);
+            }
+            return unique;
+         },
+         []
+      );
 
       setChowInfo(cleanedChowArray);
    };
