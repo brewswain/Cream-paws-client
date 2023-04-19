@@ -101,8 +101,6 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
                {orders!.length > 1 ? "Orders" : "Order"}
             </Text>
 
-            <Text onPress={handleMassOrderPayment}>Clear All Orders</Text>
-
             <CollapsibleOrder
                outstandingCollapsible={outstandingCollapsible}
                setOutstandingCollapsible={setOutstandingCollapsible}
