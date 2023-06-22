@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import {
    NativeSyntheticEvent,
+   Pressable,
    StyleSheet,
    TextInput,
+   Text,
    TextInputChangeEventData,
    View,
 } from "react-native";
+
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 
 import {
    Button,
@@ -57,6 +62,8 @@ const CreateOrderModal = ({
    const [selectedChow, setSelectedChow] = useState("");
    const [groupValues, setGroupValues] = useState<string[]>([]);
    const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+   const [datePickerIsVisible, setDatePickerIsVisible] = useState<boolean>(false)
+   const [selectedDate, setSelectedDate] = useState<Date>()
    // Loose typing on purpose for now, type SHOULD be Order.
    const [orders, setOrders] = useState<any[]>([{}]);
 
@@ -73,6 +80,16 @@ const CreateOrderModal = ({
       dropdown,
       dropdownContainer,
    } = styles;
+
+   const toggleDatePickerVisibility = () => {
+      setDatePickerIsVisible(!datePickerIsVisible)
+   }
+
+   const handleDateConfirm = (date: Date) => {
+      setSelectedDate(date)
+      handleDateChange(date)
+      toggleDatePickerVisibility()
+   }
 
    const addField = () => {
       let newField = { chow_id: "", quantity: 0 };
@@ -160,6 +177,14 @@ const CreateOrderModal = ({
       // console.log({ event: event.nativeEvent.text, data_name: name });
       setOrderInputs(data);
    };
+
+  const handleDateChange = (date:Date) => {
+   let data = { ...orderInputs };
+data["delivery_date"] = date
+setOrderInputs(data);
+
+      console.log({date})
+   }
 
    // const handleChowChange = (
    //    event: NativeSyntheticEvent<TextInputChangeEventData>,
@@ -359,6 +384,16 @@ const CreateOrderModal = ({
                         handleOrderChange(event, "delivery_date")
                      }
                   />
+                  <Pressable onPress={() => toggleDatePickerVisibility()}>
+                     <Text>Choose Delivery Date</Text>
+                  </Pressable>
+                  <DateTimePickerModal
+                  
+                     isVisible={datePickerIsVisible}
+                     onConfirm={handleDateConfirm}
+                     onCancel={toggleDatePickerVisibility}
+                  />
+
                   <Checkbox.Group
                      onChange={setGroupValues}
                      value={groupValues}
