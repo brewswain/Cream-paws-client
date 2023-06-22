@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Text, View, Pressable, StyleSheet } from "react-native";
+import { Text, View, Pressable, StyleSheet, ScrollView } from "react-native";
 
 import Icon from "react-native-vector-icons/AntDesign";
 
@@ -40,6 +40,7 @@ const StockScreen = () => {
 
    return (
       <View style={container}>
+         <ScrollView>
          {unpaidChow.length > 0 ? (
             <View>
                {unpaidChow.map((chow) => (
@@ -58,6 +59,7 @@ const StockScreen = () => {
                ))}
             </View>
          ) : null}
+         </ScrollView>
          <Pressable style={buttonContainer} onPress={openModal}>
             <Icon name="plus" size={20} />
          </Pressable>
