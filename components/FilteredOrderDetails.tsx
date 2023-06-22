@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 
+import Dinero from "dinero.js";
 import Collapsible from "react-native-collapsible";
 
 import DetailsText from "./DetailsText";
@@ -39,7 +40,11 @@ const FilteredOrderDetails = ({ orders }: FilteredOrderDetailsProps) => {
                      <DetailsText
                         header="Outstanding Cost"
                         details={
-                           order.chow_details.retail_price * order.quantity
+                           Dinero({
+                              amount:
+                                Math.round(( order.chow_details.retail_price * order.quantity) * 100),
+                           }).toFormat("$0,0.00")
+                          
                         }
                      />
                   )}
