@@ -75,28 +75,6 @@ const OrdersScreen = () => {
                   );
                return (
                   <View style={orderContainer} key={customer.id}>
-                     {/* <Text style={orderHeader}>{customer.name}</Text> */}
-
-                     {/* <View>
-                        {mappedCostArray ? (
-                           <Text style={totalOrderDetails}>
-                              Total outstanding cost:
-                              {Dinero({
-                                 amount: mappedCostArray.reduce(
-                                    (accumulator, currentValue) =>
-                                       accumulator + currentValue,
-                                    0
-                                 ),
-                                 precision: 2,
-                              }).toFormat("$0,0.00")}
-                           </Text>
-                        ) : null}
-                        <Text style={totalOrderDetails}>
-                           Total outstanding orders: {customer.orders?.length}
-                        </Text>
-                     </View> */}
-
-                     {/*  WIP, need to separate tax and delivery costs properly */}
 
                      <View>
                         {customer.orders &&
