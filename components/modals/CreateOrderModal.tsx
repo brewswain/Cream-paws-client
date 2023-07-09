@@ -26,7 +26,7 @@ import { createOrder } from "../../api";
 interface CreateOrderModalProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
-  populateOrdersList(): void;
+  populateCustomersList(): void;
   chow?: Chow[];
   customers?: Customer[];
 }
@@ -39,7 +39,7 @@ interface ChowDetails {
 const CreateOrderModal = ({
   isOpen,
   setShowModal,
-  populateOrdersList,
+  populateCustomersList,
   chow,
   customers,
 }: CreateOrderModalProps) => {
@@ -267,9 +267,9 @@ const CreateOrderModal = ({
         };
 
         await createOrder(newOrderPayload);
-        populateOrdersList();
       })
     ).then(() => {
+      populateCustomersList();
       closeModal();
     });
 
