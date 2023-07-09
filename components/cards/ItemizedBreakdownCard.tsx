@@ -74,7 +74,7 @@ const ItemizedBreakdownCard = () => {
   );
 
   const selectedOrdersArray = groupValues
-    .map((orderId) => orders.filter((order) => order.id === orderId))
+    .map((orderId) => orders.filter((order) => order._id === orderId))
     .flat();
 
   const handleClearingSelectedOrders = async () => {
@@ -119,10 +119,10 @@ const ItemizedBreakdownCard = () => {
               }).toFormat("$0,0.00");
 
               return (
-                <View key={order.id} style={orderContainer}>
+                <View key={order._id} style={orderContainer}>
                   <View>
                     <Checkbox
-                      value={`${order.id}`}
+                      value={`${order._id}`}
                       accessibilityLabel="Checkbox for identifying individual orders to pay"
                     >
                       <View
