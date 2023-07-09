@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
-import { clearAllOrders } from "../../utils";
 import { Button, Checkbox } from "native-base";
 import { clearOrders, getTodaysOrders } from "../../utils/orderUtils";
 

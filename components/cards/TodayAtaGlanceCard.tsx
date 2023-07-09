@@ -40,53 +40,57 @@ const TodayAtaGlanceCard = () => {
 
   const populateData = async () => {
     const filteredOutstandingOrders = await getTodaysOrders();
-    setOrders(filteredOutstandingOrders);
+    if (filteredOutstandingOrders.length < 1) {
+      setOrders([]);
+      setCustomers([]);
+      setChowInfo([]);
+    } else {
+      setOrders(filteredOutstandingOrders);
 
-    const customerList = await Promise.all(
-      filteredOutstandingOrders.map(
-        async (
-          order: OrderWithChowDetails | undefined
-        ): Promise<Customer | undefined> => {
-          if (order) return await findCustomer(order.customer_id);
-          return undefined;
-        }
-      )
-    );
-    setCustomers(
-      customerList.filter((customer) => customer !== undefined) as Customer[]
-    );
+      const customerList = await Promise.all(
+        filteredOutstandingOrders.map(
+          async (
+            order: OrderWithChowDetails | undefined
+          ): Promise<Customer | undefined> => {
+            if (order) return await findCustomer(order.customer_id);
+            return undefined;
+          }
+        )
+      );
+      setCustomers(
+        customerList.filter((customer) => customer !== undefined) as Customer[]
+      );
 
-    const customerChowArray = filteredOutstandingOrders.map((order) => ({
-      quantity: order?.quantity ?? 0,
-      details: {
-        brand: order?.chow_details?.brand ?? "",
-        flavour: order?.chow_details?.flavour ?? "",
-        size: order?.chow_details?.size ?? 0,
-        unit: order?.chow_details?.unit ?? "",
-        order_id: order?.id ?? "",
-      },
-    }));
+      const customerChowArray = filteredOutstandingOrders.map((order) => ({
+        quantity: order?.quantity ?? 0,
+        details: {
+          brand: order?.chow_details?.brand ?? "",
+          flavour: order?.chow_details?.flavour ?? "",
+          size: order?.chow_details?.size ?? 0,
+          unit: order?.chow_details?.unit ?? "",
+          order_id: order?.id ?? "",
+        },
+      }));
 
-    const updatedChowArray = [...chowInfo, ...customerChowArray];
+      const cleanedChowArray: ChowInfo[] = customerChowArray.reduce(
+        (unique: ChowInfo[], chowObject) => {
+          const existingIndex = unique.findIndex(
+            (obj) => obj.details.order_id === chowObject.details.order_id
+          );
 
-    const cleanedChowArray: ChowInfo[] = updatedChowArray.reduce(
-      (unique: ChowInfo[], chowObject) => {
-        const existingIndex = unique.findIndex(
-          (obj) => obj.details.order_id === chowObject.details.order_id
-        );
+          if (existingIndex !== -1) {
+            unique[existingIndex].quantity += chowObject.quantity;
+          } else {
+            unique.push(chowObject);
+          }
 
-        if (existingIndex !== -1) {
-          unique[existingIndex].quantity += chowObject.quantity;
-        } else {
-          unique.push(chowObject);
-        }
+          return unique;
+        },
+        []
+      );
 
-        return unique;
-      },
-      []
-    );
-
-    setChowInfo(cleanedChowArray);
+      setChowInfo(cleanedChowArray);
+    }
   };
 
   useFocusEffect(
@@ -111,10 +115,6 @@ const TodayAtaGlanceCard = () => {
       };
     }, [])
   );
-
-  useEffect(() => {
-    console.log(chowInfo);
-  }, [chowInfo]);
 
   return (
     <View style={container}>

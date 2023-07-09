@@ -7,6 +7,8 @@ import {
   Text,
   TextInputChangeEventData,
   View,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -77,6 +79,8 @@ const CreateOrderModal = ({
     buttonContainer,
     confirmationButton,
     confirmationButtonContainer,
+    deliveryText,
+    required,
     dropdown,
     dropdownContainer,
   } = styles;
@@ -92,7 +96,7 @@ const CreateOrderModal = ({
   };
 
   const addField = () => {
-    let newField = { chow_id: "", quantity: 0 };
+    let newField = { chow_id: "", quantity: 1 };
     setChowInputs([...chowInputs, newField]);
   };
 
@@ -140,7 +144,7 @@ const CreateOrderModal = ({
     //          chow_id: chow.chow_id,
     //          quantity: chow.quantity,
     //          ...rest of form details
-    //       })
+    //       }
     //    })
     // }
   };
@@ -182,8 +186,6 @@ const CreateOrderModal = ({
     let data = { ...orderInputs };
     data["delivery_date"] = date;
     setOrderInputs(data);
-
-    console.log({ date });
   };
 
   // const handleChowChange = (
@@ -205,9 +207,17 @@ const CreateOrderModal = ({
     name: string
   ) => {
     let data = [...chowInputs];
-    // console.log({ event: event.nativeEvent.text, data_name: name });
+    const inputValue = event.nativeEvent.text.trim(); // Trim whitespace from input value
 
-    data[index][name] = parseInt(event.nativeEvent.text);
+    if (inputValue === "") {
+      data[index][name] = 1; // Set quantity to 1 if input is blank
+    } else {
+      const convertedText = parseInt(inputValue);
+      if (!isNaN(convertedText)) {
+        data[index][name] = convertedText; // Only update quantity if input is a valid number
+      }
+    }
+
     setChowInputs(data);
   };
 
@@ -272,63 +282,7 @@ const CreateOrderModal = ({
       populateCustomersList();
       closeModal();
     });
-
-    // const { chow_id, quantity } = chowArray[0];
-    // const {
-    //    customer_id,
-    //    delivery_date,
-    //    payment_made,
-    //    payment_date,
-    //    is_delivery,
-    //    driver_paid,
-    //    warehouse_paid,
-    // } = orderPayload;
-
-    // const newOrderPayload = {
-    //    delivery_date,
-    //    payment_made,
-    //    payment_date,
-    //    is_delivery,
-    //    quantity,
-    //    driver_paid,
-    //    warehouse_paid,
-    //    customer_id,
-    //    chow_id,
-    // };
-    // await createOrder(newOrderPayload);
-    // populateOrdersList();
-    // closeModal();
-
-    // await orderPayload.chow_array.map(async (chow_details: ChowDetails) => {
-
-    //    console.log({ newOrderPayload });
-    //    // Add quantity here to Payload
-    //    // await createOrder({
-    //    //    delivery_date,
-    //    //    payment_made,
-    //    //    payment_date,
-    //    //    is_delivery,
-    //    //    quantity,
-    //    //    driver_paid,
-    //    //    warehouse_paid,
-    //    //    customer_id,
-    //    //    chow_id,
-    //    // });
-    //    // populateOrdersList();
-    //    // closeModal();
-    // });
   };
-
-  // const testPayload = {
-  //    delivery_date: "test order",
-  //    payment_made: true,
-  //    payment_date: "hello",
-  //    is_delivery: true,
-  //    driver_paid: false,
-  //    warehouse_paid: true,
-  //    customer_id: "636ade22d10a673e13bfd2b5",
-  //    chow_id: "636ade34e20197302f90d6c6",
-  // };
 
   useEffect(() => {
     groupValues.map((value: string) => {
@@ -353,111 +307,110 @@ const CreateOrderModal = ({
                   />
                </FormControl>
              */}
-          <FormControl mt={3}>
-            <FormControl.Label>Customer</FormControl.Label>
-            {customers && customers?.length > 0 ? (
-              <Select
-                minWidth="200"
-                selectedValue={orderInputs.customer_id}
-                accessibilityLabel="Choose Customer"
-                placeholder="Choose Customer"
-                _selectedItem={{
-                  bg: "teal.600",
-                  endIcon: <CheckIcon size={5} />,
-                }}
-                mt="1"
-                onValueChange={(nextValue) => handleCustomerSelected(nextValue)}
-              >
-                {chow && renderCustomersDropdown()}
-              </Select>
-            ) : null}
-          </FormControl>
-          <FormControl mt={3}>
-            <FormControl.Label>Order Information</FormControl.Label>
-            <Pressable onPress={() => toggleDatePickerVisibility()}>
-              <Text>Choose Delivery Date</Text>
-            </Pressable>
-            <DateTimePickerModal
-              isVisible={datePickerIsVisible}
-              onConfirm={handleDateConfirm}
-              onCancel={toggleDatePickerVisibility}
-            />
-
-            <Checkbox.Group
-              onChange={setGroupValues}
-              value={groupValues}
-              accessibilityLabel="Choose order options"
+          {/* <TouchableWithoutFeedback onPress={renderCustomersDropdown}> */}
+          <View>
+            <Select
+              minWidth="200"
+              selectedValue={orderInputs.customer_id}
+              accessibilityLabel="Choose Customer"
+              placeholder="Choose Customer *"
+              _selectedItem={{
+                bg: "teal.600",
+                endIcon: <CheckIcon size={5} />,
+              }}
+              mt="1"
+              onValueChange={(nextValue) => handleCustomerSelected(nextValue)}
             >
-              <Checkbox value="payment_made">Payment Made</Checkbox>
-              <Checkbox value="is_delivery">Is delivery</Checkbox>
-              <Checkbox value="driver_paid">Driver Paid?</Checkbox>
-              <Checkbox value="warehouse_paid">Warehouse Paid?</Checkbox>
-            </Checkbox.Group>
+              {chow && renderCustomersDropdown()}
+            </Select>
+          </View>
+          {/* </TouchableWithoutFeedback> */}
+          <FormControl.Label>Order Information</FormControl.Label>
+          <Pressable onPress={() => toggleDatePickerVisibility()}>
+            <Text style={deliveryText}>
+              Choose Delivery Date <Text>*</Text>
+            </Text>
+          </Pressable>
+          <DateTimePickerModal
+            isVisible={datePickerIsVisible}
+            onConfirm={handleDateConfirm}
+            onCancel={toggleDatePickerVisibility}
+          />
 
-            <FormControl.Label>Chow Details</FormControl.Label>
-            {chowInputs.map((field, index) => {
-              return (
-                <View key={index}>
-                  <View style={dropdownContainer}>
-                    <Select
-                      minWidth="200"
-                      selectedValue={chowInputs[index].chow_id}
-                      accessibilityLabel="Choose Chow"
-                      placeholder="Choose Chow"
-                      _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size={5} />,
-                      }}
-                      mt="1"
-                      onValueChange={(itemValue) =>
-                        handleChowSelected(itemValue, index, "chow_id")
-                      }
-                      key={field.chow_id}
-                      style={dropdown}
-                    >
-                      {chow && renderChowDropdown()}
-                    </Select>
-                  </View>
+          <Checkbox.Group
+            onChange={setGroupValues}
+            value={groupValues}
+            accessibilityLabel="Choose order options"
+          >
+            <Checkbox value="payment_made">Payment Made</Checkbox>
+            <Checkbox value="is_delivery">Is delivery</Checkbox>
+            <Checkbox value="driver_paid">Driver Paid?</Checkbox>
+            <Checkbox value="warehouse_paid">Warehouse Paid?</Checkbox>
+          </Checkbox.Group>
 
-                  <TextInput
-                    style={input}
-                    placeholder="Quantity"
-                    keyboardType="numeric"
-                    onChange={(event) =>
-                      handleQuantityChange(event, index, "quantity")
+          <FormControl.Label>Chow Details</FormControl.Label>
+          {chowInputs.map((field, index) => {
+            return (
+              <View key={index}>
+                <TouchableWithoutFeedback onPress={renderChowDropdown}>
+                  <Select
+                    minWidth="200"
+                    selectedValue={chowInputs[index].chow_id}
+                    accessibilityLabel="Choose Chow"
+                    placeholder="Choose Chow *"
+                    _selectedItem={{
+                      bg: "teal.600",
+                      endIcon: <CheckIcon size={5} />,
+                    }}
+                    mt="1"
+                    onValueChange={(itemValue) =>
+                      handleChowSelected(itemValue, index, "chow_id")
                     }
-                    value={field.quantity}
-                    key={`index: ${index} Quantity `}
-                  />
-                  <View style={buttonContainer}>
-                    <Button
-                      style={button}
-                      onPress={() => addField()}
-                      key={`index: ${index} AddField `}
-                    >
-                      <Icon
-                        name="plus"
-                        size={10}
-                        key={`index: ${index} PlusIcon `}
-                      />
-                    </Button>
-                    <Button
-                      style={button}
-                      isDisabled={chowInputs.length <= 1}
-                      onPress={() => removeField(index)}
-                      key={`index: ${index} RemoveField `}
-                    >
-                      <Icon
-                        name="minus"
-                        size={10}
-                        key={`index: ${index} MinusIcon `}
-                      />
-                    </Button>
-                  </View>
+                    key={field.chow_id}
+                  >
+                    {chow && renderChowDropdown()}
+                  </Select>
+                </TouchableWithoutFeedback>
+
+                <TextInput
+                  style={input}
+                  placeholder="Quantity (Set to 1 by default)"
+                  keyboardType="numeric"
+                  onChange={(event) =>
+                    handleQuantityChange(event, index, "quantity")
+                  }
+                  defaultValue={chowInputs[index].quantity}
+                  value={field.quantity}
+                  key={`index: ${index} Quantity `}
+                />
+                <View style={buttonContainer}>
+                  <Button
+                    style={button}
+                    onPress={() => addField()}
+                    key={`index: ${index} AddField `}
+                  >
+                    <Icon
+                      name="plus"
+                      size={10}
+                      key={`index: ${index} PlusIcon `}
+                    />
+                  </Button>
+                  <Button
+                    style={button}
+                    isDisabled={chowInputs.length <= 1}
+                    onPress={() => removeField(index)}
+                    key={`index: ${index} RemoveField `}
+                  >
+                    <Icon
+                      name="minus"
+                      size={10}
+                      key={`index: ${index} MinusIcon `}
+                    />
+                  </Button>
                 </View>
-              );
-            })}
-          </FormControl>
+              </View>
+            );
+          })}
         </Modal.Body>
         <Button.Group space={2} style={confirmationButtonContainer}>
           <Button variant="ghost" onPress={closeModal}>
@@ -466,6 +419,14 @@ const CreateOrderModal = ({
           <Button
             style={confirmationButton}
             onPress={() => handleOrderCreation()}
+            isDisabled={
+              !orderInputs.customer_id ||
+              !orderInputs.delivery_date ||
+              chowInputs.some(
+                (chowInput) =>
+                  chowInput.chow_id === "" || chowInput.quantity === 0
+              )
+            }
           >
             Save
           </Button>
@@ -477,9 +438,8 @@ const CreateOrderModal = ({
 
 const styles = StyleSheet.create({
   input: {
-    margin: 5,
     marginBottom: 8,
-    marginTop: 0,
+    marginTop: 10,
     paddingLeft: 10,
     width: 270,
     borderRadius: 4,
@@ -489,6 +449,18 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "flex-end",
+  },
+  deliveryText: {
+    backgroundColor: "hsl(213,74%,54%)",
+    padding: 10,
+    fontSize: 16,
+    color: "white",
+    marginBottom: 10,
+    textAlign: "center",
+    borderRadius: 4,
+  },
+  required: {
+    color: "red",
   },
   button: {
     width: 40,

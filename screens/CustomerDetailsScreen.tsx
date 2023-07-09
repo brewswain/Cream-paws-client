@@ -73,7 +73,6 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         payment_date: new Date().toString(),
       };
 
-      console.log(JSON.stringify(paidOrder));
       // await updateOrder(order.id, paidOrder);
     });
   };

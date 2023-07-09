@@ -18,6 +18,7 @@ import {
 
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { OrderCard } from "../components";
+import { ScrollView } from "native-base";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -59,13 +60,10 @@ const OrdersScreen = () => {
     populateData();
   }, []);
 
-  useEffect(() => {
-    console.log({ customers });
-  }, [customers]);
   const customersArray = customers && customers;
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View>
         {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
         {customersArray?.map((customer: Customer, index: number) => {
@@ -106,7 +104,7 @@ const OrdersScreen = () => {
         chow={chow}
         customers={customers}
       />
-    </View>
+    </ScrollView>
   );
 };
 
