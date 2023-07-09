@@ -30,7 +30,6 @@ const OrdersScreen = () => {
   const populateOrdersList = async () => {
     const response = await getAllOrders();
 
-    clg;
     setOrders(response);
   };
 
