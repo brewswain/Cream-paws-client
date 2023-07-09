@@ -29,7 +29,7 @@ const TodayAtaGlanceCard = () => {
   const [stockCollapsed, setStockCollapsed] = useState<boolean>(true);
   const [orders, setOrders] = useState<any[]>([]);
   const [customers, setCustomers] = useState<Customer[]>();
-  const [chowInfo, setChowInfo] = useState<ChowInfo[] | []>([]);
+  const [chowInfo, setChowInfo] = useState<ChowInfo[]>([]);
 
   const { container, highlight, header, subHeader, deemphasis } = styles;
   const navigation = useNavigation();
@@ -38,61 +38,49 @@ const TodayAtaGlanceCard = () => {
     navigation.navigate("CustomerDetails", customer);
   };
 
-  // TODO: P0--Perform this logic in the backend--major refactor MUST be done once alpha of app is released.
   const populateData = async () => {
-    // Orders Block
-    // const orderData = await getAllOrders();
-    // setOrders(orderData);
     const filteredOutstandingOrders = await getTodaysOrders();
-    // TODO: change order object so that it includes chow_details by default, since passing a customer down to get chow info is inefficient
     setOrders(filteredOutstandingOrders);
-    // Customers Block
+
     const customerList = await Promise.all(
       filteredOutstandingOrders.map(
-        async (order: OrderWithChowDetails | undefined) => {
-          if (order) return await findCustomer(order!.customer_id);
+        async (
+          order: OrderWithChowDetails | undefined
+        ): Promise<Customer | undefined> => {
+          if (order) return await findCustomer(order.customer_id);
+          return undefined;
         }
       )
     );
+    setCustomers(
+      customerList.filter((customer) => customer !== undefined) as Customer[]
+    );
 
-    // console.log(
-    //    JSON.stringify(
-    //       { customersWithActiveOrders, filteredOutstandingOrders },
-    //       null,
-    //       2
-    //    )
-    // );
+    const customerChowArray = filteredOutstandingOrders.map((order) => ({
+      quantity: order?.quantity ?? 0,
+      details: {
+        brand: order?.chow_details?.brand ?? "",
+        flavour: order?.chow_details?.flavour ?? "",
+        size: order?.chow_details?.size ?? 0,
+        unit: order?.chow_details?.unit ?? "",
+        order_id: order?.id ?? "",
+      },
+    }));
 
-    setCustomers(customerList);
+    const updatedChowArray = [...chowInfo, ...customerChowArray];
 
-    // Chow Block
-    const customerChowArray = filteredOutstandingOrders.map((order) => {
-      if (order)
-        return {
-          quantity: order.quantity,
-          details: {
-            brand: order.chow_details.brand,
-            flavour: order.chow_details.flavour,
-            size: order.chow_details.size,
-            unit: order.chow_details.unit,
-            order_id: order.id,
-          },
-        };
-    });
-    const updatedChowArray = [...chowInfo, customerChowArray].flat();
+    const cleanedChowArray: ChowInfo[] = updatedChowArray.reduce(
+      (unique: ChowInfo[], chowObject) => {
+        const existingIndex = unique.findIndex(
+          (obj) => obj.details.order_id === chowObject.details.order_id
+        );
 
-    // Prevents dupes--should be fixed when we do backend refactor:
-    // https://stackoverflow.com/questions/45439961/remove-duplicate-values-from-an-array-of-objects-in-javascript
-    const cleanedChowArray = updatedChowArray.reduce(
-      (unique: any[], chowObject) => {
-        if (
-          !unique.some(
-            (obj: ChowInfo) =>
-              obj.details.order_id === chowObject?.details.order_id
-          )
-        ) {
+        if (existingIndex !== -1) {
+          unique[existingIndex].quantity += chowObject.quantity;
+        } else {
           unique.push(chowObject);
         }
+
         return unique;
       },
       []
@@ -109,17 +97,24 @@ const TodayAtaGlanceCard = () => {
         try {
           if (isFetching) {
             await populateData();
-
             isFetching = false;
           }
         } catch (error) {
           console.error(error);
         }
       };
+
       getPageData();
-      return () => (isFetching = false);
+
+      return () => {
+        isFetching = false;
+      };
     }, [])
   );
+
+  useEffect(() => {
+    console.log(chowInfo);
+  }, [chowInfo]);
 
   return (
     <View style={container}>
@@ -131,9 +126,9 @@ const TodayAtaGlanceCard = () => {
               onPress={() => setOrderCollapsed(!orderCollapsed)}
             >
               <Text style={highlight}>
-                {orders?.length}{" "}
+                {orders.length}{" "}
                 <Text style={subHeader}>
-                  {orders?.length > 1 ? "orders" : "order"}
+                  {orders.length > 1 ? "orders" : "order"}
                 </Text>
               </Text>
             </TouchableOpacity>
@@ -143,7 +138,7 @@ const TodayAtaGlanceCard = () => {
           <Collapsible collapsed={orderCollapsed}>
             {customers &&
               customers.length > 0 &&
-              customers?.map((customer, index) => (
+              customers.map((customer, index) => (
                 <TouchableOpacity
                   key={`${customer.id}, index: ${index}`}
                   onPress={() => handleClick(customer)}
@@ -160,7 +155,7 @@ const TodayAtaGlanceCard = () => {
               onPress={() => setStockCollapsed(!stockCollapsed)}
             >
               <Text style={highlight}>
-                {chowInfo.length}{" "}
+                {chowInfo.reduce((total, chow) => total + chow.quantity, 0)}{" "}
                 <Text style={subHeader}>{`${
                   chowInfo.length > 1 ? "bags" : "bag"
                 } of Chow`}</Text>
@@ -174,15 +169,15 @@ const TodayAtaGlanceCard = () => {
             collapsed={stockCollapsed}
             style={{ display: "flex", flexDirection: "column" }}
           >
-            {chowInfo?.map((chow, index) => (
+            {chowInfo.map((chow, index) => (
               <View key={index}>
-                {chow ? (
+                {chow && (
                   <View>
                     <Text style={deemphasis}>
                       {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
                     </Text>
                   </View>
-                ) : null}
+                )}
               </View>
             ))}
           </Collapsible>
