@@ -111,7 +111,7 @@ const CreateOrderModal = ({
     return chow?.map((item) => {
       return (
         <Select.Item
-          label={`${item.brand} - ${item.size}${item.unit}`}
+          label={`${item.brand}: ${item.flavour} - ${item.size}${item.unit}`}
           value={`${item.id}`}
           key={item.id}
         />
