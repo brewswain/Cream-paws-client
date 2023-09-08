@@ -43,7 +43,6 @@ const OrderCard = ({ clientName, order }: OrderCardProps) => {
 const styles = StyleSheet.create({
   container: {
     display: "flex",
-    flexDirection: "row",
     justifyContent: "space-between",
     alignSelf: "center",
     borderRadius: 4,
@@ -67,8 +66,9 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     display: "flex",
-    alignSelf: "center",
-    marginRight: 8,
+    alignSelf: "flex-start",
+    marginLeft: 8,
+    marginBottom: 8,
   },
   price: {
     color: "#55E8D9",

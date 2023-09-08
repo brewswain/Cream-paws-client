@@ -63,56 +63,58 @@ const OrdersScreen = () => {
   const customersArray = customers && customers;
 
   return (
-    <ScrollView style={styles.container}>
-      <View>
-        {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-        {customersArray?.map((customer: Customer, index: number) => {
-          return (
-            <View style={orderContainer} key={customer.id}>
-              <View>
-                {customer.orders &&
-                  customer.orders
-                    .flat()
-                    .filter((order) => order.payment_made === false)
-                    .map((order, index) => {
-                      return (
-                        <View
-                          key={order.id}
-                          style={index === 0 ? { paddingTop: 20 } : null}
-                        >
-                          {order ? (
-                            <OrderCard
-                              clientName={customer.name}
-                              order={order}
-                            />
-                          ) : null}
-                        </View>
-                      );
-                    })}
+    <View style={styles.container}>
+      <ScrollView>
+        <View>
+          {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
+          {customersArray?.map((customer: Customer, index: number) => {
+            return (
+              <View style={orderContainer} key={customer.id + index}>
+                <View>
+                  {customer.orders &&
+                    customer.orders
+                      .flat()
+                      .filter((order) => order.payment_made === false)
+                      .map((order, index) => {
+                        return (
+                          <View
+                            key={order.id + index}
+                            style={index === 0 ? { paddingTop: 20 } : null}
+                          >
+                            {order ? (
+                              <OrderCard
+                                clientName={customer.name}
+                                order={order}
+                              />
+                            ) : null}
+                          </View>
+                        );
+                      })}
+                </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+
+        <CreateOrderModal
+          isOpen={showModal}
+          setShowModal={setShowModal}
+          populateCustomersList={populateCustomersList}
+          chow={chow}
+          customers={customers}
+        />
+      </ScrollView>
       <Pressable style={styles.buttonContainer} onPress={openModal}>
         <Icon name="plus" size={20} />
       </Pressable>
-      <CreateOrderModal
-        isOpen={showModal}
-        setShowModal={setShowModal}
-        populateCustomersList={populateCustomersList}
-        chow={chow}
-        customers={customers}
-      />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#252526",
-    height: "100%",
     flex: 1,
+    backgroundColor: "white",
   },
   buttonContainer: {
     flex: 1,
