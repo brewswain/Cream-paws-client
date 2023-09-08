@@ -1,9 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
-   NavigationContainer,
-   DefaultTheme,
-   DarkTheme,
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
@@ -14,34 +14,32 @@ import useColorScheme from "../hooks/useColorScheme";
 import AuthScreen from "../screens/AuthScreen";
 import CustomerDetailsScreen from "../screens/CustomerDetailsScreen";
 import CustomersScreen from "../screens/CustomersScreen";
-import ClientListScreen from "../screens/CustomersScreen";
 import FinanceScreen from "../screens/FinanceScreen";
 import HomeScreen from "../screens/HomeScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import OrdersScreen from "../screens/OrdersScreen";
 import StockScreen from "../screens/StockScreen";
-import TabTwoScreen from "../screens/TabTwoScreen";
 
 import {
-   RootStackParamList,
-   RootTabParamList,
-   RootTabScreenProps,
+  RootStackParamList,
+  RootTabParamList,
+  RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
 
 export default function Navigation({
-   colorScheme,
+  colorScheme,
 }: {
-   colorScheme: ColorSchemeName;
+  colorScheme: ColorSchemeName;
 }) {
-   return (
-      <NavigationContainer
-         linking={LinkingConfiguration}
-         theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-      >
-         <RootNavigator />
-      </NavigationContainer>
-   );
+  return (
+    <NavigationContainer
+      linking={LinkingConfiguration}
+      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+    >
+      <RootNavigator />
+    </NavigationContainer>
+  );
 }
 
 /**
@@ -51,61 +49,61 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-   return (
-      <Stack.Navigator>
-         {/* <Stack.Screen
-            name="Root"
-            component={BottomTabNavigator}
-            options={{ title: "Home" }}
-         /> */}
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Root"
+        component={BottomTabNavigator}
+        options={{ title: "Cream Paws Beta" }}
+      />
 
-         <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ title: "Home" }}
-         />
-         <Stack.Screen
-            name="Customers"
-            component={CustomersScreen}
-            options={{ title: "Customers" }}
-         />
+      {/* <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: "Home" }}
+      /> */}
+      <Stack.Screen
+        name="Customers"
+        component={CustomersScreen}
+        options={{ title: "Customers" }}
+      />
 
-         <Stack.Screen
-            name="Auth"
-            component={AuthScreen}
-            options={{ title: "Authentication" }}
-         />
-         <Stack.Screen
-            name="Orders"
-            component={OrdersScreen}
-            options={{ title: "Orders" }}
-         />
-         <Stack.Screen
-            name="Finance"
-            component={FinanceScreen}
-            options={{ title: "Finance" }}
-         />
-         <Stack.Screen
-            name="Stock"
-            component={StockScreen}
-            options={{ title: "Stock" }}
-         />
-         <Stack.Screen
-            name="NotFound"
-            component={NotFoundScreen}
-            options={{ title: "Oops!" }}
-         />
-         <Stack.Screen
-            name="CustomerDetails"
-            component={CustomerDetailsScreen}
-            options={{ title: "Customer Details" }}
-         />
+      <Stack.Screen
+        name="Auth"
+        component={AuthScreen}
+        options={{ title: "Authentication" }}
+      />
+      <Stack.Screen
+        name="Orders"
+        component={OrdersScreen}
+        options={{ title: "Orders" }}
+      />
+      <Stack.Screen
+        name="Finance"
+        component={FinanceScreen}
+        options={{ title: "Finance" }}
+      />
+      <Stack.Screen
+        name="Stock"
+        component={StockScreen}
+        options={{ title: "Stock" }}
+      />
+      <Stack.Screen
+        name="NotFound"
+        component={NotFoundScreen}
+        options={{ title: "Oops!" }}
+      />
+      <Stack.Screen
+        name="CustomerDetails"
+        component={CustomerDetailsScreen}
+        options={{ title: "Customer Details" }}
+      />
 
-         {/* <Stack.Group screenOptions={{ presentation: "modal" }}>
+      {/* <Stack.Group screenOptions={{ presentation: "modal" }}>
             <Stack.Screen name="Modal" component={ModalScreen} />
          </Stack.Group> */}
-      </Stack.Navigator>
-   );
+    </Stack.Navigator>
+  );
 }
 
 /**
@@ -115,45 +113,66 @@ function RootNavigator() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 export function BottomTabNavigator() {
-   const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme();
 
-   return (
-      <BottomTab.Navigator
-         initialRouteName="TabOne"
-         screenOptions={{
-            tabBarActiveTintColor: Colors[colorScheme].tint,
-         }}
-      >
-         <BottomTab.Screen
-            name="Home"
-            component={HomeScreen}
-            options={({ navigation }: RootTabScreenProps<"Home">) => ({
-               title: "Home",
-               tabBarIcon: ({ color }) => (
-                  <TabBarIcon name="code" color={color} />
-               ),
-            })}
-         />
-         <BottomTab.Screen
-            name="Customers"
-            component={CustomersScreen}
-            options={{
-               title: "Tab Two",
-               tabBarIcon: ({ color }) => (
-                  <TabBarIcon name="code" color={color} />
-               ),
-            }}
-         />
-      </BottomTab.Navigator>
-   );
+  return (
+    <BottomTab.Navigator
+      initialRouteName="TabOne"
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme].tint,
+      }}
+    >
+      <BottomTab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={({ navigation }: RootTabScreenProps<"Home">) => ({
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        })}
+      />
+      <BottomTab.Screen
+        name="Customers"
+        component={CustomersScreen}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="user-plus" color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Orders"
+        component={OrdersScreen}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="sticky-note" color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Stock"
+        component={StockScreen}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="shopping-bag" color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Finance"
+        component={FinanceScreen}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="money" color={color} />,
+        }}
+      />
+    </BottomTab.Navigator>
+  );
 }
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
 function TabBarIcon(props: {
-   name: React.ComponentProps<typeof FontAwesome>["name"];
-   color: string;
+  name: React.ComponentProps<typeof FontAwesome>["name"];
+  color: string;
 }) {
-   return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
 }
