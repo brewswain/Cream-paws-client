@@ -49,12 +49,15 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+  const packageJson = require("../package.json");
+  const appVersion = packageJson.version;
+
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Root"
         component={BottomTabNavigator}
-        options={{ title: "Cream Paws Beta" }}
+        options={{ title: `Cream Paws Beta ${appVersion}` }}
       />
 
       {/* <Stack.Screen

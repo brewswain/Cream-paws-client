@@ -8,7 +8,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "ota": "npm version patch && eas update --branch preview --message",
+    "ota:prod": "eas update --branch production --message"
   },
   "jest": {
     "preset": "jest-expo"
@@ -51,6 +53,7 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",
     "native-base": "^3.4.18",
+    "npm-version": "^1.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.71.8",
@@ -70,6 +73,7 @@
     "@babel/core": "^7.12.9",
     "react-native-web": "^0.18.12"
   },
+  "license": "MIT",
   "resolutions": {},
   "private": true
 }
