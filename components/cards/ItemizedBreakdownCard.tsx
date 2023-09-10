@@ -8,6 +8,10 @@ import { clearOrders, getTodaysOrders } from "../../utils/orderUtils";
 import { useFocusEffect } from "@react-navigation/native";
 
 const ItemizedBreakdownCard = () => {
+  const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
+    useState("idle");
+  const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
+    useState("idle");
   const [groupValues, setGroupValues] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [outstandingOrders, setOutstandingOrders] = useState<any[]>([]);
@@ -62,6 +66,7 @@ const ItemizedBreakdownCard = () => {
     totalCost,
     orderCard,
     textContainer,
+    buttonText,
   } = styles;
 
   const orders = outstandingOrders;
@@ -92,14 +97,53 @@ const ItemizedBreakdownCard = () => {
     .flat();
 
   const handleClearingSelectedOrders = async () => {
-    await clearOrders(selectedOrdersArray);
+    setButtonStateSelectedOrders("loading"); // Set loading state
 
-    setIsFetching(true);
+    try {
+      await clearOrders(selectedOrdersArray);
+      // On success, set success state
+      setButtonStateSelectedOrders("success");
+      setIsFetching(true);
+
+      getWarehouseOwedCost();
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateSelectedOrders("error");
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    }
   };
 
   const handleClearingAllOrders = async () => {
-    await clearOrders(orders);
-    setIsFetching(true);
+    setButtonStateClearAllOrders("loading"); // Set loading state
+
+    try {
+      await clearOrders(orders);
+      // On success, set success state
+      setButtonStateClearAllOrders("success");
+      setIsFetching(true);
+
+      getWarehouseOwedCost();
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateClearAllOrders("error");
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    }
   };
 
   useFocusEffect(
@@ -119,12 +163,38 @@ const ItemizedBreakdownCard = () => {
   return (
     <View style={container}>
       {orders.length > 0 ? (
-        <Button
-          style={payAllOrderButton}
-          onPress={() => handleClearingAllOrders()}
-        >
-          Pay all outstanding orders
-        </Button>
+        <View style={buttonContainer}>
+          <Button
+            onPress={async () => {
+              if (buttonStateClearAllOrders === "idle") {
+                setButtonStateClearAllOrders("loading");
+                try {
+                  await handleClearingAllOrders();
+                  setButtonStateClearAllOrders("success");
+                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
+                } catch (error) {
+                  setButtonStateClearAllOrders("error");
+                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
+                }
+              }
+            }}
+            style={button}
+          >
+            {buttonStateClearAllOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateClearAllOrders === "success" ? (
+              <>
+                <Text style={buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateClearAllOrders === "error" ? (
+              <>
+                <Text style={buttonText}>Error!</Text>
+              </>
+            ) : (
+              "Pay all outstanding orders"
+            )}
+          </Button>
+        </View>
       ) : null}
 
       <View style={headerWrapper}>
@@ -156,7 +226,7 @@ const ItemizedBreakdownCard = () => {
                       >
                         <View style={textContainer}>
                           <Text style={tableChowDescription}>
-                            {shortenedDescription} :
+                            {shortenedDescription || description} :
                           </Text>
                           <Text style={tableQuantity}>
                             {order.quantity}
@@ -222,14 +292,42 @@ const ItemizedBreakdownCard = () => {
       {orders.length > 0 ? (
         <View style={buttonContainer}>
           <Button
-            onPress={() => handleClearingSelectedOrders()}
+            onPress={async () => {
+              if (
+                buttonStateSelectedOrders === "idle" &&
+                groupValues.length >= 1
+              ) {
+                setButtonStateSelectedOrders("loading");
+                try {
+                  await handleClearingSelectedOrders();
+                  setButtonStateSelectedOrders("success");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+                } catch (error) {
+                  setButtonStateSelectedOrders("error");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+                }
+              }
+            }}
             isDisabled={groupValues.length < 1}
             style={button}
           >
-            Set orders to "Paid"
+            {buttonStateSelectedOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateSelectedOrders === "success" ? (
+              <>
+                <Text style={buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateSelectedOrders === "error" ? (
+              <>
+                <Text style={buttonText}>Error!</Text>
+              </>
+            ) : (
+              "Set orders to 'Paid'"
+            )}
           </Button>
         </View>
       ) : null}
+
       {/* Problem detected here */}
       <View style={totalsContainer}>
         <View style={totalWrapper}>
@@ -391,6 +489,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     maxWidth: "65%", // Set a maximum width for the text
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
   },
 });
 
