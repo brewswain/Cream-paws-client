@@ -484,11 +484,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   textContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     flexWrap: "wrap", // Wrap text if it exceeds the width
-    alignItems: "center",
-    justifyContent: "space-between",
-    maxWidth: "65%", // Set a maximum width for the text
+    justifyContent: "center",
+
+    width: "65%", // Set a maximum width for the text
+    maxWidth: "65%",
   },
   buttonText: {
     color: "white",
