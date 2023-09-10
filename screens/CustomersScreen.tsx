@@ -23,6 +23,11 @@ const CustomersScreen = () => {
 
   const populateCustomersList = async () => {
     const response: Customer[] = await getAllCustomers();
+    // TODO: this logic should be  localised inside of the backend. Let's refactor this later.
+    // The goal is that getAllCustomers() will return an object with 2 fields: customersWithOrders and customersWithoutOrders.
+    // So basically, we'll get response.customersWithOrders and response.customersWithoutOrders. That too can be optimized so that our state
+    // only uses one object and specifies from there, but i like the separation for now as it makes my life easier
+    
     response.sort((customerA, customerB) => {
       if (customerA.name < customerB.name) {
         return -1;
