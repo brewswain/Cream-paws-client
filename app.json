@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "karin-dog-app",
-    "slug": "karin-dog-app",
+    "name": "cream-paws-beta",
+    "slug": "cream-paws-beta",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,13 +12,19 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development"
+        }
+      ]
+    ],
     "updates": {
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/d3c66efb-f87d-44df-a4dc-31cfaec171a5"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.brewswain.karindogapp"
