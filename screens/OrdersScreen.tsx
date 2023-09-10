@@ -19,6 +19,8 @@ import {
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { OrderCard } from "../components";
 import { ScrollView } from "native-base";
+import { useFocusEffect } from "@react-navigation/native";
+import React from "react";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -56,9 +58,12 @@ const OrdersScreen = () => {
 
   // const uuid = uuidv4();
 
-  useEffect(() => {
-    populateData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
+      populateData();
+    }, [])
+  );
 
   const customersArray = customers && customers;
 
