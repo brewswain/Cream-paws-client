@@ -2,16 +2,20 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteCustomer } from "../../api";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Button, Modal } from "native-base";
 
 interface CustomerCardProps {
   customer: Customer;
   populateCustomersList: () => void;
+  setIsDeleted: Dispatch<SetStateAction<boolean | null>>
+  isDeleted: boolean | null
 }
 const CustomerCard = ({
   customer,
   populateCustomersList,
+  isDeleted,
+  setIsDeleted
 }: CustomerCardProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
@@ -44,15 +48,27 @@ const CustomerCard = ({
     navigation.navigate("CustomerDetails", customer);
   };
 
-  const handleDelete = (id: string) => {
-    deleteCustomer(id);
-    populateCustomersList();
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleted(false)
+      await deleteCustomer(id);
+      setIsDeleted(true)
+      populateCustomersList();
+    } catch (error) {
+      console.error(error)
+    }
   };
 
   const openOrdersArray = customer.orders?.filter(
     (order) => order.payment_made === false
   );
 
+
+
+
+  useEffect(() => { }, [
+
+  ])
   return (
     <>
       <Pressable onPress={() => handleClick(customer.id)}>
