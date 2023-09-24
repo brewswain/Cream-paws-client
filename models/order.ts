@@ -8,23 +8,12 @@ interface Order {
   warehouse_paid: boolean;
   customer_id: string;
   chow_id: string;
-  id?: string;
+  id: string;
   _id?: string;
   version?: number;
 }
 
-interface OrderWithChowDetails {
-  id: string;
-  version: number;
-  delivery_date: string;
-  payment_made: boolean;
-  payment_date: string;
-  is_delivery: boolean;
-  quantity: number;
-  driver_paid: boolean;
-  warehouse_paid: boolean;
-  customer_id: string;
-  chow_id: string;
+interface OrderWithChowDetails extends Order {
   chow_details: {
     brand: string;
     target_group: string;
