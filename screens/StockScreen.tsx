@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Text, View, Pressable, StyleSheet, ScrollView } from "react-native";
 
-import Icon from "react-native-vector-icons/AntDesign";
+import Icon from "@expo/vector-icons/AntDesign";
 
 import { getAllChow } from "../api/routes/stock";
 import CreateChowModal from "../components/modals/CreateChowModal";

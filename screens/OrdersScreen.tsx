@@ -5,7 +5,7 @@ import "react-native-get-random-values";
 import Dinero from "dinero.js";
 import { v4 as uuidv4 } from "uuid";
 
-import Icon from "react-native-vector-icons/AntDesign";
+import Icon from "@expo/vector-icons/AntDesign";
 
 import {
   createOrder,

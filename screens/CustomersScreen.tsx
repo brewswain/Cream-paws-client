@@ -2,7 +2,7 @@ import axios from "axios";
 import { ScrollView } from "native-base";
 import { useEffect, useState } from "react";
 import { Button, Text, View, StyleSheet, Pressable } from "react-native";
-import Icon from "react-native-vector-icons/AntDesign";
+import Icon from "@expo/vector-icons/AntDesign";
 
 import {
   createCustomer,
@@ -27,16 +27,7 @@ const CustomersScreen = () => {
     // The goal is that getAllCustomers() will return an object with 2 fields: customersWithOrders and customersWithoutOrders.
     // So basically, we'll get response.customersWithOrders and response.customersWithoutOrders. That too can be optimized so that our state
     // only uses one object and specifies from there, but i like the separation for now as it makes my life easier
-    
-    response.sort((customerA, customerB) => {
-      if (customerA.name < customerB.name) {
-        return -1;
-      }
-      if (customerA.name > customerB.name) {
-        return 1;
-      }
-      return 0;
-    });
+
     const mappedCustomersWithOrders = response.filter((customer) => {
       if (customer.orders) {
         return customer.orders.some((order) => order.payment_made === false);
@@ -67,7 +58,11 @@ const CustomersScreen = () => {
               key={customer.id}
               style={index === 0 ? { marginTop: 12 } : null}
             >
-              <CustomerCard customer={customer} key={customer.id} />
+              <CustomerCard
+                customer={customer}
+                key={customer.id}
+                populateCustomersList={populateCustomersList}
+              />
             </View>
           ))}
         {customersWithoutOpenOrders &&
@@ -76,7 +71,11 @@ const CustomersScreen = () => {
               key={customer.id}
               style={index === 0 ? { marginTop: 12 } : null}
             >
-              <CustomerCard customer={customer} key={customer.id} />
+              <CustomerCard
+                customer={customer}
+                key={customer.id}
+                populateCustomersList={populateCustomersList}
+              />
             </View>
           ))}
         <CreateCustomerModal

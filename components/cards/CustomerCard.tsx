@@ -1,10 +1,20 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { deleteCustomer } from "../../api";
+import { useState } from "react";
+import { Button, Modal } from "native-base";
 
 interface CustomerCardProps {
   customer: Customer;
+  populateCustomersList: () => void;
 }
-const CustomerCard = ({ customer }: CustomerCardProps) => {
+const CustomerCard = ({
+  customer,
+  populateCustomersList,
+}: CustomerCardProps) => {
+  const [showModal, setShowModal] = useState<boolean>(false);
+
   const { name } = customer;
   const {
     openOrdersContainer,
@@ -34,33 +44,69 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
     navigation.navigate("CustomerDetails", customer);
   };
 
+  const handleDelete = (id: string) => {
+    deleteCustomer(id);
+    populateCustomersList();
+  };
+
   const openOrdersArray = customer.orders?.filter(
     (order) => order.payment_made === false
   );
 
   return (
-    <Pressable onPress={() => handleClick(customer.id)}>
-      {customer.orders && customer.orders.length > 0 && (
-        <View style={openOrdersContainer}>
-          <View style={detailsContainer}>
-            <Text style={clientNameHeader}>{name}</Text>
+    <>
+      <Pressable onPress={() => handleClick(customer.id)}>
+        {customer.orders && customer.orders.length > 0 && (
+          <View style={openOrdersContainer}>
+            <View style={detailsContainer}>
+              <Text style={clientNameHeader}>{name}</Text>
+            </View>
+            <View style={priceContainer}>
+              <Pressable onPress={() => setShowModal(true)}>
+                <Icon
+                  name="trash-o"
+                  style={{ color: "white", marginRight: 8, zIndex: 20 }}
+                  size={20}
+                />
+              </Pressable>
+              <Text style={price}>
+                {` Open Orders:${openOrdersArray?.length}`}
+              </Text>
+            </View>
           </View>
-          <View style={priceContainer}>
-            <Text style={price}>
-              {` Open Orders:${openOrdersArray?.length}`}
-            </Text>
-          </View>
-        </View>
-      )}
+        )}
 
-      {customer.orders && customer.orders?.length < 1 && (
-        <View style={noOrdersContainer}>
-          <View style={detailsContainer}>
-            <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
+        {customer.orders && customer.orders?.length < 1 && (
+          <View style={noOrdersContainer}>
+            <View style={detailsContainer}>
+              <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
+            </View>
+            <Pressable onPress={() => setShowModal(true)}>
+              <Icon name="trash-o" size={20} style={{ marginRight: 20 }} />
+            </Pressable>
           </View>
-        </View>
-      )}
-    </Pressable>
+        )}
+      </Pressable>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+        <Modal.Content>
+          <Modal.CloseButton />
+          <Modal.Header>Delete Confirmation</Modal.Header>
+          <Modal.Body>
+            <Text>
+              Please confirm that you wish to delete this customer -
+              {customer.name}.
+            </Text>
+            <Button
+              colorScheme="danger"
+              style={{ marginTop: 60, width: 100, alignSelf: "center" }}
+              onPress={() => handleDelete(customer.id)}
+            >
+              Delete
+            </Button>
+          </Modal.Body>
+        </Modal.Content>
+      </Modal>
+    </>
   );
 };
 
@@ -83,6 +129,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignSelf: "center",
+    alignItems: "center",
     borderRadius: 4,
     width: "90%",
     backgroundColor: "#BFBFBF",
@@ -107,6 +154,7 @@ const styles = StyleSheet.create({
     display: "flex",
     alignSelf: "center",
     marginRight: 8,
+    flexDirection: "row",
   },
   price: {
     color: "#14F800",

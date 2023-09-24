@@ -16,6 +16,7 @@ export const createCustomer = async (name: string, pets: any[] = []) => {
 
 export const deleteCustomer = async (id: string) => {
   try {
+    console.log({ id });
     await axiosInstance.delete(`/customer/${id}`);
   } catch (error) {
     // TODO: use toasts instead of alerts

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "cream-paws-beta",
-    "slug": "cream-paws-beta",
+    "name": "karin-dog-app",
+    "slug": "karin-dog-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,14 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-      [
-        "onesignal-expo-plugin",
-        {
-          "mode": "development"
-        }
-      ]
-    ],
+    "plugins": [],
     "updates": {
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/d3c66efb-f87d-44df-a4dc-31cfaec171a5"
@@ -30,6 +23,11 @@
       "bundleIdentifier": "com.brewswain.karindogapp"
     },
     "android": {
+      "config": {
+        "oneSignal": {
+          "appId": "07eb2cd7-ddd5-4c36-adb5-add45d605219"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

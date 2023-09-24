@@ -342,10 +342,10 @@ const CreateOrderModal = ({
             value={groupValues}
             accessibilityLabel="Choose order options"
           >
-            <Checkbox value="payment_made">Payment Made</Checkbox>
-            <Checkbox value="is_delivery">Is delivery</Checkbox>
+            <Checkbox value="payment_made">Has client Paid for order?</Checkbox>
             <Checkbox value="driver_paid">Driver Paid?</Checkbox>
             <Checkbox value="warehouse_paid">Warehouse Paid?</Checkbox>
+            <Checkbox value="is_delivery">Is This a delivery</Checkbox>
           </Checkbox.Group>
 
           <FormControl.Label>Chow Details</FormControl.Label>
