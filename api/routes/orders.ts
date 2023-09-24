@@ -36,8 +36,20 @@ export const deleteOrder = async (id: string) => {
     const response = await axiosInstance.delete(`/orders/${id}`);
     return response.data;
   } catch (error) {
-    alert(error);
+    console.error(error);
   }
+};
+
+export const deleteCustomersOrder = async (
+  orderId: string,
+  customerId: string
+) => {
+  try {
+    const response = await axiosInstance.delete("/orders/customer", {
+      data: { customerId, orderId },
+    });
+    return response.data;
+  } catch (error) {}
 };
 
 export const getAllOrders = async () => {
