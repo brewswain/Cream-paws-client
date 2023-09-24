@@ -27,6 +27,7 @@ const OrdersScreen = () => {
   const [chow, setChow] = useState<Chow[]>();
   const [orders, setOrders] = useState<Order[]>();
   const [customers, setCustomers] = useState<Customer[]>();
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
   const { orderHeader, orderContainer, totalOrderDetails } = styles;
 
@@ -56,13 +57,11 @@ const OrdersScreen = () => {
     setShowModal(true);
   };
 
-  // const uuid = uuidv4();
-
   useFocusEffect(
     React.useCallback(() => {
       // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
       populateData();
-    }, [])
+    }, [isDeleted])
   );
 
   const customersArray = customers && customers;
@@ -83,12 +82,16 @@ const OrdersScreen = () => {
                       .map((order, index) => {
                         return (
                           <View
-                            key={order.id + index}
+                            key={order.id}
                             style={index === 0 ? { paddingTop: 20 } : null}
                           >
                             {order ? (
                               <OrderCard
+                                isDeleted={isDeleted}
+                                setIsDeleted={setIsDeleted}
+                                populateData={populateData}
                                 clientName={customer.name}
+                                customerId={customer.id}
                                 order={order}
                               />
                             ) : null}
@@ -136,6 +139,7 @@ const styles = StyleSheet.create({
   orderContainer: {
     display: "flex",
     flexDirection: "column",
+    width: "100%",
   },
   orderHeader: {
     display: "flex",
