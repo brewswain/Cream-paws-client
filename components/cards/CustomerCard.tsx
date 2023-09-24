@@ -4,18 +4,19 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteCustomer } from "../../api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Button, Modal } from "native-base";
+import DeleteModal from "../modals/DeleteModal";
 
 interface CustomerCardProps {
   customer: Customer;
   populateCustomersList: () => void;
-  setIsDeleted: Dispatch<SetStateAction<boolean | null>>
-  isDeleted: boolean | null
+  setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
+  isDeleted: boolean | null;
 }
 const CustomerCard = ({
   customer,
   populateCustomersList,
   isDeleted,
-  setIsDeleted
+  setIsDeleted,
 }: CustomerCardProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
@@ -50,12 +51,12 @@ const CustomerCard = ({
 
   const handleDelete = async (id: string) => {
     try {
-      setIsDeleted(false)
+      setIsDeleted(false);
       await deleteCustomer(id);
-      setIsDeleted(true)
+      setIsDeleted(true);
       populateCustomersList();
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   };
 
@@ -63,12 +64,7 @@ const CustomerCard = ({
     (order) => order.payment_made === false
   );
 
-
-
-
-  useEffect(() => { }, [
-
-  ])
+  useEffect(() => {}, []);
   return (
     <>
       <Pressable onPress={() => handleClick(customer.id)}>
@@ -103,25 +99,13 @@ const CustomerCard = ({
           </View>
         )}
       </Pressable>
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Content>
-          <Modal.CloseButton />
-          <Modal.Header>Delete Confirmation</Modal.Header>
-          <Modal.Body>
-            <Text>
-              Please confirm that you wish to delete this customer -
-              {customer.name}.
-            </Text>
-            <Button
-              colorScheme="danger"
-              style={{ marginTop: 60, width: 100, alignSelf: "center" }}
-              onPress={() => handleDelete(customer.id)}
-            >
-              Delete
-            </Button>
-          </Modal.Body>
-        </Modal.Content>
-      </Modal>
+      <DeleteModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        handlePress={handleDelete}
+        deletionId={customer.id}
+        message={` Please confirm that you wish to delete this customer - ${customer.name}.`}
+      />
     </>
   );
 };
