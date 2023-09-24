@@ -12,6 +12,8 @@ import Collapsible from "react-native-collapsible";
 
 import { getAllOrders, findCustomer } from "../../api";
 import { getTodaysOrders } from "../../utils";
+import { Divider } from "native-base";
+import Dinero from "dinero.js";
 
 interface ChowInfo {
   quantity: number;
@@ -31,7 +33,14 @@ const TodayAtaGlanceCard = () => {
   const [customers, setCustomers] = useState<Customer[]>();
   const [chowInfo, setChowInfo] = useState<ChowInfo[]>([]);
 
-  const { container, highlight, header, subHeader, deemphasis } = styles;
+  const {
+    container,
+    highlight,
+    header,
+    subHeader,
+    deemphasis,
+    totalCostContainer,
+  } = styles;
   const navigation = useNavigation();
 
   const handleClick = (customer: Customer) => {
@@ -45,7 +54,7 @@ const TodayAtaGlanceCard = () => {
       setCustomers([]);
       setChowInfo([]);
     } else {
-      setOrders(filteredOutstandingOrders);
+      filteredOutstandingOrders && setOrders(filteredOutstandingOrders);
 
       const customerList = await Promise.all(
         filteredOutstandingOrders.map(
@@ -57,9 +66,18 @@ const TodayAtaGlanceCard = () => {
           }
         )
       );
-      setCustomers(
-        customerList.filter((customer) => customer !== undefined) as Customer[]
-      );
+
+      const uniqueCustomerIds: Record<string, boolean> = {}; // Type the object as Record<string, boolean>
+
+      const filteredCustomers = customerList.filter((customer) => {
+        if (customer && !uniqueCustomerIds[customer.id]) {
+          uniqueCustomerIds[customer.id] = true; // Mark the customer ID as seen
+          return true; // Include the customer in the filtered list
+        }
+        return false; // Exclude duplicate customers
+      }) as Customer[];
+
+      setCustomers(filteredCustomers);
 
       const customerChowArray = filteredOutstandingOrders.map((order) => ({
         quantity: order?.quantity ?? 0,
@@ -93,6 +111,31 @@ const TodayAtaGlanceCard = () => {
     }
   };
 
+  const totalBagsOfChow = chowInfo.reduce(
+    (total, chow) => total + chow.quantity,
+    0
+  );
+
+  const mappedCostArray =
+    orders
+      .filter((order) => order.payment_made === false)
+      .map((order) => order.chow_details.retail_price * order.quantity) ||
+    undefined;
+
+  const subTotal = Math.round(
+    mappedCostArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
+
+  const customerOutstandingOrders = (customer: Customer) => {
+    const totalOrders = customer.orders?.filter(
+      (order) => order.payment_made === false
+    );
+    return totalOrders?.length;
+  };
+
   useFocusEffect(
     useCallback(() => {
       let isFetching = true;
@@ -118,71 +161,97 @@ const TodayAtaGlanceCard = () => {
 
   return (
     <View style={container}>
-      <ScrollView>
-        <Text style={header}>Today at a Glance</Text>
+      <ScrollView style={{ flex: 1 }}>
         <View>
-          {orders && orders.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => setOrderCollapsed(!orderCollapsed)}
-            >
-              <Text style={highlight}>
-                {orders.length}{" "}
-                <Text style={subHeader}>
-                  {orders.length > 1 ? "orders" : "order"}
+          <Text style={header}>Today at a Glance</Text>
+          <View>
+            {orders && orders.length > 0 ? (
+              <TouchableOpacity
+                onPress={() => setOrderCollapsed(!orderCollapsed)}
+              >
+                <Text style={highlight}>
+                  {orders.length}{" "}
+                  <Text style={subHeader}>
+                    {orders.length > 1 ? "orders" : "order"}
+                  </Text>
                 </Text>
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={subHeader}>No orders left!</Text>
-          )}
-          <Collapsible collapsed={orderCollapsed}>
-            {customers &&
-              customers.length > 0 &&
-              customers.map((customer, index) => (
-                <TouchableOpacity
-                  key={`${customer.id}, index: ${index}`}
-                  onPress={() => handleClick(customer)}
-                >
-                  <Text style={deemphasis}>{customer.name}</Text>
-                </TouchableOpacity>
-              ))}
-          </Collapsible>
-        </View>
-
-        <View>
-          {chowInfo && chowInfo.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => setStockCollapsed(!stockCollapsed)}
-            >
-              <Text style={highlight}>
-                {chowInfo.reduce((total, chow) => total + chow.quantity, 0)}{" "}
-                <Text style={subHeader}>{`${
-                  chowInfo.length > 1 ? "bags" : "bag"
-                } of Chow`}</Text>
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={subHeader}>No chow to be delivered</Text>
-          )}
-
-          <Collapsible
-            collapsed={stockCollapsed}
-            style={{ display: "flex", flexDirection: "column" }}
-          >
-            {chowInfo.map((chow, index) => (
-              <View key={index}>
-                {chow && (
-                  <View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={subHeader}>No orders left!</Text>
+            )}
+            <Collapsible collapsed={orderCollapsed}>
+              {customers &&
+                customers.length > 0 &&
+                customers.map((customer, index) => (
+                  <TouchableOpacity
+                    key={`${customer.id}, index: ${index}`}
+                    onPress={() => handleClick(customer)}
+                  >
                     <Text style={deemphasis}>
-                      {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
+                      {customer.name}
+                      {customer.orders!.length > 1
+                        ? ` x ${customerOutstandingOrders(customer)}`
+                        : null}
                     </Text>
-                  </View>
-                )}
-              </View>
-            ))}
-          </Collapsible>
+                  </TouchableOpacity>
+                ))}
+            </Collapsible>
+          </View>
+
+          <View>
+            {chowInfo && chowInfo.length > 0 ? (
+              <TouchableOpacity
+                onPress={() => setStockCollapsed(!stockCollapsed)}
+              >
+                <Text style={highlight}>
+                  {totalBagsOfChow} 
+                  <Text style={subHeader}>{`${
+                    chowInfo.length > 1 || totalBagsOfChow > 1 ? "bags" : "bag"
+                  } of Chow`}</Text>
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={subHeader}>No chow to be delivered</Text>
+            )}
+
+            <Collapsible
+              collapsed={stockCollapsed}
+              style={{ display: "flex", flexDirection: "column" }}
+            >
+              {chowInfo.map((chow, index) => (
+                <View key={index}>
+                  {chow && (
+                    <View>
+                      <Text style={deemphasis}>
+                        {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </Collapsible>
+          </View>
         </View>
       </ScrollView>
+      <View style={{ paddingBottom: 10, alignItems: "center" }}>
+        <Divider style={{ marginTop: 10, marginBottom: 20 }} />
+        <View style={totalCostContainer}>
+          <Text style={subHeader}>Total Cost:</Text>
+          <Text style={subHeader}>
+            {subTotal
+              ? Dinero({
+                  amount: subTotal || 0,
+                  precision: 2,
+                }).toFormat("$0,0.00")
+              : null}
+          </Text>
+        </View>
+        <Text
+          style={[deemphasis, { alignSelf: "flex-start", paddingLeft: 20 }]}
+        >
+          Vat inclusive
+        </Text>
+      </View>
     </View>
   );
 };
@@ -211,6 +280,11 @@ const styles = StyleSheet.create({
     color: "#BCBCBC",
     fontSize: 16,
     paddingLeft: 26,
+  },
+  totalCostContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
   },
 });
 
