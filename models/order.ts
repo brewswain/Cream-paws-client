@@ -13,6 +13,8 @@ interface Order {
   version?: number;
 }
 
+type firstTimeOrder = Omit<Order, "id">;
+
 interface OrderWithChowDetails extends Order {
   chow_details: {
     brand: string;
