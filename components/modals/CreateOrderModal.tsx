@@ -96,7 +96,7 @@ const CreateOrderModal = ({
   };
 
   const addField = () => {
-    let newField = { chow_id: "", quantity: 1 };
+    let newField = { chow_id: "", quantity: "1" };
     setChowInputs([...chowInputs, newField]);
   };
 
@@ -379,8 +379,8 @@ const CreateOrderModal = ({
                   onChange={(event) =>
                     handleQuantityChange(event, index, "quantity")
                   }
-                  defaultValue={chowInputs[index].quantity}
-                  value={field.quantity}
+                  defaultValue={chowInputs[index].quantity.toString()}
+                  value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
                 <View style={buttonContainer}>

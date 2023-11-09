@@ -41,19 +41,21 @@ const StockScreen = () => {
       <ScrollView>
         {unpaidChow.length > 0 ? (
           <View>
-            {unpaidChow.map((chow) => (
-              <View style={unpaidChowCard}>
-                <Text
-                  style={{ color: "white" }}
-                >{`${chow.brand} - ${chow.flavour}`}</Text>
-              </View>
-            ))}
+            {unpaidChow.map((chow) => {
+              return (
+                <View style={unpaidChowCard} key={`unpaid-${chow.id}`}>
+                  <Text
+                    style={{ color: "white" }}
+                  >{`${chow.brand} - ${chow.flavour}`}</Text>
+                </View>
+              );
+            })}
           </View>
         ) : null}
         {customerReservedChow.length > 0 ? (
           <View>
             {customerReservedChow.map((chow) => (
-              <View style={paidChowCard}>
+              <View style={paidChowCard} key={`paid-${chow.id}`}>
                 <Text
                   style={{ color: "white" }}
                 >{`${chow.brand} - ${chow.flavour}`}</Text>

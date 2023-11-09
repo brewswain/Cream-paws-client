@@ -1,6 +1,6 @@
 import { axiosInstance } from "../api";
 
-export const createOrder = async (order: Order) => {
+export const createOrder = async (order: firstTimeOrder) => {
   const {
     delivery_date,
     payment_made,
