@@ -3,7 +3,7 @@ import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 import "react-native-get-random-values";
 import Dinero from "dinero.js";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuid } from "uuid";
 
 import Icon from "@expo/vector-icons/AntDesign";
 
@@ -82,7 +82,11 @@ const OrdersScreen = () => {
                       .map((order, index) => {
                         return (
                           <View
-                            key={order.id}
+                            key={
+                              order._id
+                                ? order._id + index
+                                : `order id not found - ${index}`
+                            }
                             style={index === 0 ? { paddingTop: 20 } : null}
                           >
                             {order ? (
