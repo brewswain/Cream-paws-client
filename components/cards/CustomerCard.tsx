@@ -74,16 +74,16 @@ const CustomerCard = ({
               <Text style={clientNameHeader}>{name}</Text>
             </View>
             <View style={priceContainer}>
-              <Pressable onPress={() => setShowModal(true)}>
-                <Icon
-                  name="trash-o"
-                  style={{ color: "white", marginRight: 8, zIndex: 20 }}
-                  size={20}
-                />
-              </Pressable>
               <Text style={price}>
                 {` Open Orders:${openOrdersArray?.length}`}
               </Text>
+              <Pressable onPress={() => setShowModal(true)}>
+                <Icon
+                  name="trash-o"
+                  style={{ color: "white", marginLeft: 8, zIndex: 20 }}
+                  size={20}
+                />
+              </Pressable>
             </View>
           </View>
         )}
