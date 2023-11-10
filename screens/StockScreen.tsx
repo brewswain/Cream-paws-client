@@ -5,6 +5,7 @@ import Icon from "@expo/vector-icons/AntDesign";
 
 import { getAllChow } from "../api/routes/stock";
 import CreateChowModal from "../components/modals/CreateChowModal";
+import ChowCard from "../components/cards/ChowCard";
 
 const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -12,6 +13,7 @@ const StockScreen = () => {
   const [chow, setChow] = useState<Chow[]>([]);
   const [customerReservedChow, setCustomerReservedChow] = useState<Chow[]>([]);
   const [unpaidChow, setUnpaidChow] = useState<Chow[]>([]);
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
   const { container, buttonContainer, unpaidChowCard, paidChowCard } = styles;
 
@@ -36,6 +38,14 @@ const StockScreen = () => {
     populateChowList();
   }, []);
 
+  //   <Pressable onPress={() => setShowModal(true)}>
+  //   <Icon
+  //     name="trash-o"
+  //     style={{ color: "white", marginLeft: 8, zIndex: 20 }}
+  //     size={20}
+  //   />
+  // </Pressable>
+
   return (
     <View style={container}>
       <ScrollView>
@@ -43,11 +53,14 @@ const StockScreen = () => {
           <View>
             {unpaidChow.map((chow) => {
               return (
-                <View style={unpaidChowCard} key={`unpaid-${chow.id}`}>
-                  <Text
-                    style={{ color: "white" }}
-                  >{`${chow.brand} - ${chow.flavour}`}</Text>
-                </View>
+                <ChowCard
+                  unpaid
+                  populateStockList={populateChowList}
+                  chow={chow}
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                  key={`${chow.id} - unpaid`}
+                />
               );
             })}
           </View>
@@ -55,11 +68,14 @@ const StockScreen = () => {
         {customerReservedChow.length > 0 ? (
           <View>
             {customerReservedChow.map((chow) => (
-              <View style={paidChowCard} key={`paid-${chow.id}`}>
-                <Text
-                  style={{ color: "white" }}
-                >{`${chow.brand} - ${chow.flavour}`}</Text>
-              </View>
+              <ChowCard
+                unpaid={false}
+                populateStockList={populateChowList}
+                chow={chow}
+                isDeleted={isDeleted}
+                setIsDeleted={setIsDeleted}
+                key={`${chow.id} - paid`}
+              />
             ))}
           </View>
         ) : null}

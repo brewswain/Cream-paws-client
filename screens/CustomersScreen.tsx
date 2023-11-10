@@ -20,8 +20,7 @@ const CustomersScreen = () => {
   const [customersWithoutOpenOrders, setCustomersWithoutOpenOrders] =
     useState<Customer[]>();
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [isDeleted, setIsDeleted] = useState<boolean | null>(null)
-
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
   const populateCustomersList = async () => {
     const response: Customer[] = await getAllCustomers();
@@ -50,7 +49,6 @@ const CustomersScreen = () => {
   useEffect(() => {
     populateCustomersList();
   }, [isDeleted]);
-
 
   return (
     <View style={styles.container}>
