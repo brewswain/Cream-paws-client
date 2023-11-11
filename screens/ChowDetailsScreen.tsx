@@ -15,7 +15,8 @@ interface ChowDetailsProps {
 }
 
 const ChowDetailsScreen = ({ navigation, route }: ChowDetailsProps) => {
-  const {} = route.params;
+  const { } = route.params;
+  console.log(route.params)
 
   return (
     <View>
