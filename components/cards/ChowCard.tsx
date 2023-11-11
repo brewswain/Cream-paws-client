@@ -4,6 +4,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteChow } from "../../api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DeleteModal from "../modals/DeleteModal";
+import SettingsModal from "../modals/SettingsModal";
 
 interface ChowCardProps {
   chow: Chow;
@@ -26,12 +27,8 @@ const ChowCard = ({
 
   const { buttonContainer, unpaidChowCard, paidChowCard, icon } = styles;
 
-  const handleClick = (id: string | undefined) => {
-    if (!id) {
-      console.error("No id provided");
-    }
-
-    console.log("navigating to ChowDetails");
+  const viewDetails = () => {
+    navigation.navigate("ChowDetails", chow);
   };
 
   const handleDelete = async (id: string) => {
@@ -47,7 +44,7 @@ const ChowCard = ({
 
   return (
     <>
-      <Pressable onPress={() => handleClick(chow.id)}>
+      <Pressable onPress={() => viewDetails()}>
         {unpaid ? (
           <View>
             <View style={unpaidChowCard} key={`unpaid-${chow.id}`}>
@@ -72,12 +69,11 @@ const ChowCard = ({
           </View>
         )}
       </Pressable>
-      <DeleteModal
+      <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
         handlePress={handleDelete}
         deletionId={chow.id}
-        message={` Please confirm that you wish to delete this item - ${chow.brand}: ${chow.flavour}. - ${chow.size}${chow.unit}`}
       />
     </>
   );

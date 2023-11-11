@@ -7,6 +7,8 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import DeleteModal from "../modals/DeleteModal";
 import { deleteOrder } from "../../api";
 import { deleteCustomersOrder } from "../../api/routes/orders";
+import SettingsModal from "../modals/SettingsModal";
+import { useNavigation } from "@react-navigation/native";
 
 interface OrderCardProps {
   clientName: string;
@@ -27,6 +29,8 @@ const OrderCard = ({
 }: OrderCardProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
+  const navigation = useNavigation();
+
   const {
     container,
     detailsContainer,
@@ -36,6 +40,10 @@ const OrderCard = ({
     price,
     flexRow,
   } = styles;
+
+  const viewDetails = () => {
+    navigation.navigate("OrderDetails", order);
+  };
 
   const handleDelete = async (orderId: string, customerId: string) => {
     try {
@@ -52,7 +60,7 @@ const OrderCard = ({
   return (
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
-      <View style={flexRow}>
+      <Pressable style={flexRow} onPress={() => viewDetails()}>
         <View>
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{clientName}</Text>
@@ -78,13 +86,14 @@ const OrderCard = ({
             style={{ marginRight: 20, color: "white" }}
           />
         </Pressable>
-      </View>
-      <DeleteModal
+      </Pressable>
+      <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={() => handleDelete(order.id, customerId)}
+        handlePress={() =>
+          handleDelete(order._id || "id not found", customerId)
+        }
         deletionId={order._id}
-        message={` Please confirm that you wish to delete this order.`}
       />
     </View>
   );

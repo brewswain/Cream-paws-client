@@ -38,14 +38,6 @@ const StockScreen = () => {
     populateChowList();
   }, []);
 
-  //   <Pressable onPress={() => setShowModal(true)}>
-  //   <Icon
-  //     name="trash-o"
-  //     style={{ color: "white", marginLeft: 8, zIndex: 20 }}
-  //     size={20}
-  //   />
-  // </Pressable>
-
   return (
     <View style={container}>
       <ScrollView>

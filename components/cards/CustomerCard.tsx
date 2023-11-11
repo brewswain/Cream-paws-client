@@ -5,6 +5,7 @@ import { deleteCustomer } from "../../api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Button, Modal } from "native-base";
 import DeleteModal from "../modals/DeleteModal";
+import SettingsModal from "../modals/SettingsModal";
 
 interface CustomerCardProps {
   customer: Customer;
@@ -45,7 +46,7 @@ const CustomerCard = ({
   //    }).start();
   // };
 
-  const handleClick = (id: string) => {
+  const viewDetails = () => {
     navigation.navigate("CustomerDetails", customer);
   };
 
@@ -67,7 +68,7 @@ const CustomerCard = ({
   useEffect(() => {}, []);
   return (
     <>
-      <Pressable onPress={() => handleClick(customer.id)}>
+      <Pressable onPress={() => viewDetails()}>
         {customer.orders && customer.orders.length > 0 && (
           <View style={openOrdersContainer}>
             <View style={detailsContainer}>
@@ -94,17 +95,24 @@ const CustomerCard = ({
               <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
             </View>
             <Pressable onPress={() => setShowModal(true)}>
-              <Icon name="trash-o" size={20} style={{ marginRight: 20 }} />
+              <Icon name="ellipsis-h" size={20} style={{ padding: 12 }} />
             </Pressable>
           </View>
         )}
       </Pressable>
-      <DeleteModal
+      {/* <DeleteModal
         showModal={showModal}
         setShowModal={setShowModal}
         handlePress={handleDelete}
         deletionId={customer.id}
         message={` Please confirm that you wish to delete this customer - ${customer.name}.`}
+      />
+       */}
+      <SettingsModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        handlePress={handleDelete}
+        deletionId={customer.id}
       />
     </>
   );
