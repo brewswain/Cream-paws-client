@@ -38,11 +38,9 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
   const { height, width } = useWindowDimensions();
 
-  // const TEST_PETS_EXIST =
-  //    testCustomerDetails.pets && testCustomerDetails.pets.length > 0;
-  // const TEST_ORDERS_EXIST =
-  //    testCustomerDetails.orders && testCustomerDetails.orders.length > 0;
-  const petsExist = pets && pets.length > 0;
+  console.log({ pets });
+
+  const petsExist = pets.length > 0;
   const ordersExist = orders && orders.length > 0;
   const outstandingOrders = orders.filter(
     (order: Order) => order.payment_made === false
