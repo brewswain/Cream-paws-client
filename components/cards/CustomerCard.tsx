@@ -79,11 +79,7 @@ const CustomerCard = ({
                 {` Open Orders:${openOrdersArray?.length}`}
               </Text>
               <Pressable onPress={() => setShowModal(true)}>
-                <Icon
-                  name="trash-o"
-                  style={{ color: "white", marginLeft: 8, zIndex: 20 }}
-                  size={20}
-                />
+                <Icon name="ellipsis-h" size={20} style={{ marginLeft: 14 }} />
               </Pressable>
             </View>
           </View>
@@ -100,14 +96,6 @@ const CustomerCard = ({
           </View>
         )}
       </Pressable>
-      {/* <DeleteModal
-        showModal={showModal}
-        setShowModal={setShowModal}
-        handlePress={handleDelete}
-        deletionId={customer.id}
-        message={` Please confirm that you wish to delete this customer - ${customer.name}.`}
-      />
-       */}
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}

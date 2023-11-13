@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Modal, Button } from "native-base";
 
 import IonicIcon from "@expo/vector-icons/Ionicons";
@@ -28,8 +28,13 @@ const SettingsModal = ({
     }
   };
 
+  const handleClose = () => {
+    setShowModal(false);
+    setShowConfirmationMessage(false);
+  };
+
   return (
-    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+    <Modal isOpen={showModal} onClose={() => handleClose()}>
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header style={{ alignSelf: "center" }}>
@@ -54,29 +59,19 @@ const SettingsModal = ({
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
               {!showConfirmationMessage ? (
-                <>
+                <Pressable
+                  style={{ flexDirection: "row" }}
+                  onPress={() => setShowConfirmationMessage(true)}
+                >
                   <Text style={{ fontSize: 20 }}>Delete</Text>
                   <MaterialIcon
                     name="delete-outline"
                     size={26}
                     style={{ paddingLeft: 20 }}
-                    onPress={() => setShowConfirmationMessage(true)}
-                    // onPress={() => handleDelete(deletionId)}
                   />
-                </>
+                </Pressable>
               ) : null}
-              {/* <Button
-              colorScheme="danger"
-              style={{
-                marginTop: 60,
-                marginRight: 20,
-                width: 100,
-                alignSelf: "flex-end",
-              }}
-              onPress={() => checkForId(deletionId)}
-            >
-              Delete
-            </Button> */}
+
               {showConfirmationMessage ? (
                 <View style={{ width: "100%", alignItems: "center" }}>
                   <Text style={{ textAlign: "center" }}>

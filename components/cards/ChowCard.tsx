@@ -52,7 +52,7 @@ const ChowCard = ({
                 style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
               >{`${chow.brand} - ${chow.flavour}`}</Text>
               <Pressable onPress={() => setShowModal(true)}>
-                <Icon name="trash-o" size={20} style={icon} />
+                <Icon name="ellipsis-h" size={20} style={icon} />
               </Pressable>
             </View>
           </View>
@@ -63,7 +63,7 @@ const ChowCard = ({
                 style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
               >{`${chow.brand} - ${chow.flavour}`}</Text>
               <Pressable onPress={() => setShowModal(true)}>
-                <Icon name="trash-o" size={20} style={icon} />
+                <Icon name="ellipsis-h" size={20} style={icon} />
               </Pressable>
             </View>
           </View>

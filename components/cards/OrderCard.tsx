@@ -79,11 +79,11 @@ const OrderCard = ({
             </Text>
           </View>
         </View>
-        <Pressable style={{ marginTop: 8 }} onPress={() => setShowModal(true)}>
+        <Pressable onPress={() => setShowModal(true)}>
           <Icon
-            name="trash-o"
+            name="ellipsis-h"
             size={20}
-            style={{ marginRight: 20, color: "white" }}
+            style={{ padding: 12, color: "white" }}
           />
         </Pressable>
       </Pressable>
@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
   detailsContainer: {
     display: "flex",
