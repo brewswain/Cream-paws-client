@@ -27,7 +27,7 @@ export type RootStackParamList = {
   Finance: undefined;
   Auth: undefined;
   CustomerDetails: Customer;
-  OrderDetails: Order;
+  OrderDetails: OrderDetails;
   ChowDetails: Chow;
 };
 
@@ -44,7 +44,7 @@ export type RootTabParamList = {
   Finance: undefined;
   Auth: undefined;
   CustomerDetails: Customer;
-  OrderDetails: Order;
+  OrderDetails: OrderDetails;
   ChowDetails: Chow;
 };
 
