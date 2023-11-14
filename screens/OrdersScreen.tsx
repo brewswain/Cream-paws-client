@@ -94,7 +94,7 @@ const OrdersScreen = () => {
                                 isDeleted={isDeleted}
                                 setIsDeleted={setIsDeleted}
                                 populateData={populateData}
-                                clientName={customer.name}
+                                client_name={customer.name}
                                 customerId={customer.id}
                                 order={order}
                               />

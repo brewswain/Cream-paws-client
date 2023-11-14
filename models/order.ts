@@ -30,3 +30,7 @@ interface OrderWithChowDetails extends Order {
     id: string;
   };
 }
+
+interface OrderDetails extends OrderWithChowDetails {
+  client_name: string;
+}
