@@ -11,7 +11,7 @@ import SettingsModal from "../modals/SettingsModal";
 import { useNavigation } from "@react-navigation/native";
 
 interface OrderCardProps {
-  clientName: string;
+  client_name: string;
   order: OrderWithChowDetails;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
@@ -20,7 +20,7 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({
-  clientName,
+  client_name,
   order,
   isDeleted,
   setIsDeleted,
@@ -42,7 +42,7 @@ const OrderCard = ({
   } = styles;
 
   const viewDetails = () => {
-    navigation.navigate("OrderDetails", order);
+    navigation.navigate("OrderDetails", { ...order, client_name });
   };
 
   const handleDelete = async (orderId: string, customerId: string) => {
@@ -61,9 +61,9 @@ const OrderCard = ({
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
       <Pressable style={flexRow} onPress={() => viewDetails()}>
-        <View>
+        <View style={{ width: "80%" }}>
           <View style={detailsContainer}>
-            <Text style={clientNameHeader}>{clientName}</Text>
+            <Text style={clientNameHeader}>{client_name}</Text>
             <Text
               style={orderDetails}
             >{`${order.chow_details.brand} - ${order.chow_details.flavour} x ${order.quantity}`}</Text>
@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   },
   orderDetails: {
     color: "white",
+    width: "80%",
   },
   priceContainer: {
     display: "flex",
