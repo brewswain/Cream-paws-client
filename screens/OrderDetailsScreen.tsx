@@ -17,19 +17,8 @@ interface OrderDetailsProps {
 }
 
 const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
-  const {
-    client_name,
-    chow_id,
-    delivery_date,
-    driver_paid,
-    chow_details,
-    is_delivery,
-    payment_date,
-    payment_made,
-    quantity,
-    warehouse_paid,
-  } = route.params;
-  console.log(route.params);
+  const [orderPayload, setOrderPayload] = useState(route.params);
+
   // TODO: sanitize our inputs
 
   const formatDate = (date: string) => {
@@ -38,19 +27,22 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     return formattedDate;
   };
 
-  const formattedDeliveryDate = formatDate(delivery_date);
+  const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
   const chowFields: SubFields[] = [
-    { title: "Brand", content: chow_details.brand },
-    { title: "Flavour", content: chow_details.flavour },
-    { title: "Size", content: chow_details.size },
-    { title: "Unit", content: chow_details.unit },
-    { title: "Quantity", content: quantity },
+    { title: "Brand", content: orderPayload.chow_details.brand },
+    { title: "Flavour", content: orderPayload.chow_details.flavour },
+    { title: "Size", content: orderPayload.chow_details.size },
+    { title: "Unit", content: orderPayload.chow_details.unit },
+    { title: "Quantity", content: orderPayload.quantity },
   ];
 
   const costsFields: SubFields[] = [
-    { title: "Wholesale Price", content: chow_details.wholesale_price },
-    { title: "Retail Price", content: chow_details.retail_price },
+    {
+      title: "Wholesale Price",
+      content: orderPayload.chow_details.wholesale_price,
+    },
+    { title: "Retail Price", content: orderPayload.chow_details.retail_price },
     { title: "Delivery Fee", content: "Add delivery fee dropdown here" },
     { title: "Total Cost", content: "Calculate all costs in our API" },
   ];
@@ -60,7 +52,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       <View style={{ width: "90%" }}>
         {/* Checkmarks like Driver Paid, etc */}
         <Text style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}>
-          {client_name}
+          {orderPayload.client_name}
         </Text>
 
         <Header>Delivery Date</Header>

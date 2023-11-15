@@ -21,16 +21,15 @@ interface ChowDetailsProps {
 }
 
 const ChowDetailsScreen = ({ navigation, route }: ChowDetailsProps) => {
-  const { brand, flavour, size, unit, wholesale_price, retail_price } =
-    route.params;
+  const [chowPayload, setChowPayload] = useState(route.params);
 
   const chowFields: SubFields[] = [
-    { title: "Brand", content: brand },
-    { title: "Flavour", content: flavour },
-    { title: "Size", content: size },
-    { title: "Unit", content: unit },
-    { title: "Wholesale Price", content: wholesale_price },
-    { title: "Retail Price", content: retail_price },
+    { title: "Brand", content: chowPayload.brand },
+    { title: "Flavour", content: chowPayload.flavour },
+    { title: "Size", content: chowPayload.size },
+    { title: "Unit", content: chowPayload.unit },
+    { title: "Wholesale Price", content: chowPayload.wholesale_price },
+    { title: "Retail Price", content: chowPayload.retail_price },
   ];
 
   return <View>{renderDetailInputs(chowFields)}</View>;
