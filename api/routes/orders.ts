@@ -64,8 +64,12 @@ export const getAllOrders = async () => {
 // TODO: fix typings lol
 export const updateOrder = async (order: Order) => {
   try {
-    const response = await axiosInstance.put(`/orders/${order._id}`, order);
+    const response = await axiosInstance.put(
+      `/orders/${order.order_id}`,
+      order
+    );
 
+    console.log({ response: response.data });
     return response.data;
   } catch (error) {
     console.error({ error });

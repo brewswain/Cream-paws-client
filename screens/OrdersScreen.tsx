@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 import "react-native-get-random-values";
@@ -65,9 +65,11 @@ const OrdersScreen = () => {
     setShowModal(true);
   };
 
-  useEffect(() => {
-    populateData();
-  }, [isDeleted]);
+  useFocusEffect(
+    useCallback(() => {
+      populateData();
+    }, [isDeleted])
+  );
 
   const customersArray = customers && customers;
 

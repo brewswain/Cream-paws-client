@@ -48,7 +48,7 @@ const OrderCard = ({
   const handleDelete = async (orderId: string, customerId: string) => {
     try {
       setIsDeleted(false);
-      // await deleteOrder(id);
+      // await deleteOrder(orderId);
       await deleteCustomersOrder(orderId, customerId);
       setIsDeleted(true);
       populateData();
@@ -95,9 +95,9 @@ const OrderCard = ({
         showModal={showModal}
         setShowModal={setShowModal}
         handlePress={() =>
-          handleDelete(order._id || "id not found", customerId)
+          handleDelete(order.order_id || "id not found", customerId)
         }
-        deletionId={order._id}
+        deletionId={order.order_id}
       />
     </View>
   );
