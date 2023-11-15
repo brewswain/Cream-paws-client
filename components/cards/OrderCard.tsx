@@ -61,7 +61,11 @@ const OrderCard = ({
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
       <Pressable style={flexRow} onPress={() => viewDetails()}>
-        <View style={{ width: "80%" }}>
+        <View
+          style={{
+            width: "80%",
+          }}
+        >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
             <Text
@@ -107,16 +111,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     width: "90%",
     backgroundColor: "#434949",
-    marginBottom: 8,
+    minHeight: 120,
   },
   flexRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    minHeight: 120,
   },
   detailsContainer: {
-    display: "flex",
-    flexDirection: "column",
     marginLeft: 8,
     paddingBottom: 4,
   },
@@ -130,10 +133,7 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   priceContainer: {
-    display: "flex",
-    alignSelf: "flex-start",
     marginLeft: 8,
-    marginBottom: 8,
   },
   price: {
     color: "#55E8D9",

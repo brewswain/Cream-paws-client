@@ -25,7 +25,7 @@ const ChowCard = ({
 
   const navigation = useNavigation();
 
-  const { buttonContainer, unpaidChowCard, paidChowCard, icon } = styles;
+  const { buttonContainer, chowCard, icon } = styles;
 
   const viewDetails = () => {
     navigation.navigate("ChowDetails", chow);
@@ -45,29 +45,16 @@ const ChowCard = ({
   return (
     <>
       <Pressable onPress={() => viewDetails()}>
-        {unpaid ? (
-          <View>
-            <View style={unpaidChowCard} key={`unpaid-${chow.id}`}>
-              <Text
-                style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
-              >{`${chow.brand} - ${chow.flavour}`}</Text>
-              <Pressable onPress={() => setShowModal(true)}>
-                <Icon name="ellipsis-h" size={20} style={icon} />
-              </Pressable>
-            </View>
+        <View>
+          <View style={chowCard} key={`paid-${chow.id}`}>
+            <Text
+              style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
+            >{`${chow.brand} - ${chow.flavour}`}</Text>
+            <Pressable onPress={() => setShowModal(true)}>
+              <Icon name="ellipsis-h" size={20} style={icon} />
+            </Pressable>
           </View>
-        ) : (
-          <View>
-            <View style={paidChowCard} key={`paid-${chow.id}`}>
-              <Text
-                style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
-              >{`${chow.brand} - ${chow.flavour}`}</Text>
-              <Pressable onPress={() => setShowModal(true)}>
-                <Icon name="ellipsis-h" size={20} style={icon} />
-              </Pressable>
-            </View>
-          </View>
-        )}
+        </View>
       </Pressable>
       <SettingsModal
         showModal={showModal}
@@ -92,8 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: "#8099c1",
   },
-  unpaidChowCard: {
-    display: "flex",
+  chowCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignSelf: "center",
@@ -106,20 +92,7 @@ const styles = StyleSheet.create({
     color: "white",
     minHeight: 70,
   },
-  paidChowCard: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignSelf: "center",
-    alignItems: "center",
-    borderRadius: 4,
-    width: "90%",
-    backgroundColor: "#434949",
-    color: "white",
-    marginBottom: 8,
-    padding: 8,
-    minHeight: 70,
-  },
+
   icon: {
     marginRight: 30,
     color: "white",

@@ -65,7 +65,6 @@ const CustomerCard = ({
     (order) => order.payment_made === false
   );
 
-  useEffect(() => {}, []);
   return (
     <>
       <Pressable onPress={() => viewDetails()}>
@@ -91,7 +90,7 @@ const CustomerCard = ({
               <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
             </View>
             <Pressable onPress={() => setShowModal(true)}>
-              <Icon name="ellipsis-h" size={20} style={{ padding: 12 }} />
+              <Icon name="ellipsis-h" size={20} style={{ marginRight: 7 }} />
             </Pressable>
           </View>
         )}
