@@ -42,7 +42,7 @@ const SettingsModal = ({
         </Modal.Header>
         <Modal.Body>
           <View style={{ gap: 12 }}>
-            <View
+            {/* <View
               style={{
                 flexDirection: "row",
                 justifyContent: "flex-end",
@@ -55,7 +55,7 @@ const SettingsModal = ({
                 size={26}
                 style={{ paddingLeft: 20 }}
               />
-            </View>
+            </View> */}
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
               {!showConfirmationMessage ? (
