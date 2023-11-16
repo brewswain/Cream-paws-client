@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -12,6 +12,9 @@ import {
   SubFields,
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
+import { updateChow } from "../api";
+import { useNavigation } from "@react-navigation/native";
+import { Button } from "native-base";
 
 interface ChowDetailsProps {
   navigation: RootTabScreenProps<"ChowDetails">;
@@ -23,16 +26,53 @@ interface ChowDetailsProps {
 const ChowDetailsScreen = ({ navigation, route }: ChowDetailsProps) => {
   const [chowPayload, setChowPayload] = useState(route.params);
 
+  const navigate = useNavigation();
+
+  const handleChange = (name: string, value: string | number) => {
+    setChowPayload((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdate = async () => {
+    await updateChow(route.params.id, chowPayload);
+    navigate.navigate("Stock");
+  };
+
   const chowFields: SubFields[] = [
-    { title: "Brand", content: chowPayload.brand },
-    { title: "Flavour", content: chowPayload.flavour },
-    { title: "Size", content: chowPayload.size },
-    { title: "Unit", content: chowPayload.unit },
-    { title: "Wholesale Price", content: chowPayload.wholesale_price },
-    { title: "Retail Price", content: chowPayload.retail_price },
+    { title: "Brand", content: chowPayload.brand, name: "brand" },
+    { title: "Flavour", content: chowPayload.flavour, name: "flavour" },
+    { title: "Size", content: chowPayload.size, name: "size" },
+    { title: "Unit", content: chowPayload.unit, name: "unit" },
+    {
+      title: "Wholesale Price",
+      content: chowPayload.wholesale_price,
+      name: "wholesale_price",
+    },
+    {
+      title: "Retail Price",
+      content: chowPayload.retail_price,
+      name: "retail_price",
+    },
   ];
 
-  return <View>{renderDetailInputs(chowFields)}</View>;
+  return (
+    <View>
+      {renderDetailInputs(chowFields, handleChange)}
+      <Button
+        colorScheme="danger"
+        style={{
+          marginTop: 20,
+          width: 100,
+          alignSelf: "flex-end",
+        }}
+        onPress={() => handleUpdate()}
+      >
+        Update Order
+      </Button>
+    </View>
+  );
 };
 
 export default ChowDetailsScreen;
