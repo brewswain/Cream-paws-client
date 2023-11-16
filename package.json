@@ -1,6 +1,6 @@
 {
   "name": "karin-dog-app",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "scripts": {
     "start": "expo start",
     "start:development_build": "expo start --dev-client",
