@@ -26,6 +26,8 @@ import {
   RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
+import ChowDetailsScreen from "../screens/ChowDetailsScreen";
+import OrderDetailsScreen from "../screens/OrderDetailsScreen";
 
 export default function Navigation({
   colorScheme,
@@ -100,6 +102,16 @@ function RootNavigator() {
         name="CustomerDetails"
         component={CustomerDetailsScreen}
         options={{ title: "Customer Details" }}
+      />
+      <Stack.Screen
+        name="ChowDetails"
+        component={ChowDetailsScreen}
+        options={{ title: "Chow Details" }}
+      />
+      <Stack.Screen
+        name="OrderDetails"
+        component={OrderDetailsScreen}
+        options={{ title: "Order Details" }}
       />
 
       {/* <Stack.Group screenOptions={{ presentation: "modal" }}>

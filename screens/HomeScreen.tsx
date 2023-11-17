@@ -22,29 +22,7 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
     // <SafeAreaView style={safeAreaView}>
     //    <ScrollView>
     <View style={container}>
-      {/* <NavigationCard navigation={navigation} destination="Auth">
-                  Auth
-               </NavigationCard>
-               <NavigationCard navigation={navigation} destination="Customers">
-                  Customers
-               </NavigationCard>
-               <NavigationCard navigation={navigation} destination="Orders">
-                  Orders
-               </NavigationCard>
-               <NavigationCard navigation={navigation} destination="Stock">
-                  Stock
-               </NavigationCard>
-               <NavigationCard navigation={navigation} destination="Finance">
-                  Finance
-               </NavigationCard>
-               <NavigationCard
-                  navigation={navigation}
-                  destination="CustomerDetails"
-               >
-                  Test Customer Details
-               </NavigationCard> */}
       <TodayAtaGlanceCard />
-      {/* <NavigationMenu navigation={navigation} /> */}
     </View>
     //    </ScrollView>
     // </SafeAreaView>

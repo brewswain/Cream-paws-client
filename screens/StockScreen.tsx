@@ -5,6 +5,10 @@ import Icon from "@expo/vector-icons/AntDesign";
 
 import { getAllChow } from "../api/routes/stock";
 import CreateChowModal from "../components/modals/CreateChowModal";
+import ChowCard from "../components/cards/ChowCard";
+import React from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { generateSkeletons } from "../components/Skeleton/Skeleton";
 
 const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -12,6 +16,8 @@ const StockScreen = () => {
   const [chow, setChow] = useState<Chow[]>([]);
   const [customerReservedChow, setCustomerReservedChow] = useState<Chow[]>([]);
   const [unpaidChow, setUnpaidChow] = useState<Chow[]>([]);
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { container, buttonContainer, unpaidChowCard, paidChowCard } = styles;
 
@@ -20,50 +26,86 @@ const StockScreen = () => {
   };
 
   const populateChowList = async () => {
-    const response: Chow[] = await getAllChow();
+    setIsLoading(true);
+    try {
+      const response: Chow[] = await getAllChow();
 
-    const customerReservedChow = response.filter(
-      (item) => item.is_paid_for === true
-    );
-    const unpaidForChow = response.filter((item) => item.is_paid_for === false);
+      const customerReservedChow = response.filter(
+        (item) => item.is_paid_for === true
+      );
+      const unpaidForChow = response.filter(
+        (item) => item.is_paid_for === false
+      );
 
-    setCustomerReservedChow(customerReservedChow);
-    setUnpaidChow(unpaidForChow);
-    setChow(response);
+      setCustomerReservedChow(customerReservedChow);
+      setUnpaidChow(unpaidForChow);
+      setChow(response);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  };
+
+  const renderChowCards = (chow: Chow, unpaid: boolean) => {
+    if (isLoading) {
+      return generateSkeletons({ count: 1, type: "ChowSkeleton" });
+    } else {
+      return (
+        <ChowCard
+          unpaid={unpaid}
+          populateStockList={populateChowList}
+          chow={chow}
+          isDeleted={isDeleted}
+          setIsDeleted={setIsDeleted}
+          key={`${chow.id} - paid`}
+        />
+      );
+    }
   };
 
   useEffect(() => {
     populateChowList();
-  }, []);
+  }, [isDeleted]);
 
   return (
     <View style={container}>
-      <ScrollView>
-        {unpaidChow.length > 0 ? (
-          <View>
-            {unpaidChow.map((chow) => {
-              return (
-                <View style={unpaidChowCard} key={`unpaid-${chow.id}`}>
-                  <Text
-                    style={{ color: "white" }}
-                  >{`${chow.brand} - ${chow.flavour}`}</Text>
-                </View>
-              );
-            })}
-          </View>
-        ) : null}
-        {customerReservedChow.length > 0 ? (
-          <View>
-            {customerReservedChow.map((chow) => (
-              <View style={paidChowCard} key={`paid-${chow.id}`}>
-                <Text
-                  style={{ color: "white" }}
-                >{`${chow.brand} - ${chow.flavour}`}</Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-      </ScrollView>
+      {isLoading ? (
+        generateSkeletons({ count: 10, type: "ChowSkeleton" })
+      ) : (
+        <ScrollView>
+          {unpaidChow.length > 0 ? (
+            <View>
+              {unpaidChow.map((chow) => {
+                return (
+                  <ChowCard
+                    unpaid
+                    populateStockList={populateChowList}
+                    chow={chow}
+                    isDeleted={isDeleted}
+                    setIsDeleted={setIsDeleted}
+                    key={`${chow.id} - unpaid`}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+          {customerReservedChow.length > 0 ? (
+            <View>
+              {customerReservedChow.map((chow) => (
+                <ChowCard
+                  unpaid={false}
+                  populateStockList={populateChowList}
+                  chow={chow}
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                  key={`${chow.id} - paid`}
+                />
+              ))}
+            </View>
+          ) : null}
+        </ScrollView>
+      )}
       <Pressable style={buttonContainer} onPress={openModal}>
         <Icon name="plus" size={20} />
       </Pressable>

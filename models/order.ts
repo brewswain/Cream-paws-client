@@ -10,6 +10,7 @@ interface Order {
   chow_id: string;
   id: string;
   _id?: string;
+  order_id?: string;
   version?: number;
 }
 
@@ -29,4 +30,8 @@ interface OrderWithChowDetails extends Order {
     warehouse_paid: boolean;
     id: string;
   };
+}
+
+interface OrderDetails extends OrderWithChowDetails {
+  client_name: string;
 }

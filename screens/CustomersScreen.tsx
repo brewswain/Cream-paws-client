@@ -13,6 +13,7 @@ import {
 
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
+import { generateSkeletons } from "../components/Skeleton/Skeleton";
 
 const CustomersScreen = () => {
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
@@ -20,77 +21,89 @@ const CustomersScreen = () => {
   const [customersWithoutOpenOrders, setCustomersWithoutOpenOrders] =
     useState<Customer[]>();
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [isDeleted, setIsDeleted] = useState<boolean | null>(null)
-
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const populateCustomersList = async () => {
-    const response: Customer[] = await getAllCustomers();
-    // TODO: this logic should be  localised inside of the backend. Let's refactor this later.
-    // The goal is that getAllCustomers() will return an object with 2 fields: customersWithOrders and customersWithoutOrders.
-    // So basically, we'll get response.customersWithOrders and response.customersWithoutOrders. That too can be optimized so that our state
-    // only uses one object and specifies from there, but i like the separation for now as it makes my life easier
+    setIsLoading(true);
+    try {
+      const response: Customer[] = await getAllCustomers();
+      // TODO: this logic should be  localised inside of the backend. Let's refactor this later.
+      // The goal is that getAllCustomers() will return an object with 2 fields: customersWithOrders and customersWithoutOrders.
+      // So basically, we'll get response.customersWithOrders and response.customersWithoutOrders. That too can be optimized so that our state
+      // only uses one object and specifies from there, but i like the separation for now as it makes my life easier
 
-    const mappedCustomersWithOrders = response.filter((customer) => {
-      if (customer.orders) {
-        return customer.orders.some((order) => order.payment_made === false);
-      }
-    });
-    const mappedCustomersWithoutOrders = response.filter(
-      (customer) => customer.orders && customer.orders?.length < 1
-    );
+      const mappedCustomersWithOrders = response.filter((customer) => {
+        if (customer.orders) {
+          return customer.orders.some((order) => order.payment_made === false);
+        }
+      });
+      const mappedCustomersWithoutOrders = response.filter(
+        (customer) => customer.orders && customer.orders?.length < 1
+      );
 
-    setCustomersWithOpenOrders(mappedCustomersWithOrders);
-    setCustomersWithoutOpenOrders(mappedCustomersWithoutOrders);
+      setCustomersWithOpenOrders(mappedCustomersWithOrders);
+      setCustomersWithoutOpenOrders(mappedCustomersWithoutOrders);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
   };
 
   const openModal = () => {
     setShowModal(true);
   };
 
+  const renderCustomerCard = (customer: Customer) => {};
+
   useEffect(() => {
     populateCustomersList();
   }, [isDeleted]);
 
-
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {customersWithOpenOrders &&
-          customersWithOpenOrders.map((customer, index) => (
-            <View
-              key={customer.id}
-              style={index === 0 ? { marginTop: 12 } : null}
-            >
-              <CustomerCard
-                customer={customer}
+      {isLoading ? (
+        generateSkeletons({ count: 12, type: "CustomerSkeleton" })
+      ) : (
+        <ScrollView>
+          {customersWithOpenOrders &&
+            customersWithOpenOrders.map((customer, index) => (
+              <View
                 key={customer.id}
-                populateCustomersList={populateCustomersList}
-                isDeleted={isDeleted}
-                setIsDeleted={setIsDeleted}
-              />
-            </View>
-          ))}
-        {customersWithoutOpenOrders &&
-          customersWithoutOpenOrders.map((customer, index) => (
-            <View
-              key={customer.id}
-              style={index === 0 ? { marginTop: 12 } : null}
-            >
-              <CustomerCard
-                customer={customer}
+                style={index === 0 ? { marginTop: 12 } : null}
+              >
+                <CustomerCard
+                  customer={customer}
+                  key={customer.id}
+                  populateCustomersList={populateCustomersList}
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                />
+              </View>
+            ))}
+          {customersWithoutOpenOrders &&
+            customersWithoutOpenOrders.map((customer, index) => (
+              <View
                 key={customer.id}
-                populateCustomersList={populateCustomersList}
-                isDeleted={isDeleted}
-                setIsDeleted={setIsDeleted}
-              />
-            </View>
-          ))}
-        <CreateCustomerModal
-          isOpen={showModal}
-          setShowModal={setShowModal}
-          populateCustomerList={populateCustomersList}
-        />
-      </ScrollView>
+                style={index === 0 ? { marginTop: 12 } : null}
+              >
+                <CustomerCard
+                  customer={customer}
+                  key={customer.id}
+                  populateCustomersList={populateCustomersList}
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                />
+              </View>
+            ))}
+        </ScrollView>
+      )}
+      <CreateCustomerModal
+        isOpen={showModal}
+        setShowModal={setShowModal}
+        populateCustomerList={populateCustomersList}
+      />
       <Pressable style={styles.buttonContainer} onPress={openModal}>
         <Icon name="plus" size={20} />
       </Pressable>

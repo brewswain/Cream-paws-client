@@ -1,6 +1,6 @@
 {
   "name": "karin-dog-app",
-  "version": "1.0.4",
+  "version": "1.0.11",
   "scripts": {
     "start": "expo start",
     "start:development_build": "expo start --dev-client",
@@ -30,6 +30,8 @@
     "@react-navigation/bottom-tabs": "^6.0.5",
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/native-stack": "^6.1.0",
+    "@rneui/base": "^4.0.0-rc.8",
+    "@rneui/themed": "^4.0.0-rc.8",
     "@types/babel__core": "^7.1.19",
     "@types/dinero.js": "^1.9.0",
     "@types/moment": "^2.13.0",
@@ -69,9 +71,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
+    "@types/react": "~18.0.27",
     "react-native-dotenv": "^3.4.9",
-    "react-native-web": "^0.18.12",
-    "@types/react": "~18.0.27"
+    "react-native-web": "^0.18.12"
   },
   "license": "MIT",
   "resolutions": {},

@@ -7,9 +7,11 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import DeleteModal from "../modals/DeleteModal";
 import { deleteOrder } from "../../api";
 import { deleteCustomersOrder } from "../../api/routes/orders";
+import SettingsModal from "../modals/SettingsModal";
+import { useNavigation } from "@react-navigation/native";
 
 interface OrderCardProps {
-  clientName: string;
+  client_name: string;
   order: OrderWithChowDetails;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
@@ -18,7 +20,7 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({
-  clientName,
+  client_name,
   order,
   isDeleted,
   setIsDeleted,
@@ -26,6 +28,8 @@ const OrderCard = ({
   customerId,
 }: OrderCardProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
+
+  const navigation = useNavigation();
 
   const {
     container,
@@ -37,10 +41,14 @@ const OrderCard = ({
     flexRow,
   } = styles;
 
+  const viewDetails = () => {
+    navigation.navigate("OrderDetails", { ...order, client_name });
+  };
+
   const handleDelete = async (orderId: string, customerId: string) => {
     try {
       setIsDeleted(false);
-      // await deleteOrder(id);
+      // await deleteOrder(orderId);
       await deleteCustomersOrder(orderId, customerId);
       setIsDeleted(true);
       populateData();
@@ -52,10 +60,14 @@ const OrderCard = ({
   return (
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
-      <View style={flexRow}>
-        <View>
+      <Pressable style={flexRow} onPress={() => viewDetails()}>
+        <View
+          style={{
+            width: "80%",
+          }}
+        >
           <View style={detailsContainer}>
-            <Text style={clientNameHeader}>{clientName}</Text>
+            <Text style={clientNameHeader}>{client_name}</Text>
             <Text
               style={orderDetails}
             >{`${order.chow_details.brand} - ${order.chow_details.flavour} x ${order.quantity}`}</Text>
@@ -71,20 +83,21 @@ const OrderCard = ({
             </Text>
           </View>
         </View>
-        <Pressable style={{ marginTop: 8 }} onPress={() => setShowModal(true)}>
+        <Pressable onPress={() => setShowModal(true)}>
           <Icon
-            name="trash-o"
+            name="ellipsis-h"
             size={20}
-            style={{ marginRight: 20, color: "white" }}
+            style={{ padding: 12, color: "white" }}
           />
         </Pressable>
-      </View>
-      <DeleteModal
+      </Pressable>
+      <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={() => handleDelete(order.id, customerId)}
-        deletionId={order._id}
-        message={` Please confirm that you wish to delete this order.`}
+        handlePress={() =>
+          handleDelete(order.order_id || "id not found", customerId)
+        }
+        deletionId={order.order_id}
       />
     </View>
   );
@@ -98,15 +111,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     width: "90%",
     backgroundColor: "#434949",
-    marginBottom: 8,
+    minHeight: 120,
   },
   flexRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    minHeight: 120,
   },
   detailsContainer: {
-    display: "flex",
-    flexDirection: "column",
     marginLeft: 8,
     paddingBottom: 4,
   },
@@ -117,12 +130,10 @@ const styles = StyleSheet.create({
   },
   orderDetails: {
     color: "white",
+    width: "80%",
   },
   priceContainer: {
-    display: "flex",
-    alignSelf: "flex-start",
     marginLeft: 8,
-    marginBottom: 8,
   },
   price: {
     color: "#55E8D9",

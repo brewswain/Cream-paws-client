@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 import "react-native-get-random-values";
@@ -21,6 +21,7 @@ import { OrderCard } from "../components";
 import { ScrollView } from "native-base";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
+import { generateSkeletons } from "../components/Skeleton/Skeleton";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -28,13 +29,20 @@ const OrdersScreen = () => {
   const [orders, setOrders] = useState<Order[]>();
   const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { orderHeader, orderContainer, totalOrderDetails } = styles;
 
   const populateOrdersList = async () => {
-    const response = await getAllOrders();
-
-    setOrders(response);
+    setIsLoading(true);
+    try {
+      const response = await getAllOrders();
+      setOrders(response);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
   };
 
   const populateChowList = async () => {
@@ -58,8 +66,7 @@ const OrdersScreen = () => {
   };
 
   useFocusEffect(
-    React.useCallback(() => {
-      // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
+    useCallback(() => {
       populateData();
     }, [isDeleted])
   );
@@ -69,44 +76,46 @@ const OrdersScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View>
-          {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-          {customersArray?.map((customer: Customer, index: number) => {
-            return (
-              <View style={orderContainer} key={customer.id + index}>
-                <View>
-                  {customer.orders &&
-                    customer.orders
-                      .flat()
-                      .filter((order) => order.payment_made === false)
-                      .map((order, index) => {
-                        return (
-                          <View
-                            key={
-                              order._id
-                                ? order._id + index
-                                : `order id not found - ${index}`
-                            }
-                            style={index === 0 ? { paddingTop: 20 } : null}
-                          >
-                            {order ? (
+        {isLoading ? (
+          generateSkeletons({ count: 4, type: "OrderSkeleton" })
+        ) : (
+          <View>
+            {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
+            {customersArray?.map((customer: Customer, index: number) => {
+              return (
+                <View style={orderContainer} key={customer.id + index}>
+                  <View>
+                    {customer.orders &&
+                      customer.orders
+                        .flat()
+                        .filter((order) => order.payment_made === false)
+                        .map((order, index) => {
+                          return (
+                            <View
+                              key={
+                                order._id
+                                  ? order._id + index
+                                  : `order id not found - ${index}`
+                              }
+                              style={index === 0 ? { paddingTop: 20 } : null}
+                            >
                               <OrderCard
                                 isDeleted={isDeleted}
                                 setIsDeleted={setIsDeleted}
                                 populateData={populateData}
-                                clientName={customer.name}
+                                client_name={customer.name}
                                 customerId={customer.id}
                                 order={order}
                               />
-                            ) : null}
-                          </View>
-                        );
-                      })}
+                            </View>
+                          );
+                        })}
+                  </View>
                 </View>
-              </View>
-            );
-          })}
-        </View>
+              );
+            })}
+          </View>
+        )}
 
         <CreateOrderModal
           isOpen={showModal}
