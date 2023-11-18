@@ -58,14 +58,14 @@ const ChowDetailsScreen = ({ navigation, route }: ChowDetailsProps) => {
   ];
 
   return (
-    <View>
+    <View style={{ backgroundColor: "white", flex: 1 }}>
       {renderDetailInputs(chowFields, handleChange)}
       <Button
         colorScheme="danger"
         style={{
           marginTop: 20,
-          width: 100,
-          alignSelf: "flex-end",
+          width: 150,
+          alignSelf: "center",
         }}
         onPress={() => handleUpdate()}
       >
