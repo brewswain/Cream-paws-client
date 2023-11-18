@@ -9,6 +9,7 @@ import {
   View,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  GestureResponderEvent,
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -16,12 +17,13 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {
   Button,
   CheckIcon,
-  Checkbox,
+  // Checkbox,
   FormControl,
   Modal,
   Select,
 } from "native-base";
 import Icon from "react-native-vector-icons/AntDesign";
+import { CheckBox } from "@rneui/themed";
 
 import { createOrder } from "../../api";
 
@@ -61,13 +63,18 @@ const CreateOrderModal = ({
     warehouse_paid: false,
   });
   const [selectedChow, setSelectedChow] = useState("");
-  const [groupValues, setGroupValues] = useState<string[]>([]);
+  const [groupValues, setGroupValues] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   // Loose typing on purpose for now, type SHOULD be Order.
   const [orders, setOrders] = useState<any[]>([{}]);
+
+  const orderInputsPaymentMade = orderInputs.payment_made;
+  const orderInputDriverPaid = orderInputs.driver_paid;
+  const orderInputIsDelivery = orderInputs.is_delivery;
+  const orderInputWarehousePaid = orderInputs.warehouse_paid;
 
   const closeModal = () => {
     setShowModal(false);
@@ -161,12 +168,14 @@ const CreateOrderModal = ({
     });
   };
 
-  const handleCheckboxChange = (values: any) => {
-    setGroupValues(values);
-  };
+  // const handleCheckboxChange = (values: any) => {
+  //   setGroupValues(values);
+  // };
 
   const handleOrderChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
+    event:
+      | NativeSyntheticEvent<TextInputChangeEventData>
+      | GestureResponderEvent,
     name: string
   ) => {
     let data = { ...orderInputs };
@@ -175,10 +184,18 @@ const CreateOrderModal = ({
     } else if (data[name] === "false") {
       data[name] = false;
     } else {
-      data[name] = event.nativeEvent.text;
+      if (
+        name === "payment_made" ||
+        name === "warehouse_paid" ||
+        name === "is_delivery" ||
+        name === "driver_paid"
+      ) {
+        data[name] = !data[name];
+      } else {
+        data[name] = event.nativeEvent.target;
+      }
     }
 
-    // console.log({ event: event.nativeEvent.text, data_name: name });
     setOrderInputs(data);
   };
 
@@ -239,7 +256,6 @@ const CreateOrderModal = ({
     const data = { ...orderInputs };
     data.customer_id = itemValue;
     setOrderInputs(data);
-    // console.log({ location: "handleCustomerSelected", data });
   };
 
   const handleOrderCreation = async () => {
@@ -266,12 +282,12 @@ const CreateOrderModal = ({
 
         const newOrderPayload = {
           delivery_date,
-          payment_made,
           payment_date,
-          is_delivery,
           quantity,
-          driver_paid,
-          warehouse_paid,
+          payment_made: orderInputs.payment_made,
+          is_delivery: orderInputs.is_delivery,
+          driver_paid: orderInputs.driver_paid,
+          warehouse_paid: orderInputs.warehouse_paid,
           customer_id,
           chow_id,
         };
@@ -284,12 +300,6 @@ const CreateOrderModal = ({
     });
   };
 
-  useEffect(() => {
-    groupValues.map((value: string) => {
-      orderPayload[value] = true;
-    });
-  }, [groupValues]);
-
   return (
     <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
       <Modal.Content>
@@ -297,7 +307,6 @@ const CreateOrderModal = ({
         <Modal.Header>Create Order</Modal.Header>
         <Modal.Body>
           {/* TODO: Add in differentiation for order-type later */}
-
           {/* <FormControl isRequired>
                   <FormControl.Label>Order Type</FormControl.Label>
                   <Input
@@ -337,17 +346,27 @@ const CreateOrderModal = ({
             onCancel={toggleDatePickerVisibility}
           />
 
-          <Checkbox.Group
-            onChange={setGroupValues}
-            value={groupValues}
-            accessibilityLabel="Choose order options"
-          >
-            <Checkbox value="payment_made">Has client Paid for order?</Checkbox>
-            <Checkbox value="driver_paid">Driver Paid?</Checkbox>
-            <Checkbox value="warehouse_paid">Warehouse Paid?</Checkbox>
-            <Checkbox value="is_delivery">Is This a delivery</Checkbox>
-          </Checkbox.Group>
-
+          {/* TODO: fix all the jank. in this case, we need to make our types better */}
+          <CheckBox
+            title="Has the driver been paid?"
+            checked={orderInputDriverPaid}
+            onPress={(event) => handleOrderChange(event, "driver_paid")}
+          />
+          <CheckBox
+            title="Is this a delivery??"
+            checked={orderInputIsDelivery}
+            onPress={(event) => handleOrderChange(event, "is_delivery")}
+          />
+          <CheckBox
+            title="Has Client Paid for order?"
+            checked={orderInputsPaymentMade}
+            onPress={(event) => handleOrderChange(event, "payment_made")}
+          />
+          <CheckBox
+            title="Has the warehouse been paid?"
+            checked={orderInputWarehousePaid}
+            onPress={(event) => handleOrderChange(event, "warehouse_paid")}
+          />
           <FormControl.Label>Chow Details</FormControl.Label>
           {chowInputs.map((field, index) => {
             return (
