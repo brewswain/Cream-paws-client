@@ -7,21 +7,13 @@ import {
   Text,
   TextInputChangeEventData,
   View,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   GestureResponderEvent,
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-import {
-  Button,
-  CheckIcon,
-  // Checkbox,
-  FormControl,
-  Modal,
-  Select,
-} from "native-base";
+import { Button, CheckIcon, FormControl, Modal, Select } from "native-base";
 import Icon from "react-native-vector-icons/AntDesign";
 import { CheckBox } from "@rneui/themed";
 
@@ -63,13 +55,10 @@ const CreateOrderModal = ({
     warehouse_paid: false,
   });
   const [selectedChow, setSelectedChow] = useState("");
-  const [groupValues, setGroupValues] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  // Loose typing on purpose for now, type SHOULD be Order.
-  const [orders, setOrders] = useState<any[]>([{}]);
 
   const orderInputsPaymentMade = orderInputs.payment_made;
   const orderInputDriverPaid = orderInputs.driver_paid;
@@ -225,15 +214,10 @@ const CreateOrderModal = ({
   ) => {
     let data = [...chowInputs];
     const inputValue = event.nativeEvent.text.trim(); // Trim whitespace from input value
-
-    // if (inputValue === "") {
-    //   data[index][name] = 1; // Set quantity to 1 if input is blank
-    // } else {
     const convertedText = parseInt(inputValue);
     if (!isNaN(convertedText)) {
       data[index][name] = convertedText; // Only update quantity if input is a valid number
     }
-    // }
 
     setChowInputs(data);
   };
@@ -270,15 +254,7 @@ const CreateOrderModal = ({
     Promise.all(
       chowArray.map(async (chowDetails: ChowDetails) => {
         const { chow_id, quantity } = chowDetails;
-        const {
-          customer_id,
-          delivery_date,
-          payment_made,
-          payment_date,
-          is_delivery,
-          driver_paid,
-          warehouse_paid,
-        } = orderPayload;
+        const { customer_id, delivery_date, payment_date } = orderPayload;
 
         const newOrderPayload = {
           delivery_date,
@@ -306,17 +282,6 @@ const CreateOrderModal = ({
         <Modal.CloseButton />
         <Modal.Header>Create Order</Modal.Header>
         <Modal.Body>
-          {/* TODO: Add in differentiation for order-type later */}
-          {/* <FormControl isRequired>
-                  <FormControl.Label>Order Type</FormControl.Label>
-                  <Input
-                     onChange={(event) =>
-                        handleOrderChange(event, index, "name")
-                     }
-                  />
-               </FormControl>
-             */}
-          {/* <TouchableWithoutFeedback onPress={renderCustomersDropdown}> */}
           <View>
             <Select
               minWidth="200"
