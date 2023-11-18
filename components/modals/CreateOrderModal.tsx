@@ -209,14 +209,14 @@ const CreateOrderModal = ({
     let data = [...chowInputs];
     const inputValue = event.nativeEvent.text.trim(); // Trim whitespace from input value
 
-    if (inputValue === "") {
-      data[index][name] = 1; // Set quantity to 1 if input is blank
-    } else {
-      const convertedText = parseInt(inputValue);
-      if (!isNaN(convertedText)) {
-        data[index][name] = convertedText; // Only update quantity if input is a valid number
-      }
+    // if (inputValue === "") {
+    //   data[index][name] = 1; // Set quantity to 1 if input is blank
+    // } else {
+    const convertedText = parseInt(inputValue);
+    if (!isNaN(convertedText)) {
+      data[index][name] = convertedText; // Only update quantity if input is a valid number
     }
+    // }
 
     setChowInputs(data);
   };
@@ -374,13 +374,13 @@ const CreateOrderModal = ({
 
                 <TextInput
                   style={input}
-                  placeholder="Quantity (Set to 1 by default)"
+                  placeholder="Quantity"
                   keyboardType="numeric"
                   onChange={(event) =>
                     handleQuantityChange(event, index, "quantity")
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
-                  value={field.quantity.toString()}
+                  // value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
                 <View style={buttonContainer}>
@@ -416,6 +416,7 @@ const CreateOrderModal = ({
           <Button variant="ghost" onPress={closeModal}>
             Cancel
           </Button>
+
           <Button
             style={confirmationButton}
             onPress={() => handleOrderCreation()}
