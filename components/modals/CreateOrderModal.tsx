@@ -18,7 +18,6 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { CheckBox } from "@rneui/themed";
 
 import { createOrder } from "../../api";
-import { G } from "react-native-svg";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -119,13 +118,17 @@ const CreateOrderModal = ({
   const renderDeliveryCost = () => {
     const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
 
-    return TEST_DELIVERY_COSTS.map((price, index) => (
-      <Select.Item
-        key={index}
-        value={price.toString()}
-        label={price.toString()}
-      />
-    ));
+    return (
+      <Select placeholder="Delivery Cost">
+        {TEST_DELIVERY_COSTS.map((price, index) => (
+          <Select.Item
+            key={index}
+            value={price.toString()}
+            label={price.toString()}
+          />
+        ))}
+      </Select>
+    );
   };
 
   // TODO: fix 'any' typing here, expect this to give problems--The problem is that if i were to pass an interface here, it'd need to iterate through each [value] and have its own unique type
@@ -136,12 +139,12 @@ const CreateOrderModal = ({
     // payload to act like a pseudo-singleton would be really nice.
     customer_id: selectedCustomer,
     chow_array: chowInputs,
-    payment_made: false,
-    payment_date: "Payment not Made",
+    payment_made: orderInputs.payment_made,
+    payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
     delivery_date: orderInputs.delivery_date,
-    is_delivery: false,
-    driver_paid: false,
-    warehouse_paid: false,
+    is_delivery: orderInputs.is_delivery,
+    driver_paid: orderInputs.driver_paid,
+    warehouse_paid: orderInputs.warehouse_paid,
     // add chow object
     // Make it work when making multiple calls. Maybe a loop, or something like Promise.all()
     // This is so that we can make multiple orders of separate chow for one client.
@@ -168,35 +171,6 @@ const CreateOrderModal = ({
         />
       );
     });
-  };
-
-  // const handleCheckboxChange = (values: any) => {
-  //   setGroupValues(values);
-  // };
-
-  const isGestureResponderEvent = (
-    event:
-      | NativeSyntheticEvent<TextInputChangeEventData>
-      | GestureResponderEvent
-  ): event is GestureResponderEvent => {
-    return "nativeEvent" in event && "target" in event.nativeEvent;
-  };
-
-  const handleOrderChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string
-  ) => {
-    let data = { ...orderInputs };
-    if (data[name] === "true") {
-      data[name] = true;
-    } else if (data[name] === "false") {
-      data[name] = false;
-    } else {
-      data[name] = event.nativeEvent.text;
-    }
-
-    // console.log({ event: event.nativeEvent.text, data_name: name });
-    setOrderInputs(data);
   };
 
   const handleCheckBoxChange = (name: string) => {
@@ -270,29 +244,30 @@ const CreateOrderModal = ({
 
     const chowArray = orderPayload.chow_array;
 
-    Promise.all(
-      chowArray.map(async (chowDetails: ChowDetails) => {
-        const { chow_id, quantity } = chowDetails;
-        const { customer_id, delivery_date, payment_date } = orderPayload;
+    console.log({ orderPayload });
+    // Promise.all(
+    //   chowArray.map(async (chowDetails: ChowDetails) => {
+    //     const { chow_id, quantity } = chowDetails;
+    //     const { customer_id, delivery_date, payment_date } = orderPayload;
 
-        const newOrderPayload = {
-          delivery_date,
-          payment_date,
-          quantity,
-          payment_made: orderInputs.payment_made,
-          is_delivery: orderInputs.is_delivery,
-          driver_paid: orderInputs.driver_paid,
-          warehouse_paid: orderInputs.warehouse_paid,
-          customer_id,
-          chow_id,
-        };
+    //     const newOrderPayload = {
+    //       delivery_date,
+    //       payment_date,
+    //       quantity,
+    //       payment_made: orderInputs.payment_made,
+    //       is_delivery: orderInputs.is_delivery,
+    //       driver_paid: orderInputs.driver_paid,
+    //       warehouse_paid: orderInputs.warehouse_paid,
+    //       customer_id,
+    //       chow_id,
+    //     };
 
-        await createOrder(newOrderPayload);
-      })
-    ).then(() => {
-      populateCustomersList();
-      closeModal();
-    });
+    //     await createOrder(newOrderPayload);
+    //   })
+    // ).then(() => {
+    //   populateCustomersList();
+    //   closeModal();
+    // });
   };
 
   return (
