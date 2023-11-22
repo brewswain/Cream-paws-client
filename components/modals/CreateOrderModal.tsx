@@ -244,30 +244,29 @@ const CreateOrderModal = ({
 
     const chowArray = orderPayload.chow_array;
 
-    console.log({ orderPayload });
-    // Promise.all(
-    //   chowArray.map(async (chowDetails: ChowDetails) => {
-    //     const { chow_id, quantity } = chowDetails;
-    //     const { customer_id, delivery_date, payment_date } = orderPayload;
+    Promise.all(
+      chowArray.map(async (chowDetails: ChowDetails) => {
+        const { chow_id, quantity } = chowDetails;
+        const { customer_id, delivery_date, payment_date } = orderPayload;
 
-    //     const newOrderPayload = {
-    //       delivery_date,
-    //       payment_date,
-    //       quantity,
-    //       payment_made: orderInputs.payment_made,
-    //       is_delivery: orderInputs.is_delivery,
-    //       driver_paid: orderInputs.driver_paid,
-    //       warehouse_paid: orderInputs.warehouse_paid,
-    //       customer_id,
-    //       chow_id,
-    //     };
+        const newOrderPayload = {
+          delivery_date,
+          payment_date,
+          quantity,
+          payment_made: orderInputs.payment_made,
+          is_delivery: orderInputs.is_delivery,
+          driver_paid: orderInputs.driver_paid,
+          warehouse_paid: orderInputs.warehouse_paid,
+          customer_id,
+          chow_id,
+        };
 
-    //     await createOrder(newOrderPayload);
-    //   })
-    // ).then(() => {
-    //   populateCustomersList();
-    //   closeModal();
-    // });
+        await createOrder(newOrderPayload);
+      })
+    ).then(() => {
+      populateCustomersList();
+      closeModal();
+    });
   };
 
   return (
