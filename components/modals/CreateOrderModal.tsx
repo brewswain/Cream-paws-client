@@ -187,19 +187,6 @@ const CreateOrderModal = ({
     setOrderInputs(data);
   };
 
-  // const handleChowChange = (
-  //    event: NativeSyntheticEvent<TextInputChangeEventData>,
-  //    index: number,
-  //    name: string
-  // ) => {
-  //    let data = [...chowInputs];
-  //    // TODO: clean up elifs
-
-  //    data[index][name] = event.nativeEvent.text;
-
-  //    setChowInputs(data);
-  // };
-
   const handleQuantityChange = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
     index: number,
