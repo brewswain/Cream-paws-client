@@ -14,10 +14,11 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import { Button, CheckIcon, FormControl, Modal, Select } from "native-base";
-import Icon from "react-native-vector-icons/AntDesign";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { CheckBox } from "@rneui/themed";
 
 import { createOrder } from "../../api";
+import { G } from "react-native-svg";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -115,6 +116,18 @@ const CreateOrderModal = ({
     });
   };
 
+  const renderDeliveryCost = () => {
+    const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
+
+    return TEST_DELIVERY_COSTS.map((price, index) => (
+      <Select.Item
+        key={index}
+        value={price.toString()}
+        label={price.toString()}
+      />
+    ));
+  };
+
   // TODO: fix 'any' typing here, expect this to give problems--The problem is that if i were to pass an interface here, it'd need to iterate through each [value] and have its own unique type
   // Perhaps a for in loop?🤔
 
@@ -161,10 +174,16 @@ const CreateOrderModal = ({
   //   setGroupValues(values);
   // };
 
-  const handleOrderChange = (
+  const isGestureResponderEvent = (
     event:
       | NativeSyntheticEvent<TextInputChangeEventData>
-      | GestureResponderEvent,
+      | GestureResponderEvent
+  ): event is GestureResponderEvent => {
+    return "nativeEvent" in event && "target" in event.nativeEvent;
+  };
+
+  const handleOrderChange = (
+    event: NativeSyntheticEvent<TextInputChangeEventData>,
     name: string
   ) => {
     let data = { ...orderInputs };
@@ -173,17 +192,17 @@ const CreateOrderModal = ({
     } else if (data[name] === "false") {
       data[name] = false;
     } else {
-      if (
-        name === "payment_made" ||
-        name === "warehouse_paid" ||
-        name === "is_delivery" ||
-        name === "driver_paid"
-      ) {
-        data[name] = !data[name];
-      } else {
-        data[name] = event.nativeEvent.target;
-      }
+      data[name] = event.nativeEvent.text;
     }
+
+    // console.log({ event: event.nativeEvent.text, data_name: name });
+    setOrderInputs(data);
+  };
+
+  const handleCheckBoxChange = (name: string) => {
+    let data = { ...orderInputs };
+
+    data[name] = !data[name];
 
     setOrderInputs(data);
   };
@@ -312,25 +331,24 @@ const CreateOrderModal = ({
           />
 
           {/* TODO: fix all the jank. in this case, we need to make our types better */}
+
           <CheckBox
-            title="Has the driver been paid?"
-            checked={orderInputDriverPaid}
-            onPress={(event) => handleOrderChange(event, "driver_paid")}
-          />
-          <CheckBox
-            title="Is this a delivery??"
+            title="Is this a delivery?"
             checked={orderInputIsDelivery}
-            onPress={(event) => handleOrderChange(event, "is_delivery")}
+            onPress={() => handleCheckBoxChange("is_delivery")}
           />
+
+          {orderInputs.is_delivery && renderDeliveryCost()}
+
           <CheckBox
             title="Has Client Paid for order?"
             checked={orderInputsPaymentMade}
-            onPress={(event) => handleOrderChange(event, "payment_made")}
+            onPress={() => handleCheckBoxChange("payment_made")}
           />
           <CheckBox
             title="Has the warehouse been paid?"
             checked={orderInputWarehousePaid}
-            onPress={(event) => handleOrderChange(event, "warehouse_paid")}
+            onPress={() => handleCheckBoxChange("warehouse_paid")}
           />
           <FormControl.Label>Chow Details</FormControl.Label>
           {chowInputs.map((field, index) => {
@@ -358,7 +376,7 @@ const CreateOrderModal = ({
 
                 <TextInput
                   style={input}
-                  placeholder="Quantity"
+                  placeholder="Quantity *"
                   keyboardType="numeric"
                   onChange={(event) =>
                     handleQuantityChange(event, index, "quantity")
