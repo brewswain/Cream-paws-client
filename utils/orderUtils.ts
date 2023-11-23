@@ -19,6 +19,7 @@ export const clearOrders = async (orders: Order[]) => {
           quantity: order.quantity,
           id: order._id,
           _id: order._id,
+          order_id: order.order_id,
         };
 
         await updateOrder(updatedOrder);
