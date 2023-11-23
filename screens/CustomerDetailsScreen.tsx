@@ -7,19 +7,12 @@ import {
   useWindowDimensions,
 } from "react-native";
 
-import Collapsible from "react-native-collapsible";
 import Dinero from "dinero.js";
 
 import { RootTabScreenProps } from "../types";
 
-import { testCustomerDetails } from "../data/test_data";
-import {
-  CollapsibleOrder,
-  DetailsText,
-  FilteredOrderDetails,
-} from "../components";
+import { CollapsibleOrder, DetailsText } from "../components";
 
-import { updateOrder } from "../api";
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
   route: any;
@@ -32,20 +25,19 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
 
-  const { pets, orders, name, id } = route.params;
+  const { pets, orders, name, id, contactNumber, location } = route.params;
   // const { pets, orders, name, id } = testCustomerDetails;
   const { container, header, subHeader, deEmphasis, outstandingCosts } = styles;
 
   const { height, width } = useWindowDimensions();
 
-  console.log({ pets });
-
   const petsExist = pets.length > 0;
   const ordersExist = orders && orders.length > 0;
+  const locationExist = location !== undefined;
+  const contactNumberExist = contactNumber !== undefined;
   const outstandingOrders = orders.filter(
     (order: Order) => order.payment_made === false
   );
-  // console.log({ outstandingOrders });
   const completedOrders = orders.filter(
     (order: Order) => order.payment_made === true
   );
@@ -63,18 +55,26 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     return name[0].toUpperCase() + name.substring(1);
   };
 
-  const handleMassOrderPayment = () => {
-    outstandingOrders.map(async (order: OrderWithChowDetails) => {
-      const paidOrder = {
-        ...order,
-        payment_made: true,
-        payment_date: new Date().toString(),
-      };
-
-      // await updateOrder(order.id, paidOrder);
-    });
+  const renderContactNumber = () => {
+    return (
+      <>
+        <Text style={subHeader}>Contact Number</Text>
+        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
+          {contactNumber}
+        </Text>
+      </>
+    );
   };
-
+  const renderLocation = () => {
+    return (
+      <>
+        <Text style={subHeader}>Location</Text>
+        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
+          {location}
+        </Text>
+      </>
+    );
+  };
   const renderPets = () => (
     <View>
       <Text style={[subHeader]}>{pets!.length > 1 ? "Pets" : "Pet"}</Text>
@@ -89,8 +89,6 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   );
 
   const renderOrders = () => {
-    // Using explicit boolean verification here for DX purposes
-
     return (
       <View style={container}>
         <Text style={subHeader}>{orders!.length > 1 ? "Orders" : "Order"}</Text>
@@ -102,13 +100,13 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         >
           Outstanding Orders
         </CollapsibleOrder>
-        <CollapsibleOrder
+        {/* <CollapsibleOrder
           outstandingCollapsible={completedCollapsible}
           setOutstandingCollapsible={setCompletedCollapsible}
           outstandingOrders={completedOrders}
         >
           Completed Orders
-        </CollapsibleOrder>
+        </CollapsibleOrder> */}
       </View>
     );
   };
@@ -136,10 +134,10 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         </Text>
       )}
       <View>
+        {locationExist && renderLocation()}
+        {contactNumberExist && renderContactNumber()}
         {petsExist && renderPets()}
         {ordersExist && renderOrders()}
-        {/* {TEST_PETS_EXIST && renderPets()}
-            {TEST_ORDERS_EXIST && renderOrders()} */}
       </View>
       <Text style={deEmphasis}>Customer ID: {id}</Text>
     </ScrollView>
