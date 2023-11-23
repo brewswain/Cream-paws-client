@@ -4,12 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Text, View, StyleSheet, Pressable } from "react-native";
 import Icon from "@expo/vector-icons/AntDesign";
 
-import {
-  createCustomer,
-  deleteCustomer,
-  getAllCustomers,
-  updateCustomer,
-} from "../api/routes/customers";
+import { getAllCustomers } from "../api/routes/customers";
 
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
