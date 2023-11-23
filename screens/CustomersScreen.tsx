@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ScrollView } from "native-base";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Text, View, StyleSheet, Pressable } from "react-native";
 import Icon from "@expo/vector-icons/AntDesign";
 
@@ -14,6 +14,7 @@ import {
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
+import { useFocusEffect } from "@react-navigation/native";
 
 const CustomersScreen = () => {
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
@@ -57,10 +58,11 @@ const CustomersScreen = () => {
 
   const renderCustomerCard = (customer: Customer) => {};
 
-  useEffect(() => {
-    populateCustomersList();
-  }, [isDeleted]);
-
+  useFocusEffect(
+    useCallback(() => {
+      populateCustomersList();
+    }, [isDeleted])
+  );
   return (
     <View style={styles.container}>
       {isLoading ? (
