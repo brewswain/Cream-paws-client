@@ -111,7 +111,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   ];
 
   return (
-    <View>
+    <View style={{ backgroundColor: "white", flex: 1 }}>
       <View style={{ width: "90%" }}>
         {/* Checkmarks like Driver Paid, etc */}
         <Text style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}>
@@ -136,8 +136,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         colorScheme="danger"
         style={{
           marginTop: 20,
-          width: 100,
-          alignSelf: "flex-end",
+          width: 150,
+          alignSelf: "center",
         }}
         onPress={() => handleUpdate()}
       >

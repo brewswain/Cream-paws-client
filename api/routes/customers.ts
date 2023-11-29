@@ -2,11 +2,14 @@ import axios from "axios";
 import { axiosInstance } from "../api";
 
 // Creating default param in case we don't have any pets added
-export const createCustomer = async (name: string, pets: any[] = []) => {
+export const createCustomer = async (customer: CustomerPayload) => {
+  const { name, pets, contactNumber, location } = customer;
   try {
     const response = await axiosInstance.post(`/customer`, {
       name,
       pets,
+      contactNumber,
+      location,
     });
     return response.data;
   } catch (error) {
@@ -16,7 +19,6 @@ export const createCustomer = async (name: string, pets: any[] = []) => {
 
 export const deleteCustomer = async (id: string) => {
   try {
-    console.log({ id });
     await axiosInstance.delete(`/customer/${id}`);
   } catch (error) {
     // TODO: use toasts instead of alerts

@@ -69,7 +69,6 @@ export const updateOrder = async (order: Order) => {
       order
     );
 
-    console.log({ response: response.data });
     return response.data;
   } catch (error) {
     console.error({ error });

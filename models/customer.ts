@@ -1,11 +1,20 @@
 interface Customer {
-   name: string;
-   id: string;
-   pets?: [
-      {
-         name: string;
-         breed: string;
-      }
-   ];
-   orders?: OrderWithChowDetails[];
+  id: string;
+  pets?: [
+    {
+      name: string;
+      breed: string;
+    }
+  ];
+  contactNumber?: string;
+  location?: string;
+  name?: string;
+  orders?: OrderWithChowDetails[];
+}
+
+interface CustomerPayload {
+  name: string;
+  pets?: any[];
+  contactNumber?: string;
+  location?: string;
 }

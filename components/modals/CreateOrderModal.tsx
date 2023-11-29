@@ -7,21 +7,15 @@ import {
   Text,
   TextInputChangeEventData,
   View,
-  TouchableOpacity,
   TouchableWithoutFeedback,
+  GestureResponderEvent,
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-import {
-  Button,
-  CheckIcon,
-  Checkbox,
-  FormControl,
-  Modal,
-  Select,
-} from "native-base";
-import Icon from "react-native-vector-icons/AntDesign";
+import { Button, CheckIcon, FormControl, Modal, Select } from "native-base";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { CheckBox } from "@rneui/themed";
 
 import { createOrder } from "../../api";
 
@@ -61,13 +55,15 @@ const CreateOrderModal = ({
     warehouse_paid: false,
   });
   const [selectedChow, setSelectedChow] = useState("");
-  const [groupValues, setGroupValues] = useState<string[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  // Loose typing on purpose for now, type SHOULD be Order.
-  const [orders, setOrders] = useState<any[]>([{}]);
+
+  const orderInputsPaymentMade = orderInputs.payment_made;
+  const orderInputDriverPaid = orderInputs.driver_paid;
+  const orderInputIsDelivery = orderInputs.is_delivery;
+  const orderInputWarehousePaid = orderInputs.warehouse_paid;
 
   const closeModal = () => {
     setShowModal(false);
@@ -119,6 +115,22 @@ const CreateOrderModal = ({
     });
   };
 
+  const renderDeliveryCost = () => {
+    const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
+
+    return (
+      <Select placeholder="Delivery Cost">
+        {TEST_DELIVERY_COSTS.map((price, index) => (
+          <Select.Item
+            key={index}
+            value={price.toString()}
+            label={price.toString()}
+          />
+        ))}
+      </Select>
+    );
+  };
+
   // TODO: fix 'any' typing here, expect this to give problems--The problem is that if i were to pass an interface here, it'd need to iterate through each [value] and have its own unique type
   // Perhaps a for in loop?🤔
 
@@ -127,12 +139,12 @@ const CreateOrderModal = ({
     // payload to act like a pseudo-singleton would be really nice.
     customer_id: selectedCustomer,
     chow_array: chowInputs,
-    payment_made: false,
-    payment_date: "Payment not Made",
+    payment_made: orderInputs.payment_made,
+    payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
     delivery_date: orderInputs.delivery_date,
-    is_delivery: false,
-    driver_paid: false,
-    warehouse_paid: false,
+    is_delivery: orderInputs.is_delivery,
+    driver_paid: orderInputs.driver_paid,
+    warehouse_paid: orderInputs.warehouse_paid,
     // add chow object
     // Make it work when making multiple calls. Maybe a loop, or something like Promise.all()
     // This is so that we can make multiple orders of separate chow for one client.
@@ -161,24 +173,11 @@ const CreateOrderModal = ({
     });
   };
 
-  const handleCheckboxChange = (values: any) => {
-    setGroupValues(values);
-  };
-
-  const handleOrderChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string
-  ) => {
+  const handleCheckBoxChange = (name: string) => {
     let data = { ...orderInputs };
-    if (data[name] === "true") {
-      data[name] = true;
-    } else if (data[name] === "false") {
-      data[name] = false;
-    } else {
-      data[name] = event.nativeEvent.text;
-    }
 
-    // console.log({ event: event.nativeEvent.text, data_name: name });
+    data[name] = !data[name];
+
     setOrderInputs(data);
   };
 
@@ -188,19 +187,6 @@ const CreateOrderModal = ({
     setOrderInputs(data);
   };
 
-  // const handleChowChange = (
-  //    event: NativeSyntheticEvent<TextInputChangeEventData>,
-  //    index: number,
-  //    name: string
-  // ) => {
-  //    let data = [...chowInputs];
-  //    // TODO: clean up elifs
-
-  //    data[index][name] = event.nativeEvent.text;
-
-  //    setChowInputs(data);
-  // };
-
   const handleQuantityChange = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
     index: number,
@@ -208,14 +194,9 @@ const CreateOrderModal = ({
   ) => {
     let data = [...chowInputs];
     const inputValue = event.nativeEvent.text.trim(); // Trim whitespace from input value
-
-    if (inputValue === "") {
-      data[index][name] = 1; // Set quantity to 1 if input is blank
-    } else {
-      const convertedText = parseInt(inputValue);
-      if (!isNaN(convertedText)) {
-        data[index][name] = convertedText; // Only update quantity if input is a valid number
-      }
+    const convertedText = parseInt(inputValue);
+    if (!isNaN(convertedText)) {
+      data[index][name] = convertedText; // Only update quantity if input is a valid number
     }
 
     setChowInputs(data);
@@ -239,7 +220,6 @@ const CreateOrderModal = ({
     const data = { ...orderInputs };
     data.customer_id = itemValue;
     setOrderInputs(data);
-    // console.log({ location: "handleCustomerSelected", data });
   };
 
   const handleOrderCreation = async () => {
@@ -254,24 +234,16 @@ const CreateOrderModal = ({
     Promise.all(
       chowArray.map(async (chowDetails: ChowDetails) => {
         const { chow_id, quantity } = chowDetails;
-        const {
-          customer_id,
-          delivery_date,
-          payment_made,
-          payment_date,
-          is_delivery,
-          driver_paid,
-          warehouse_paid,
-        } = orderPayload;
+        const { customer_id, delivery_date, payment_date } = orderPayload;
 
         const newOrderPayload = {
           delivery_date,
-          payment_made,
           payment_date,
-          is_delivery,
           quantity,
-          driver_paid,
-          warehouse_paid,
+          payment_made: orderInputs.payment_made,
+          is_delivery: orderInputs.is_delivery,
+          driver_paid: orderInputs.driver_paid,
+          warehouse_paid: orderInputs.warehouse_paid,
           customer_id,
           chow_id,
         };
@@ -284,30 +256,12 @@ const CreateOrderModal = ({
     });
   };
 
-  useEffect(() => {
-    groupValues.map((value: string) => {
-      orderPayload[value] = true;
-    });
-  }, [groupValues]);
-
   return (
     <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header>Create Order</Modal.Header>
         <Modal.Body>
-          {/* TODO: Add in differentiation for order-type later */}
-
-          {/* <FormControl isRequired>
-                  <FormControl.Label>Order Type</FormControl.Label>
-                  <Input
-                     onChange={(event) =>
-                        handleOrderChange(event, index, "name")
-                     }
-                  />
-               </FormControl>
-             */}
-          {/* <TouchableWithoutFeedback onPress={renderCustomersDropdown}> */}
           <View>
             <Select
               minWidth="200"
@@ -337,17 +291,26 @@ const CreateOrderModal = ({
             onCancel={toggleDatePickerVisibility}
           />
 
-          <Checkbox.Group
-            onChange={setGroupValues}
-            value={groupValues}
-            accessibilityLabel="Choose order options"
-          >
-            <Checkbox value="payment_made">Has client Paid for order?</Checkbox>
-            <Checkbox value="driver_paid">Driver Paid?</Checkbox>
-            <Checkbox value="warehouse_paid">Warehouse Paid?</Checkbox>
-            <Checkbox value="is_delivery">Is This a delivery</Checkbox>
-          </Checkbox.Group>
+          {/* TODO: fix all the jank. in this case, we need to make our types better */}
 
+          <CheckBox
+            title="Is this a delivery?"
+            checked={orderInputIsDelivery}
+            onPress={() => handleCheckBoxChange("is_delivery")}
+          />
+
+          {orderInputs.is_delivery && renderDeliveryCost()}
+
+          <CheckBox
+            title="Has Client Paid for order?"
+            checked={orderInputsPaymentMade}
+            onPress={() => handleCheckBoxChange("payment_made")}
+          />
+          <CheckBox
+            title="Has the warehouse been paid?"
+            checked={orderInputWarehousePaid}
+            onPress={() => handleCheckBoxChange("warehouse_paid")}
+          />
           <FormControl.Label>Chow Details</FormControl.Label>
           {chowInputs.map((field, index) => {
             return (
@@ -374,13 +337,13 @@ const CreateOrderModal = ({
 
                 <TextInput
                   style={input}
-                  placeholder="Quantity (Set to 1 by default)"
+                  placeholder="Quantity *"
                   keyboardType="numeric"
                   onChange={(event) =>
                     handleQuantityChange(event, index, "quantity")
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
-                  value={field.quantity.toString()}
+                  // value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
                 <View style={buttonContainer}>
@@ -416,6 +379,7 @@ const CreateOrderModal = ({
           <Button variant="ghost" onPress={closeModal}>
             Cancel
           </Button>
+
           <Button
             style={confirmationButton}
             onPress={() => handleOrderCreation()}
