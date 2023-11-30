@@ -1,4 +1,4 @@
-import { Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 interface DetailsTextProps {
   header: string;
@@ -11,17 +11,23 @@ const DetailsText = ({
   details,
   color = "white",
 }: DetailsTextProps) => {
-  const { bold, regular } = styles;
+  const { container, bold, regular } = styles;
 
   return (
-    <Text style={[bold, { paddingBottom: 6, color }]}>
-      {header}: 
+    <View style={container}>
+      <Text style={[bold, { paddingBottom: 6, color }]}>{header}: </Text>
       <Text style={regular}>{details}</Text>
-    </Text>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    minWidth: "60%",
+    maxWidth: 250,
+    justifyContent: "space-between",
+  },
   bold: {
     fontWeight: "500",
     paddingLeft: 20,

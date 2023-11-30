@@ -9,6 +9,7 @@ import {
 
 import Collapsible from "react-native-collapsible";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { Divider } from "native-base";
 
 import Dinero from "dinero.js";
 
@@ -34,7 +35,7 @@ const CollapsibleVariety = ({
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
   return (
-    <View>
+    <View style={{ marginVertical: 4, minHeight: 50 }}>
       <TouchableOpacity
         style={dropdownContainer}
         onPress={() => {
@@ -58,33 +59,46 @@ const CollapsibleVariety = ({
             },
           ]}
         >
-          {varieties.map((variety, index) => (
-            <View>
-              {/* make button press set active variety, using index */}
-              <Pressable
-                style={
-                  index === varietyIndex
-                    ? styles.activeButton
-                    : styles.inactiveButton
-                }
-                onPress={() => setVarietyIndex(index)}
-              >
-                <Text>{variety.size + variety.unit}</Text>
-              </Pressable>
-            </View>
-          ))}
+          {varieties.map((variety, index) => {
+            const isActiveButton = index === varietyIndex;
+            return (
+              <View>
+                {/* make button press set active variety, using index */}
+                <Pressable
+                  style={[
+                    styles.button,
+                    isActiveButton
+                      ? styles.activeButton
+                      : styles.inactiveButton,
+                  ]}
+                  onPress={() => setVarietyIndex(index)}
+                >
+                  <Text
+                    style={{ color: isActiveButton ? "white" : "black" }}
+                  >{`${variety.size} ${variety.unit}`}</Text>
+                </Pressable>
+              </View>
+            );
+          })}
         </View>
-        <DetailsText
-          header="Wholesale Price"
-          details={varieties[varietyIndex].wholesale_price}
-          color="black"
-        />
-        <DetailsText
-          header="Retail Price"
-          details={varieties[varietyIndex].retail_price}
-          color="black"
-        />
+        <View style={{ paddingBottom: 12 }}>
+          <DetailsText
+            header="Wholesale Price"
+            details={Dinero({
+              amount: Math.round(varieties[varietyIndex].wholesale_price * 100),
+            }).toFormat("$0,0.00")}
+            color="black"
+          />
+          <DetailsText
+            header="Retail Price"
+            details={Dinero({
+              amount: Math.round(varieties[varietyIndex].retail_price * 100),
+            }).toFormat("$0,0.00")}
+            color="black"
+          />
+        </View>
       </Collapsible>
+      <Divider />
     </View>
   );
 };
@@ -93,14 +107,15 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "white",
+    justifyContent: "space-between",
     padding: 4,
     borderRadius: 4,
     marginBottom: 10,
+    paddingHorizontal: 20,
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: 18,
+    width: "90%",
   },
   dropdownIcon: {
     paddingLeft: 20,
@@ -108,11 +123,21 @@ const styles = StyleSheet.create({
 
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  button: {
+    width: 60,
+    height: 30,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   activeButton: {
-    backgroundColor: "red",
+    backgroundColor: "#4939FF",
   },
-  inactiveButton: {},
+  inactiveButton: {
+    backgroundColor: "white",
+  },
 });
 export default CollapsibleVariety;

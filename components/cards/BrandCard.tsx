@@ -17,8 +17,6 @@ const BrandCard = ({
   populateStockList,
   setIsDeleted,
 }: BrandCardProps) => {
-  const { buttonContainer, chowCard, icon } = styles;
-
   const navigation = useNavigation();
 
   const handleNavigation = () => {
@@ -29,8 +27,8 @@ const BrandCard = ({
   };
 
   return (
-    <Pressable onPress={() => handleNavigation()}>
-      <Text>{chow.brand}</Text>
+    <Pressable style={styles.chowCard} onPress={() => handleNavigation()}>
+      <Text style={styles.header}>{chow.brand}</Text>
     </Pressable>
   );
 };
@@ -49,7 +47,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#8099c1",
   },
   chowCard: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignSelf: "center",
     alignItems: "center",
@@ -60,6 +57,12 @@ const styles = StyleSheet.create({
     padding: 8,
     color: "white",
     minHeight: 70,
+  },
+  header: {
+    fontSize: 26,
+    textAlign: "center",
+    padding: 6,
+    color: "#e6e3e3",
   },
 
   icon: {
