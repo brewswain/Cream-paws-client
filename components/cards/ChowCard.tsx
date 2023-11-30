@@ -2,8 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteChow } from "../../api";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import DeleteModal from "../modals/DeleteModal";
+import { Dispatch, SetStateAction, useState } from "react";
 import SettingsModal from "../modals/SettingsModal";
 
 interface ChowCardProps {

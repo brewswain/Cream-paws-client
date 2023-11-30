@@ -9,6 +9,7 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Chow, ChowFlavour } from "./models/chow";
 
 declare global {
   namespace ReactNavigation {
@@ -29,6 +30,10 @@ export type RootStackParamList = {
   CustomerDetails: Customer;
   OrderDetails: OrderDetails;
   ChowDetails: Chow;
+  ChowFlavour: {
+    flavours: ChowFlavour[];
+    brand: string;
+  };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -46,6 +51,10 @@ export type RootTabParamList = {
   CustomerDetails: Customer;
   OrderDetails: OrderDetails;
   ChowDetails: Chow;
+  ChowFlavour: {
+    flavours: ChowFlavour[];
+    brand: string;
+  };
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =

@@ -10,52 +10,57 @@ import * as Linking from "expo-linking";
 import { RootStackParamList } from "../types";
 
 const linking: LinkingOptions<RootStackParamList> = {
-   prefixes: [Linking.makeUrl("/")],
-   config: {
-      screens: {
-         Root: {
+  prefixes: [Linking.makeUrl("/")],
+  config: {
+    screens: {
+      Root: {
+        screens: {
+          Home: {
             screens: {
-               Home: {
-                  screens: {
-                     HomeScreen: "home",
-                  },
-               },
-               TabTwo: {
-                  screens: {
-                     TabTwoScreen: "two",
-                  },
-               },
-               Customers: {
-                  screens: {
-                     CustomersScreen: "customers",
-                  },
-               },
-               Orders: {
-                  screens: {
-                     OrdersScreen: "orders",
-                  },
-               },
-               Stock: {
-                  screens: {
-                     StockScreen: "stock",
-                  },
-               },
-               Finance: {
-                  screens: {
-                     FinanceScreen: "finance",
-                  },
-               },
-               Auth: {
-                  screens: {
-                     AuthScreen: "auth",
-                  },
-               },
+              HomeScreen: "home",
             },
-         },
-         Modal: "modal",
-         NotFound: "*",
+          },
+          TabTwo: {
+            screens: {
+              TabTwoScreen: "two",
+            },
+          },
+          Customers: {
+            screens: {
+              CustomersScreen: "customers",
+            },
+          },
+          Orders: {
+            screens: {
+              OrdersScreen: "orders",
+            },
+          },
+          Stock: {
+            screens: {
+              StockScreen: "stock",
+            },
+          },
+          Finance: {
+            screens: {
+              FinanceScreen: "finance",
+            },
+          },
+          Auth: {
+            screens: {
+              AuthScreen: "auth",
+            },
+          },
+          ChowFlavour: {
+            screens: {
+              ChowFlavourScreen: "Chow Flavour",
+            },
+          },
+        },
       },
-   },
+      Modal: "modal",
+      NotFound: "*",
+    },
+  },
 };
 
 export default linking;
