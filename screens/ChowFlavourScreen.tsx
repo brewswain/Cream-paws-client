@@ -12,7 +12,6 @@ interface ChowFlavourProps {
 
 const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   const { flavours, brand, brand_id } = route.params;
-  console.log({ brand_id });
 
   return (
     <View>
