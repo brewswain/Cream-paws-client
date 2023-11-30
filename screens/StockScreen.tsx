@@ -16,6 +16,7 @@ const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const [chows, setChows] = useState<Chow[]>([]);
+
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 

@@ -33,6 +33,7 @@ export type RootStackParamList = {
   ChowFlavour: {
     flavours: ChowFlavour[];
     brand: string;
+    brand_id: string;
   };
 };
 
@@ -54,6 +55,7 @@ export type RootTabParamList = {
   ChowFlavour: {
     flavours: ChowFlavour[];
     brand: string;
+    brand_id: string;
   };
 };
 

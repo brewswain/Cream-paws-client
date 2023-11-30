@@ -16,6 +16,6 @@ export interface ChowFlavour {
 export interface Chow {
   brand: string;
   target_group: string;
-  brand_id?: string;
+  brand_id: string;
   flavours: ChowFlavour[];
 }
