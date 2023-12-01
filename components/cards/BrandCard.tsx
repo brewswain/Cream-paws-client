@@ -23,7 +23,7 @@ const BrandCard = ({
     navigation.navigate("ChowFlavour", {
       flavours: chow.flavours,
       brand: chow.brand,
-      brand_id: chow.brand_id,
+      brand_id: chow.brand_id!,
     });
   };
 

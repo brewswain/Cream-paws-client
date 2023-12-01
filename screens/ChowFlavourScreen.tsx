@@ -17,7 +17,7 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
     <View>
       <Text style={styles.header}>{brand}</Text>
       {flavours.map((flavour) => (
-        <ChowFlavourDetails flavour={flavour} />
+        <ChowFlavourDetails key={flavour.flavour_id} flavour={flavour} />
       ))}
     </View>
   );
