@@ -16,6 +16,7 @@ import Dinero from "dinero.js";
 import { ChowVariety } from "../../../models/chow";
 import { useState } from "react";
 import DetailsText from "../../DetailsText";
+import { useNavigation } from "@react-navigation/native";
 
 interface CollapsibleVarietyProps {
   setVarietyCollapsible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,6 +32,8 @@ const CollapsibleVariety = ({
   children,
 }: CollapsibleVarietyProps) => {
   const [varietyIndex, setVarietyIndex] = useState(0);
+
+  const navigation = useNavigation();
 
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
@@ -62,7 +65,7 @@ const CollapsibleVariety = ({
           {varieties.map((variety, index) => {
             const isActiveButton = index === varietyIndex;
             return (
-              <View>
+              <View key={`${variety.chow_id}${variety.size}${variety.unit}`}>
                 {/* make button press set active variety, using index */}
                 <Pressable
                   style={[
