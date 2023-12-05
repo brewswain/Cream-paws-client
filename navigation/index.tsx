@@ -29,6 +29,7 @@ import LinkingConfiguration from "./LinkingConfiguration";
 import ChowDetailsScreen from "../screens/ChowDetailsScreen";
 import OrderDetailsScreen from "../screens/OrderDetailsScreen";
 import ChowFlavourScreen from "../screens/ChowFlavourScreen";
+import EditChowScreen from "../screens/EditChowScreen";
 
 export default function Navigation({
   colorScheme,
@@ -113,6 +114,11 @@ function RootNavigator() {
         name="ChowFlavour"
         component={ChowFlavourScreen}
         options={{ title: "Chow Flavour" }}
+      />
+      <Stack.Screen
+        name="EditChow"
+        component={EditChowScreen}
+        options={{ title: "Edit Chow" }}
       />
       <Stack.Screen
         name="OrderDetails"

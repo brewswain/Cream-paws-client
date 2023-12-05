@@ -35,6 +35,10 @@ export type RootStackParamList = {
     brand: string;
     brand_id: string;
   };
+  EditChow: {
+    brand_id: string;
+    flavour_id?: string;
+  };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -56,6 +60,10 @@ export type RootTabParamList = {
     flavours: ChowFlavour[];
     brand: string;
     brand_id: string;
+  };
+  EditChow: {
+    brand_id: string;
+    flavour_id?: string;
   };
 };
 

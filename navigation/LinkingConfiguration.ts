@@ -55,6 +55,11 @@ const linking: LinkingOptions<RootStackParamList> = {
               ChowFlavourScreen: "Chow Flavour",
             },
           },
+          EditChow: {
+            screens: {
+              EditChowScreen: "Edit Chow",
+            },
+          },
         },
       },
       Modal: "modal",

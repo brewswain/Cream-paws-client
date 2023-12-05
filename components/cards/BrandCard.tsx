@@ -17,6 +17,8 @@ const BrandCard = ({
   populateStockList,
   setIsDeleted,
 }: BrandCardProps) => {
+  const [showModal, setShowModal] = useState(false);
+
   const navigation = useNavigation();
 
   const handleNavigation = () => {
@@ -27,9 +29,34 @@ const BrandCard = ({
     });
   };
 
+  const handleEdit = () => {
+    setShowModal(false);
+    navigation.navigate("EditChow", {
+      brand_id: chow.brand_id!,
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    return;
+  };
+
   return (
     <Pressable style={styles.chowCard} onPress={() => handleNavigation()}>
       <Text style={styles.header}>{chow.brand}</Text>
+      <Pressable onPress={() => setShowModal(true)}>
+        <Icon
+          name="ellipsis-h"
+          size={20}
+          style={{ padding: 12, color: "white" }}
+        />
+      </Pressable>
+      <SettingsModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        handleDeletion={() => handleDelete("placeholder for now")}
+        handleEdit={handleEdit}
+        deletionId={chow.brand_id}
+      />
     </Pressable>
   );
 };
@@ -49,6 +76,7 @@ const styles = StyleSheet.create({
   },
   chowCard: {
     justifyContent: "space-between",
+    flexDirection: "row",
     alignSelf: "center",
     alignItems: "center",
     borderRadius: 4,
