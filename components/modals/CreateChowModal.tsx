@@ -180,7 +180,7 @@ const CreateChowModal = ({
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <>
+              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
@@ -208,7 +208,7 @@ const CreateChowModal = ({
                         ].unit;
 
                       return (
-                        <View>
+                        <View key={unit}>
                           <Pressable
                             style={[
                               styles.unitButton,
@@ -299,7 +299,7 @@ const CreateChowModal = ({
                     />
                   </Button>
                 </View>
-              </>
+              </View>
             );
           }
         )}
