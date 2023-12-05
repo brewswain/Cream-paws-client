@@ -94,7 +94,7 @@ const OrderCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={() =>
+        handleDeletion={() =>
           handleDelete(order.order_id || "id not found", customerId)
         }
         deletionId={order.order_id}

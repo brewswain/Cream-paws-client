@@ -8,21 +8,23 @@ import MaterialIcon from "@expo/vector-icons/MaterialIcons";
 interface SettingsModalProps {
   showModal: boolean;
   setShowModal: Dispatch<SetStateAction<boolean>>;
-  handlePress: (id: string) => void;
+  handleDeletion: (id: string) => void;
+  handleEdit?: () => void;
   deletionId?: string;
 }
 
 const SettingsModal = ({
   showModal,
   setShowModal,
-  handlePress,
+  handleDeletion,
+  handleEdit,
   deletionId,
 }: SettingsModalProps) => {
   const [showConfirmationMessage, setShowConfirmationMessage] =
     useState<boolean>(false);
   const handleDelete = (deletionId: string | undefined) => {
     if (deletionId) {
-      handlePress(deletionId);
+      handleDeletion(deletionId);
     } else {
       console.error("Could not get id, please check your deletionId prop");
     }
@@ -42,20 +44,27 @@ const SettingsModal = ({
         </Modal.Header>
         <Modal.Body>
           <View style={{ gap: 12 }}>
-            {/* <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontSize: 20 }}>Edit</Text>
-              <IonicIcon
-                name="settings-outline"
-                size={26}
-                style={{ paddingLeft: 20 }}
-              />
-            </View> */}
+            {handleEdit && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                <Pressable
+                  style={{ flexDirection: "row" }}
+                  onPress={() => handleEdit()}
+                >
+                  <Text style={{ fontSize: 20 }}>Edit</Text>
+                  <IonicIcon
+                    name="settings-outline"
+                    size={26}
+                    style={{ paddingLeft: 20 }}
+                  />
+                </Pressable>
+              </View>
+            )}
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
               {!showConfirmationMessage ? (
