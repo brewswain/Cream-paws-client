@@ -1,12 +1,22 @@
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   NativeSyntheticEvent,
   TextInputChangeEventData,
+  StyleSheet,
+  Pressable,
+  ScrollView,
 } from "react-native";
-import { RootStackParamList, RootTabScreenProps } from "../types";
-import { useState } from "react";
+
+import { FormControl, Button } from "native-base";
+
+import { findChow, updateChow } from "../api/routes/stock";
+
+import { RootTabScreenProps } from "../types";
 import { Chow } from "../models/chow";
+import { useNavigation } from "@react-navigation/native";
 
 interface EditChowScreenProps {
   navigation: RootTabScreenProps<"EditChow">;
@@ -36,7 +46,25 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     ],
   });
 
+  const [unitIndex, setUnitIndex] = useState(0);
+  const [specifiedFlavourIndex, setSpecifiedFlavourIndex] = useState(0);
+
+  const navigate = useNavigation();
+
+  const {
+    input,
+    confirmationButton,
+    confirmationButtonContainer,
+    button,
+    buttonContainer,
+    header,
+  } = styles;
+
   const { brand_id, flavour_id } = route.params;
+
+  const isEmpty = !Object.values(chowPayload).some(
+    (x) => x !== null && x !== ""
+  );
 
   const handleChowChange = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
@@ -74,29 +102,283 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     setChowPayload(data);
   };
 
+  const getChow = async () => {
+    const data = await findChow(brand_id);
+    const flavourIndex = data.flavours.findIndex(
+      (flavour: any) => flavour.flavour_id === flavour_id
+    );
+    setChowPayload(data);
+    setSpecifiedFlavourIndex(flavourIndex);
+  };
+
   // TODO: potentially unnecessary, since when we pull our chow using our brand_id,
   // we can just use that as our payload and spread in our edited params, preventing the need for conditions.
   // Leaving it in for now just so that I can get a mental map to work with tomz
   const updateFullChow = () => {};
   const updateFlavourOrVariety = () => {};
 
-  const updateChow = () => {
-    if (flavour_id) {
-      updateFlavourOrVariety();
-    } else {
-      updateFullChow();
-    }
+  const handleUpdate = async () => {
+    await updateChow(brand_id, chowPayload);
+
+    getChow();
+    navigate.navigate("Stock");
   };
 
-  const renderChowDetails = () => {
-    if (flavour_id) {
-      return <Text>Edit Flavour chosen</Text>;
-    } else return <Text>Edit Brand chosen</Text>;
+  useEffect(() => {
+    getChow();
+  }, []);
+
+  const renderVarietyForm = (flavourIndex: number) => {
+    return (
+      <>
+        {chowPayload.flavours[flavourIndex].varieties.map(
+          (variety, varietyIndex) => {
+            return (
+              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
+                <FormControl isRequired>
+                  <FormControl.Label>Size</FormControl.Label>
+                  <TextInput
+                    style={input}
+                    defaultValue={variety.size ? variety.size.toString() : "0"}
+                    onChange={(event) =>
+                      handleChowVarietyChange(
+                        event,
+                        "size",
+                        flavourIndex,
+                        varietyIndex
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormControl.Label>Unit</FormControl.Label>
+
+                  <View style={styles.unitButtonContainer}>
+                    {["lb", "kg"].map((unit, index) => {
+                      const isActiveButton =
+                        unit ===
+                        chowPayload.flavours[flavourIndex].varieties[
+                          varietyIndex
+                        ].unit;
+
+                      return (
+                        <View key={unit}>
+                          <Pressable
+                            style={[
+                              styles.unitButton,
+                              isActiveButton
+                                ? styles.activeButton
+                                : styles.inactiveButton,
+                            ]}
+                            onPress={() => {
+                              setUnitIndex(index);
+
+                              const data = { ...chowPayload };
+
+                              data.flavours[flavourIndex].varieties[
+                                varietyIndex
+                              ].unit = unit;
+
+                              setChowPayload(data);
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: isActiveButton ? "white" : "black",
+                              }}
+                            >
+                              {unit}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </FormControl>
+                <FormControl isRequired>
+                  <FormControl.Label>Wholesale Price</FormControl.Label>
+                  <TextInput
+                    style={input}
+                    defaultValue={
+                      variety.wholesale_price
+                        ? variety.wholesale_price.toString()
+                        : "0"
+                    }
+                    onChange={(event) =>
+                      handleChowVarietyChange(
+                        event,
+                        "wholesale_price",
+                        flavourIndex,
+                        varietyIndex
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormControl.Label>Retail Price</FormControl.Label>
+                  <TextInput
+                    style={input}
+                    defaultValue={
+                      variety.retail_price
+                        ? variety.retail_price.toString()
+                        : "0"
+                    }
+                    onChange={(event) =>
+                      handleChowVarietyChange(
+                        event,
+                        "retail_price",
+                        flavourIndex,
+                        varietyIndex
+                      )
+                    }
+                  />
+                </FormControl>
+              </View>
+            );
+          }
+        )}
+      </>
+    );
   };
 
-  // return <View>{renderChowDetails()}</View>;
+  return (
+    <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+      <FormControl>
+        <View style={{ alignItems: "center" }}>
+          <FormControl.Label>Brand</FormControl.Label>
+          <TextInput
+            style={input}
+            defaultValue={chowPayload.brand}
+            onChange={(event) => handleChowChange(event, "brand")}
+          />
+        </View>
+      </FormControl>
 
-  return <View></View>;
+      {flavour_id && chowPayload.flavours.length > 0 ? (
+        <>
+          <Text style={header}>Flavour</Text>
+          <View>
+            <FormControl.Label mt={4}>Name</FormControl.Label>
+            <TextInput
+              style={input}
+              defaultValue={
+                chowPayload.flavours[specifiedFlavourIndex].flavour_name
+              }
+              onChange={(event) =>
+                handleChowFlavourChange(
+                  event,
+                  "flavour_name",
+                  specifiedFlavourIndex
+                )
+              }
+            />
+            <Text style={header}>
+              {`${chowPayload.flavours[specifiedFlavourIndex].flavour_name} Size Variations`}
+            </Text>
+            {renderVarietyForm(specifiedFlavourIndex)}
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={header}>Flavours</Text>
+          {chowPayload.flavours.map((_, index) => {
+            const currentFlavour = chowPayload.flavours[index];
+            return (
+              <View key={index}>
+                <FormControl.Label mt={4}>Name</FormControl.Label>
+                <TextInput
+                  style={input}
+                  defaultValue={currentFlavour.flavour_name}
+                  onChange={(event) =>
+                    handleChowFlavourChange(event, "flavour_name", index)
+                  }
+                />
+                <Text
+                  style={header}
+                >{`${currentFlavour.flavour_name} Size Variations`}</Text>
+                {renderVarietyForm(index)}
+              </View>
+            );
+          })}
+        </>
+      )}
+      <Button.Group space={2} style={confirmationButtonContainer}>
+        <Button variant="ghost" onPress={() => alert()}>
+          Cancel
+        </Button>
+        <Button
+          style={confirmationButton}
+          onPress={() => handleUpdate()}
+          isDisabled={isEmpty}
+        >
+          Save
+        </Button>
+      </Button.Group>
+    </ScrollView>
+  );
 };
+
+const styles = StyleSheet.create({
+  input: {
+    margin: 5,
+    marginBottom: 8,
+    marginTop: 0,
+    paddingLeft: 10,
+    width: 270,
+    borderRadius: 4,
+    backgroundColor: "hsl(240,57%,97%)",
+  },
+  buttonContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 4,
+  },
+  button: {
+    width: 40,
+    height: 30,
+    marginRight: 4,
+    backgroundColor: "hsl(213,74%,54%)",
+  },
+  confirmationButtonContainer: {
+    marginBottom: 4,
+  },
+  confirmationButton: {
+    backgroundColor: "hsl(213,74%,54%)",
+  },
+  dropdown: {
+    height: 30,
+    paddingLeft: 10,
+  },
+  dropdownContainer: {
+    margin: 5,
+    marginBottom: 8,
+    marginTop: 0,
+    width: 270,
+    borderRadius: 4,
+  },
+  header: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  unitButtonContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  unitButton: {
+    width: 60,
+    height: 30,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activeButton: {
+    backgroundColor: "#4939FF",
+  },
+  inactiveButton: {
+    backgroundColor: "white",
+  },
+});
 
 export default EditChowScreen;

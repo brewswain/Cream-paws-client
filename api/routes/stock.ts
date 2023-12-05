@@ -41,3 +41,13 @@ export const getAllChow = async () => {
     alert(error);
   }
 };
+
+export const findChow = async (id: string) => {
+  try {
+    const response = await axiosInstance.get(`/stock/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
