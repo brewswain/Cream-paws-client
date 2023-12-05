@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Text, View, Pressable, StyleSheet, ScrollView } from "react-native";
 
 import Icon from "@expo/vector-icons/AntDesign";
@@ -39,10 +39,11 @@ const StockScreen = () => {
     }
   };
 
-  useEffect(() => {
-    populateChowList();
-  }, [isDeleted]);
-
+  useFocusEffect(
+    useCallback(() => {
+      populateChowList();
+    }, [isDeleted])
+  );
   return (
     <View style={container}>
       {isLoading ? (
