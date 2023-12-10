@@ -12,7 +12,7 @@ import {
 
 import { FormControl, Button } from "native-base";
 
-import { findChow, updateChow } from "../api/routes/stock";
+import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
 import { RootTabScreenProps } from "../types";
 import { Chow } from "../models/chow";
@@ -118,7 +118,11 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
   const updateFlavourOrVariety = () => {};
 
   const handleUpdate = async () => {
-    await updateChow(brand_id, chowPayload);
+    if (flavour_id) {
+      await updateChowFlavour(chowPayload.flavours[specifiedFlavourIndex]);
+    } else {
+      await updateChow(brand_id, chowPayload);
+    }
 
     getChow();
     navigate.navigate("Stock");
