@@ -36,8 +36,15 @@ const BrandCard = ({
     });
   };
 
-  const handleDelete = (id: string) => {
-    return;
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleted(false);
+      await deleteChow(id);
+      setIsDeleted(true);
+      populateStockList();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -53,7 +60,7 @@ const BrandCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handleDeletion={() => handleDelete("placeholder for now")}
+        handleDeletion={handleDelete}
         handleEdit={handleEdit}
         deletionId={chow.brand_id}
       />
