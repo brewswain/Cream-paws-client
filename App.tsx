@@ -1,35 +1,35 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NativeBaseProvider } from "native-base";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { loadFonts } from "./assets/fonts/loadFonts";
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
-import { loadFonts } from "./assets/fonts/loadFonts";
 
 export default function App() {
-  const [fontLoaded, setFontLoaded] = useState(false);
+	const [fontLoaded, setFontLoaded] = useState(false);
 
-  const isLoadingComplete = useCachedResources();
-  const colorScheme = useColorScheme();
+	const isLoadingComplete = useCachedResources();
+	const colorScheme = useColorScheme();
 
-  useEffect(() => {
-    loadFonts();
-    setFontLoaded(true);
-  }, []);
+	useEffect(() => {
+		loadFonts();
+		setFontLoaded(true);
+	}, []);
 
-  if (!isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <SafeAreaProvider>
-        <NativeBaseProvider>
-          <Navigation colorScheme={colorScheme} />
-          <StatusBar />
-        </NativeBaseProvider>
-      </SafeAreaProvider>
-    );
-  }
+	if (!isLoadingComplete) {
+		return null;
+	} else {
+		return (
+			<SafeAreaProvider>
+				<NativeBaseProvider>
+					<Navigation colorScheme={colorScheme} />
+					<StatusBar />
+				</NativeBaseProvider>
+			</SafeAreaProvider>
+		);
+	}
 }

@@ -1,21 +1,21 @@
 import { useState } from "react";
 import {
   NativeSyntheticEvent,
-  TextInputChangeEventData,
-  StyleSheet,
-  TextInput,
-  View,
-  Text,
   Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputChangeEventData,
+  View,
 } from "react-native";
 
-import Icon from "react-native-vector-icons/FontAwesome";
 import { Button, FormControl, Modal } from "native-base";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-import { createChow } from "../../api";
-import { Chow } from "../../models/chow";
-import { createChowFlavour, findChow } from "../../api/routes/stock";
 import { useNavigation } from "@react-navigation/native";
+import { createChow } from "../../api";
+import { createChowFlavour, findChow } from "../../api/routes/stock";
+import { Chow } from "../../models/chow";
 
 interface CreateChowProps {
   isOpen: boolean;
@@ -82,7 +82,7 @@ const CreateChowModal = ({
   };
 
   const removeFlavourField = (index: number) => {
-    let data = [...chowPayload.flavours];
+    const data = [...chowPayload.flavours];
     data.splice(index, 1);
 
     const newData = {
@@ -97,7 +97,7 @@ const CreateChowModal = ({
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit: "lb" as "lb",
+      unit: "lb" as const,
       wholesale_price: 0,
       retail_price: 0,
     };
@@ -107,7 +107,7 @@ const CreateChowModal = ({
   };
 
   const removeVarietyField = (flavourIndex: number, varietyIndex: number) => {
-    let data = { ...chowPayload };
+    const data = { ...chowPayload };
     const targetFlavour = data.flavours[flavourIndex];
 
     targetFlavour.varieties.splice(varietyIndex, 1);
@@ -122,7 +122,7 @@ const CreateChowModal = ({
     event: NativeSyntheticEvent<TextInputChangeEventData>,
     name: string
   ) => {
-    let data: any = { ...chowPayload };
+    const data: any = { ...chowPayload };
 
     data[name] = event.nativeEvent.text;
 
@@ -135,7 +135,7 @@ const CreateChowModal = ({
     name: string,
     index: number
   ) => {
-    let data: any = { ...chowPayload };
+    const data: any = { ...chowPayload };
     data.flavours[index][name] = event.nativeEvent.text;
 
     setChowPayload(data);
@@ -147,7 +147,7 @@ const CreateChowModal = ({
     flavourIndex: number,
     varietyIndex: number
   ) => {
-    let data: any = { ...chowPayload };
+    const data: any = { ...chowPayload };
     data.flavours[flavourIndex].varieties[varietyIndex][name] =
       event.nativeEvent.text;
 

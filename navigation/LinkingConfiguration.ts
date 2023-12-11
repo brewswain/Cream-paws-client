@@ -10,62 +10,62 @@ import * as Linking from "expo-linking";
 import { RootStackParamList } from "../types";
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.makeUrl("/")],
-  config: {
-    screens: {
-      Root: {
-        screens: {
-          Home: {
-            screens: {
-              HomeScreen: "home",
-            },
-          },
-          TabTwo: {
-            screens: {
-              TabTwoScreen: "two",
-            },
-          },
-          Customers: {
-            screens: {
-              CustomersScreen: "customers",
-            },
-          },
-          Orders: {
-            screens: {
-              OrdersScreen: "orders",
-            },
-          },
-          Stock: {
-            screens: {
-              StockScreen: "stock",
-            },
-          },
-          Finance: {
-            screens: {
-              FinanceScreen: "finance",
-            },
-          },
-          Auth: {
-            screens: {
-              AuthScreen: "auth",
-            },
-          },
-          ChowFlavour: {
-            screens: {
-              ChowFlavourScreen: "Chow Flavour",
-            },
-          },
-          EditChow: {
-            screens: {
-              EditChowScreen: "Edit Chow",
-            },
-          },
-        },
-      },
-      Modal: "modal",
-      NotFound: "*",
-    },
-  },
+	prefixes: [Linking.makeUrl("/")],
+	config: {
+		screens: {
+			Root: {
+				screens: {
+					Home: {
+						screens: {
+							HomeScreen: "home",
+						},
+					},
+					TabTwo: {
+						screens: {
+							TabTwoScreen: "two",
+						},
+					},
+					Customers: {
+						screens: {
+							CustomersScreen: "customers",
+						},
+					},
+					Orders: {
+						screens: {
+							OrdersScreen: "orders",
+						},
+					},
+					Stock: {
+						screens: {
+							StockScreen: "stock",
+						},
+					},
+					Finance: {
+						screens: {
+							FinanceScreen: "finance",
+						},
+					},
+					Auth: {
+						screens: {
+							AuthScreen: "auth",
+						},
+					},
+					ChowFlavour: {
+						screens: {
+							ChowFlavourScreen: "Chow Flavour",
+						},
+					},
+					EditChow: {
+						screens: {
+							EditChowScreen: "Edit Chow",
+						},
+					},
+				},
+			},
+			Modal: "modal",
+			NotFound: "*",
+		},
+	},
 };
 
 export default linking;
