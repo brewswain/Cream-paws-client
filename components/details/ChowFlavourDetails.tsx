@@ -15,6 +15,7 @@ import { Divider } from "native-base";
 import DetailsText from "../DetailsText";
 import SettingsModal from "../modals/SettingsModal";
 import { useNavigation } from "@react-navigation/native";
+import { deleteChowFlavour } from "../../api/routes/stock";
 
 interface ChowFlavourDetailsProps {
   flavour: ChowFlavour;
@@ -37,10 +38,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
       brand_id: brand_id,
       flavour_id: flavour.flavour_id,
     });
-  };
-
-  const handleDelete = (id: string) => {
-    return;
   };
 
   return (
@@ -113,7 +110,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handleDeletion={() => handleDelete("placeholder for now")}
         handleEdit={handleEdit}
         deletionId={brand_id}
       />
