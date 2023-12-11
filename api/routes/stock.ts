@@ -14,13 +14,12 @@ export const createChow = async (chow: Chow) => {
 
 export const createChowFlavour = async (
   brand_id: string,
-  flavour: ChowFlavour
+  flavours: ChowFlavour[]
 ) => {
   try {
-    const response = await axiosInstance.post(
-      `/stock/flavour/${brand_id}`,
-      flavour
-    );
+    const response = await axiosInstance.put(`/stock/flavour/${brand_id}`, {
+      flavours,
+    });
 
     return response.data;
   } catch (error) {

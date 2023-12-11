@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -8,11 +8,17 @@ import { ChowFlavour } from "../models/chow";
 import { RootTabScreenProps } from "../types";
 import ChowFlavourDetails from "../components/details/ChowFlavourDetails";
 import SettingsModal from "../components/modals/SettingsModal";
+import { CreateChowModal } from "../components";
 
 interface ChowFlavourProps {
   navigation: RootTabScreenProps<"ChowDetails">;
   route: {
-    params: { flavours: ChowFlavour[]; brand: string; brand_id: string };
+    params: {
+      flavours: ChowFlavour[];
+      brand: string;
+      brand_id: string;
+      populateChowList?: () => void;
+    };
   };
 }
 
@@ -20,13 +26,20 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
 
+  const navigate = useNavigation();
+
   const openCreationModal = () => {
     setShowCreationModal(true);
   };
   const handleEdit = () => {};
   const { flavours, brand, brand_id } = route.params;
+
   const handleDelete = (id: string) => {
     return;
+  };
+
+  const navigateToStockScreen = () => {
+    navigate.navigate("Stock");
   };
 
   return (
@@ -39,17 +52,20 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
           brand_id={brand_id}
         />
       ))}
-      <SettingsModal
-        showModal={showSettingsModal}
-        setShowModal={setShowSettingsModal}
-        handleDeletion={() => handleDelete("placeholder for now")}
-        handleEdit={handleEdit}
-        deletionId={brand_id}
-      />
-
       <Pressable style={styles.buttonContainer} onPress={openCreationModal}>
         <Icon name="plus" size={20} />
       </Pressable>
+
+      <CreateChowModal
+        isOpen={showCreationModal}
+        setShowModal={setShowCreationModal}
+        populateChowList={
+          route.params.populateChowList
+            ? route.params.populateChowList
+            : navigateToStockScreen
+        }
+        brand_id={brand_id}
+      />
     </View>
   );
 };

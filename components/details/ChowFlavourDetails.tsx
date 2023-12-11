@@ -5,8 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { ChowFlavour } from "../../models/chow";
-import CollapsibleVariety from "../Dropdowns/Chow/CollabsibleVariety";
+import { Chow, ChowFlavour } from "../../models/chow";
 import { useState } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Collapsible from "react-native-collapsible";
@@ -15,7 +14,11 @@ import { Divider } from "native-base";
 import DetailsText from "../DetailsText";
 import SettingsModal from "../modals/SettingsModal";
 import { useNavigation } from "@react-navigation/native";
-import { deleteChowFlavour } from "../../api/routes/stock";
+import {
+  deleteChowFlavour,
+  findChow,
+  getAllChow,
+} from "../../api/routes/stock";
 
 interface ChowFlavourDetailsProps {
   flavour: ChowFlavour;
@@ -40,6 +43,21 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
     });
   };
 
+  const handleDelete = async (flavour_id: string) => {
+    await deleteChowFlavour(flavour_id);
+    const data: Chow = await findChow(brand_id);
+
+    navigation.navigate("ChowFlavour", {
+      flavours: data.flavours,
+      brand: data.brand,
+      brand_id: data.brand_id!,
+    });
+  };
+
+  const openModal = () => {
+    setShowModal(true);
+  };
+
   return (
     <View style={{ marginVertical: 4, minHeight: 50 }}>
       <TouchableOpacity
@@ -47,7 +65,7 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
         onPress={() => {
           setVarietyCollapsible(!varietyCollapsible);
         }}
-        onLongPress={() => setShowModal(true)}
+        onLongPress={() => openModal()}
       >
         <Text style={dropdownText}>{flavour_name}</Text>
         <Icon
@@ -111,7 +129,8 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
         showModal={showModal}
         setShowModal={setShowModal}
         handleEdit={handleEdit}
-        deletionId={brand_id}
+        handleDeletion={handleDelete}
+        deletionId={flavour.flavour_id}
       />
     </View>
   );

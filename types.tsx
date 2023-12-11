@@ -37,6 +37,7 @@ export type RootStackParamList = {
     flavours: ChowFlavour[];
     brand: string;
     brand_id: string;
+    populateChowList?: () => void;
   };
   EditChow: {
     brand_id: string;
@@ -63,6 +64,7 @@ export type RootTabParamList = {
     flavours: ChowFlavour[];
     brand: string;
     brand_id: string;
+    populateChowList?: () => void;
   };
   EditChow: {
     brand_id: string;

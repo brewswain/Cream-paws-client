@@ -4,13 +4,15 @@ import { Modal, Button } from "native-base";
 
 import IonicIcon from "@expo/vector-icons/Ionicons";
 import MaterialIcon from "@expo/vector-icons/MaterialIcons";
+import { useNavigation } from "@react-navigation/native";
 
 interface SettingsModalProps {
   showModal: boolean;
   setShowModal: Dispatch<SetStateAction<boolean>>;
-  handleDeletion?: (id: string) => void;
+  handleDeletion: (id: string) => void;
   handleEdit?: () => void;
   deletionId?: string;
+  deleteFlavour?: boolean;
 }
 
 const SettingsModal = ({
@@ -19,11 +21,15 @@ const SettingsModal = ({
   handleDeletion,
   handleEdit,
   deletionId,
+  deleteFlavour,
 }: SettingsModalProps) => {
   const [showConfirmationMessage, setShowConfirmationMessage] =
     useState<boolean>(false);
+
+  const navigate = useNavigation();
+
   const handleDelete = (deletionId: string | undefined) => {
-    if (deletionId && handleDeletion) {
+    if (deletionId) {
       handleDeletion(deletionId);
     } else {
       console.error("Could not get id, please check your deletionId prop");

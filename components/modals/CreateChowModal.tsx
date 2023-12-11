@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   NativeSyntheticEvent,
   TextInputChangeEventData,
@@ -10,21 +10,25 @@ import {
 } from "react-native";
 
 import Icon from "react-native-vector-icons/FontAwesome";
-import { Button, FormControl, Modal, Radio } from "native-base";
+import { Button, FormControl, Modal } from "native-base";
 
 import { createChow } from "../../api";
 import { Chow } from "../../models/chow";
+import { createChowFlavour, findChow } from "../../api/routes/stock";
+import { useNavigation } from "@react-navigation/native";
 
 interface CreateChowProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
   populateChowList(): void;
+  brand_id?: string;
 }
 
 const CreateChowModal = ({
   isOpen,
   setShowModal,
   populateChowList,
+  brand_id,
 }: CreateChowProps) => {
   const [chowPayload, setChowPayload] = useState<Chow>({
     brand: "",
@@ -45,6 +49,8 @@ const CreateChowModal = ({
   const [unitIndex, setUnitIndex] = useState(0);
 
   const [errors, setErrors] = useState({});
+
+  const navigation = useNavigation();
 
   const {
     input,
@@ -161,17 +167,29 @@ const CreateChowModal = ({
     // Heavyhanded use of !, but we should never have undefined here
     await createChow(chowPayload!);
     populateChowList();
-    closeModal();
+  };
+
+  const handleFlavourCreation = async () => {
+    const flavourPayload = chowPayload.flavours;
+    // ! used here since we're only going to run this method if we have  our brand_id
+    await createChowFlavour(brand_id!, flavourPayload);
+    const data: Chow = await findChow(brand_id!);
+
+    navigation.navigate("ChowFlavour", {
+      flavours: data.flavours,
+      brand: data.brand,
+      brand_id: data.brand_id!,
+    });
   };
 
   const handleSubmit = () => {
-    handleChowCreation();
+    if (brand_id) {
+      handleFlavourCreation();
+    } else {
+      handleChowCreation();
+    }
 
-    // validateFormEntry()
-    //   ? handleChowCreation()
-    //   : alert(
-    //       "Error creating chow! This is a form validation Error, so please check to make sure that no fields are empty"
-    //     );
+    closeModal();
   };
 
   const renderVarietyForm = (flavourIndex: number) => {
@@ -311,15 +329,19 @@ const CreateChowModal = ({
     <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
       <Modal.Content>
         <Modal.CloseButton />
-        <Modal.Header>Create Chow Brand</Modal.Header>
+        <Modal.Header>
+          {brand_id ? "Create New Flavour" : "Create Chow Brand"}
+        </Modal.Header>
         <Modal.Body>
-          <FormControl isRequired>
-            <FormControl.Label>Brand</FormControl.Label>
-            <TextInput
-              style={input}
-              onChange={(event) => handleChowChange(event, "brand")}
-            />
-          </FormControl>
+          {!brand_id && (
+            <FormControl isRequired>
+              <FormControl.Label>Brand</FormControl.Label>
+              <TextInput
+                style={input}
+                onChange={(event) => handleChowChange(event, "brand")}
+              />
+            </FormControl>
+          )}
           <Text style={header}>Flavours</Text>
 
           {chowPayload.flavours.map((_, index) => {

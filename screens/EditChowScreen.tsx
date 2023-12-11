@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { FormControl, Button } from "native-base";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
@@ -61,7 +62,6 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
   } = styles;
 
   const { brand_id, flavour_id } = route.params;
-
   const isEmpty = !Object.values(chowPayload).some(
     (x) => x !== null && x !== ""
   );
@@ -76,6 +76,27 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
 
     setChowPayload(data);
     return;
+  };
+
+  const addNewVarietyField = (flavourIndex: number) => {
+    const data = { ...chowPayload };
+    const newField = {
+      size: 0,
+      unit: "lb" as "lb",
+      wholesale_price: 0,
+      retail_price: 0,
+    };
+
+    data.flavours[flavourIndex].varieties.push(newField);
+    setChowPayload(data);
+  };
+
+  const removeVarietyField = (flavourIndex: number, varietyIndex: number) => {
+    let data = { ...chowPayload };
+    const targetFlavour = data.flavours[flavourIndex];
+
+    targetFlavour.varieties.splice(varietyIndex, 1);
+    setChowPayload(data);
   };
 
   const handleChowFlavourChange = (
@@ -137,7 +158,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
+              <View key={`${varietyIndex} ${variety.size} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
@@ -236,6 +257,34 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                     }
                   />
                 </FormControl>
+                <View style={buttonContainer}>
+                  <Button
+                    style={button}
+                    onPress={() => addNewVarietyField(flavourIndex)}
+                    key={`flavourIndex: ${varietyIndex} AddField `}
+                  >
+                    <Icon
+                      name="plus"
+                      size={10}
+                      key={`flavourIndex: ${varietyIndex} PlusIcon `}
+                    />
+                  </Button>
+                  <Button
+                    isDisabled={
+                      chowPayload.flavours[flavourIndex].varieties.length <= 1
+                    }
+                    onPress={() =>
+                      removeVarietyField(flavourIndex, varietyIndex)
+                    }
+                    key={`flavourIndex: ${varietyIndex} RemoveField `}
+                  >
+                    <Icon
+                      name="minus"
+                      size={10}
+                      key={`flavourIndex: ${varietyIndex} MinusIcon `}
+                    />
+                  </Button>
+                </View>
               </View>
             );
           }
@@ -306,7 +355,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         </>
       )}
       <Button.Group space={2} style={confirmationButtonContainer}>
-        <Button variant="ghost" onPress={() => alert()}>
+        <Button variant="ghost" onPress={() => navigate.navigate("Stock")}>
           Cancel
         </Button>
         <Button

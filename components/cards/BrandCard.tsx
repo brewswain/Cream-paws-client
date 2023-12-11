@@ -26,6 +26,7 @@ const BrandCard = ({
       flavours: chow.flavours,
       brand: chow.brand,
       brand_id: chow.brand_id!,
+      populateChowList: populateStockList,
     });
   };
 
