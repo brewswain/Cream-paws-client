@@ -8,7 +8,7 @@ import MaterialIcon from "@expo/vector-icons/MaterialIcons";
 interface SettingsModalProps {
   showModal: boolean;
   setShowModal: Dispatch<SetStateAction<boolean>>;
-  handleDeletion: (id: string) => void;
+  handleDeletion?: (id: string) => void;
   handleEdit?: () => void;
   deletionId?: string;
 }
@@ -23,7 +23,7 @@ const SettingsModal = ({
   const [showConfirmationMessage, setShowConfirmationMessage] =
     useState<boolean>(false);
   const handleDelete = (deletionId: string | undefined) => {
-    if (deletionId) {
+    if (deletionId && handleDeletion) {
       handleDeletion(deletionId);
     } else {
       console.error("Could not get id, please check your deletionId prop");
