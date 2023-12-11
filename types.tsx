@@ -29,7 +29,10 @@ export type RootStackParamList = {
   Auth: undefined;
   CustomerDetails: Customer;
   OrderDetails: OrderDetails;
-  ChowDetails: Chow;
+  ChowDetails: {
+    chow: Chow;
+    populateChowList: () => void;
+  };
   ChowFlavour: {
     flavours: ChowFlavour[];
     brand: string;

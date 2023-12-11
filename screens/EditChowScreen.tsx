@@ -23,7 +23,7 @@ interface EditChowScreenProps {
   route: {
     params: {
       brand_id: string;
-      flavour_id: string;
+      flavour_id?: string;
     };
   };
 }
@@ -111,21 +111,20 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     setSpecifiedFlavourIndex(flavourIndex);
   };
 
-  // TODO: potentially unnecessary, since when we pull our chow using our brand_id,
-  // we can just use that as our payload and spread in our edited params, preventing the need for conditions.
-  // Leaving it in for now just so that I can get a mental map to work with tomz
-  const updateFullChow = () => {};
-  const updateFlavourOrVariety = () => {};
-
   const handleUpdate = async () => {
     if (flavour_id) {
       await updateChowFlavour(chowPayload.flavours[specifiedFlavourIndex]);
+      navigate.navigate("ChowFlavour", {
+        flavours: chowPayload.flavours,
+        brand: chowPayload.brand,
+        brand_id: route.params.brand_id,
+      });
     } else {
       await updateChow(brand_id, chowPayload);
+      navigate.navigate("Stock");
     }
 
     getChow();
-    navigate.navigate("Stock");
   };
 
   useEffect(() => {

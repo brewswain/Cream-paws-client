@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View, Pressable } from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
+import Icon from "@expo/vector-icons/AntDesign";
+
 import { ChowFlavour } from "../models/chow";
 import { RootTabScreenProps } from "../types";
 import ChowFlavourDetails from "../components/details/ChowFlavourDetails";
 import SettingsModal from "../components/modals/SettingsModal";
-import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
 
 interface ChowFlavourProps {
   navigation: RootTabScreenProps<"ChowDetails">;
@@ -14,16 +17,20 @@ interface ChowFlavourProps {
 }
 
 const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showCreationModal, setShowCreationModal] = useState(false);
 
-  const { flavours, brand, brand_id } = route.params;
+  const openCreationModal = () => {
+    setShowCreationModal(true);
+  };
   const handleEdit = () => {};
+  const { flavours, brand, brand_id } = route.params;
   const handleDelete = (id: string) => {
     return;
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Text style={styles.header}>{brand}</Text>
       {flavours.map((flavour) => (
         <ChowFlavourDetails
@@ -32,24 +39,42 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
           brand_id={brand_id}
         />
       ))}
-
       <SettingsModal
-        showModal={showModal}
-        setShowModal={setShowModal}
+        showModal={showSettingsModal}
+        setShowModal={setShowSettingsModal}
         handleDeletion={() => handleDelete("placeholder for now")}
         handleEdit={handleEdit}
         deletionId={brand_id}
       />
+
+      <Pressable style={styles.buttonContainer} onPress={openCreationModal}>
+        <Icon name="plus" size={20} />
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   header: {
     fontSize: 24,
     textAlign: "center",
     marginTop: 12,
     marginBottom: 20,
+  },
+  buttonContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    height: 40,
+    width: 40,
+    bottom: 20,
+    right: 10,
+    borderRadius: 50,
+    backgroundColor: "#8099c1",
   },
 });
 
