@@ -44,6 +44,7 @@ const StockScreen = () => {
       populateChowList();
     }, [isDeleted])
   );
+
   return (
     <View style={container}>
       {isLoading ? (
