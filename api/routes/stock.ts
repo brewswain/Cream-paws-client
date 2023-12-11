@@ -12,9 +12,39 @@ export const createChow = async (chow: Chow) => {
   }
 };
 
+export const createChowFlavour = async (
+  brand_id: string,
+  flavour: ChowFlavour
+) => {
+  try {
+    const response = await axiosInstance.post(
+      `/stock/flavour/${brand_id}`,
+      flavour
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const deleteChow = async (id: string) => {
   try {
     const response = await axiosInstance.delete(`/stock/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const deleteChowFlavour = async (flavour_id: string) => {
+  try {
+    const response = await axiosInstance.delete("/stock/flavour", {
+      data: {
+        flavour_id,
+      },
+    });
 
     return response.data;
   } catch (error) {
