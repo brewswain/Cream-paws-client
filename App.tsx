@@ -10,26 +10,25 @@ import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
 
 export default function App() {
-	const [fontLoaded, setFontLoaded] = useState(false);
+  const [fontLoaded, setFontLoaded] = useState(false);
 
-	const isLoadingComplete = useCachedResources();
-	const colorScheme = useColorScheme();
+  const isLoadingComplete = useCachedResources();
+  const colorScheme = useColorScheme();
 
-	useEffect(() => {
-		loadFonts();
-		setFontLoaded(true);
-	}, []);
+  useEffect(() => {
+    loadFonts();
+    setFontLoaded(true);
+  }, []);
 
-	if (!isLoadingComplete) {
-		return null;
-	} else {
-		return (
-			<SafeAreaProvider>
-				<NativeBaseProvider>
-					<Navigation colorScheme={colorScheme} />
-					<StatusBar />
-				</NativeBaseProvider>
-			</SafeAreaProvider>
-		);
-	}
+  if (!isLoadingComplete) {
+    return null;
+  }
+  return (
+    <SafeAreaProvider>
+      <NativeBaseProvider>
+        <Navigation colorScheme={colorScheme} />
+        <StatusBar />
+      </NativeBaseProvider>
+    </SafeAreaProvider>
+  );
 }
