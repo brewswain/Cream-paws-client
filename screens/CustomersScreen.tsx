@@ -41,7 +41,6 @@ const CustomersScreen = () => {
         return customer;
       });
 
-      console.log({ mappedCustomersWithOrders });
       setCustomersWithOpenOrders(mappedCustomersWithOrders);
       setCustomersWithoutOpenOrders(mappedCustomersWithoutOrders);
       setIsLoading(false);
@@ -68,20 +67,22 @@ const CustomersScreen = () => {
         generateSkeletons({ count: 12, type: "CustomerSkeleton" })
       ) : (
         <ScrollView>
-          {customersWithOpenOrders?.map((customer, index) => (
-            <View
-              key={customer.id}
-              style={index === 0 ? { marginTop: 12 } : null}
-            >
-              <CustomerCard
-                customer={customer}
+          {customersWithOpenOrders?.map((customer, index) => {
+            return (
+              <View
                 key={customer.id}
-                populateCustomersList={populateCustomersList}
-                isDeleted={isDeleted}
-                setIsDeleted={setIsDeleted}
-              />
-            </View>
-          ))}
+                style={index === 0 ? { marginTop: 12 } : null}
+              >
+                <CustomerCard
+                  customer={customer}
+                  key={customer.id}
+                  populateCustomersList={populateCustomersList}
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                />
+              </View>
+            );
+          })}
           {customersWithoutOpenOrders?.map((customer, index) => (
             <View
               key={customer.id}

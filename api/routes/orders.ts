@@ -1,3 +1,4 @@
+import { OrderWithChowDetails } from "../../models/order";
 import { axiosInstance } from "../api";
 
 export const createOrder = async (order: firstTimeOrder) => {
@@ -54,7 +55,7 @@ export const getAllOrders = async () => {
 };
 
 // TODO: fix typings lol
-export const updateOrder = async (order: Order) => {
+export const updateOrder = async (order: OrderWithChowDetails) => {
   try {
     const response = await axiosInstance.put(
       `/orders/${order.order_id}`,
