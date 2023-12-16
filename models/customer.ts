@@ -14,9 +14,10 @@ export interface Customer {
   orders?: OrderWithChowDetails[];
 }
 
-interface CustomerPayload {
+export interface CustomerPayload {
   name: string;
   pets?: any[];
+  city?: string;
   contactNumber?: string;
   location?: string;
 }

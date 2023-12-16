@@ -26,7 +26,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
 
-  const { pets, orders, name, id, contactNumber, location } = route.params;
+  const { pets, orders, name, id, contactNumber, location, city } =
+    route.params;
   // const { pets, orders, name, id } = testCustomerDetails;
   const { container, header, subHeader, deEmphasis, outstandingCosts } = styles;
 
@@ -52,7 +53,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
+      (accumulator: number, currentValue: number) => accumulator + currentValue,
       0
     ) * 100
   );
@@ -77,6 +78,10 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         <Text style={subHeader}>Location</Text>
         <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
           {location}
+        </Text>
+        <Text style={subHeader}>City</Text>
+        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
+          {city}
         </Text>
       </>
     );

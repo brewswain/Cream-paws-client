@@ -104,7 +104,7 @@ const CustomerCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={handleDelete}
+        handleDeletion={handleDelete}
         deletionId={customer.id}
       />
     </>
