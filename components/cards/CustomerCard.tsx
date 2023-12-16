@@ -50,6 +50,11 @@ const CustomerCard = ({
     navigation.navigate("CustomerDetails", customer);
   };
 
+  const handleEdit = () => {
+    setShowModal(false);
+    navigation.navigate("EditCustomer", customer);
+  };
+
   const handleDelete = async (id: string) => {
     try {
       setIsDeleted(false);
@@ -104,6 +109,7 @@ const CustomerCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
+        handleEdit={handleEdit}
         handleDeletion={handleDelete}
         deletionId={customer.id}
       />

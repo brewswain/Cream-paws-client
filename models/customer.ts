@@ -11,6 +11,7 @@ export interface Customer {
   contactNumber?: string;
   location?: string;
   name?: string;
+  city?: string;
   orders?: OrderWithChowDetails[];
 }
 

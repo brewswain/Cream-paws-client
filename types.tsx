@@ -45,6 +45,7 @@ export type RootStackParamList = {
     brand_id: string;
     flavour_id?: string;
   };
+  EditCustomer: Customer;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -72,6 +73,7 @@ export type RootTabParamList = {
     brand_id: string;
     flavour_id?: string;
   };
+  EditCustomer: Customer;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
