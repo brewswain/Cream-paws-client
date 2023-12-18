@@ -1,9 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Button, Modal } from "native-base";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteCustomer } from "../../api";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Button, Modal } from "native-base";
 import DeleteModal from "../modals/DeleteModal";
 import SettingsModal from "../modals/SettingsModal";
 
@@ -50,6 +50,11 @@ const CustomerCard = ({
     navigation.navigate("CustomerDetails", customer);
   };
 
+  const handleEdit = () => {
+    setShowModal(false);
+    navigation.navigate("EditCustomer", customer);
+  };
+
   const handleDelete = async (id: string) => {
     try {
       setIsDeleted(false);
@@ -68,23 +73,29 @@ const CustomerCard = ({
   return (
     <>
       <Pressable onPress={() => viewDetails()}>
-        {customer.orders && customer.orders.length > 0 && (
-          <View style={openOrdersContainer}>
-            <View style={detailsContainer}>
-              <Text style={clientNameHeader}>{name}</Text>
+        {customer.orders &&
+          customer.orders.length > 0 &&
+          openOrdersArray.length > 0 && (
+            <View style={openOrdersContainer}>
+              <View style={detailsContainer}>
+                <Text style={clientNameHeader}>{name}</Text>
+              </View>
+              <View style={priceContainer}>
+                <Text style={price}>
+                  {` Open Orders:${openOrdersArray?.length}`}
+                </Text>
+                <Pressable onPress={() => setShowModal(true)}>
+                  <Icon
+                    name="ellipsis-h"
+                    size={20}
+                    style={{ marginLeft: 14 }}
+                  />
+                </Pressable>
+              </View>
             </View>
-            <View style={priceContainer}>
-              <Text style={price}>
-                {` Open Orders:${openOrdersArray?.length}`}
-              </Text>
-              <Pressable onPress={() => setShowModal(true)}>
-                <Icon name="ellipsis-h" size={20} style={{ marginLeft: 14 }} />
-              </Pressable>
-            </View>
-          </View>
-        )}
+          )}
 
-        {customer.orders && customer.orders?.length < 1 && (
+        {customer.orders && openOrdersArray.length < 1 && (
           <View style={noOrdersContainer}>
             <View style={detailsContainer}>
               <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
@@ -98,7 +109,8 @@ const CustomerCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={handleDelete}
+        handleEdit={handleEdit}
+        handleDeletion={handleDelete}
         deletionId={customer.id}
       />
     </>

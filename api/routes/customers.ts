@@ -1,13 +1,15 @@
 import axios from "axios";
 import { axiosInstance } from "../api";
+import { Customer, CustomerPayload } from "../../models/customer";
 
 // Creating default param in case we don't have any pets added
 export const createCustomer = async (customer: CustomerPayload) => {
-  const { name, pets, contactNumber, location } = customer;
+  const { name, pets, contactNumber, location, city } = customer;
   try {
-    const response = await axiosInstance.post(`/customer`, {
+    const response = await axiosInstance.post("/customer", {
       name,
       pets,
+      city,
       contactNumber,
       location,
     });
@@ -44,9 +46,9 @@ export const getAllCustomers = async () => {
   }
 };
 
-export const updateCustomer = async (id: string, name: string) => {
+export const updateCustomer = async (id: string, customer: Customer) => {
   try {
-    await axiosInstance.put(`/customer/${id}`, { name });
+    await axiosInstance.put(`/customer/${id}`, customer);
   } catch (error) {
     alert(error);
   }

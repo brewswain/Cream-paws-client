@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
-  View,
+  ScrollView,
   StyleSheet,
   Text,
-  ScrollView,
+  View,
   useWindowDimensions,
 } from "react-native";
 
@@ -12,6 +12,7 @@ import Dinero from "dinero.js";
 import { RootTabScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
+import { OrderWithChowDetails } from "../models/order";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -19,13 +20,14 @@ interface CustomerDetailProps {
 }
 
 const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
-  // False by default to ensure Outstanding orders are displayed
+  //   False by default to ensure Outstanding orders are displayed
   const [outstandingCollapsible, setOutstandingCollapsible] =
     useState<boolean>(false);
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
 
-  const { pets, orders, name, id, contactNumber, location } = route.params;
+  const { pets, orders, name, id, contactNumber, location, city } =
+    route.params;
   // const { pets, orders, name, id } = testCustomerDetails;
   const { container, header, subHeader, deEmphasis, outstandingCosts } = styles;
 
@@ -36,20 +38,25 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const locationExist = location !== undefined;
   const contactNumberExist = contactNumber !== undefined;
   const outstandingOrders = orders.filter(
-    (order: Order) => order.payment_made === false
+    (order: OrderWithChowDetails) => order.payment_made === false
   );
   const completedOrders = orders.filter(
-    (order: Order) => order.payment_made === true
+    (order: OrderWithChowDetails) => order.payment_made === true
   );
 
   const mappedCostArray = orders
-    .filter((order: Order) => order.payment_made === false)
+    .filter((order: OrderWithChowDetails) => order.payment_made === false)
     .map(
       (order: OrderWithChowDetails) =>
-        order.chow_details.retail_price * order.quantity
+        order.chow_details.flavours.varieties.retail_price * order.quantity
     );
 
-  //TODO: remove test payload
+  const subTotal = Math.round(
+    mappedCostArray.reduce(
+      (accumulator: number, currentValue: number) => accumulator + currentValue,
+      0
+    ) * 100
+  );
 
   const capitalizedName = (name: string) => {
     return name[0].toUpperCase() + name.substring(1);
@@ -72,12 +79,16 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
           {location}
         </Text>
+        <Text style={subHeader}>City</Text>
+        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
+          {city}
+        </Text>
       </>
     );
   };
   const renderPets = () => (
     <View>
-      <Text style={[subHeader]}>{pets!.length > 1 ? "Pets" : "Pet"}</Text>
+      <Text style={[subHeader]}>{pets?.length > 1 ? "Pets" : "Pet"}</Text>
 
       {pets?.map((pet: { name: string; breed: string }, index: number) => (
         <View key={`${index} Pet Container`}>
@@ -91,7 +102,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const renderOrders = () => {
     return (
       <View style={container}>
-        <Text style={subHeader}>{orders!.length > 1 ? "Orders" : "Order"}</Text>
+        <Text style={subHeader}>{orders?.length > 1 ? "Orders" : "Order"}</Text>
 
         <CollapsibleOrder
           outstandingCollapsible={outstandingCollapsible}
@@ -101,12 +112,12 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
           Outstanding Orders
         </CollapsibleOrder>
         {/* <CollapsibleOrder
-          outstandingCollapsible={completedCollapsible}
-          setOutstandingCollapsible={setCompletedCollapsible}
-          outstandingOrders={completedOrders}
-        >
-          Completed Orders
-        </CollapsibleOrder> */}
+              outstandingCollapsible={completedCollapsible}
+              setOutstandingCollapsible={setCompletedCollapsible}
+              outstandingOrders={completedOrders}
+            >
+              Completed Orders
+            </CollapsibleOrder> */}
       </View>
     );
   };
@@ -117,16 +128,12 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       {outstandingOrders.length > 0 ? (
         <Text style={outstandingCosts}>
           Total Outstanding Cost:{" "}
-          {Dinero({
-            amount: Math.round(
-              mappedCostArray.reduce(
-                (accumulator: number, currentValue: number) =>
-                  accumulator + currentValue,
-                0
-              ) * 100
-            ),
-            precision: 2,
-          }).toFormat("$0,0.00")}
+          {subTotal
+            ? Dinero({
+                amount: subTotal || 0,
+                precision: 2,
+              }).toFormat("$0,0.00")
+            : null}
         </Text>
       ) : (
         <Text style={[outstandingCosts, { color: "green" }]}>

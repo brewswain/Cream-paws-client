@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   NativeSyntheticEvent,
   StyleSheet,
@@ -24,9 +24,11 @@ const CreateCustomerModal = ({
   populateCustomerList,
 }: CreateCustomerModalProps) => {
   // Used for dynamically rendering a new input for each pet
+  // TODO: convert all of these fields into one state object
   const [name, setName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [location, setLocation] = useState("");
+  const [city, setCity] = useState("");
   const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
   const {
     input,
@@ -41,12 +43,12 @@ const CreateCustomerModal = ({
   };
 
   const addField = () => {
-    let newField = { name: "", breed: "" };
+    const newField = { name: "", breed: "" };
     setPets([...pets, newField]);
   };
 
   const removeField = (index: number) => {
-    let data = [...pets];
+    const data = [...pets];
     data.splice(index, 1);
     setPets(data);
   };
@@ -65,7 +67,7 @@ const CreateCustomerModal = ({
     index: number,
     name: string
   ) => {
-    let data = [...pets];
+    const data = [...pets];
     data[index][name] = event.nativeEvent.text;
 
     setPets(data);
@@ -82,13 +84,21 @@ const CreateCustomerModal = ({
     setLocation(event.nativeEvent.text);
   };
 
+  const handleCityChange = (
+    event: NativeSyntheticEvent<TextInputChangeEventData>
+  ) => {
+    setCity(event.nativeEvent.text);
+  };
+
   const handleCustomerCreation = async () => {
     const customerPayload = {
       name,
       pets,
       location,
+      city,
       contactNumber,
     };
+
     await createCustomer(customerPayload);
     populateCustomerList();
     closeModal();
@@ -118,11 +128,19 @@ const CreateCustomerModal = ({
             />
           </FormControl>
           <FormControl>
-            <FormControl.Label>Location</FormControl.Label>
+            <FormControl.Label>Address</FormControl.Label>
             <TextInput
               style={input}
               onChange={(event) => handleLocationChange(event)}
               value={location}
+            />
+          </FormControl>
+          <FormControl>
+            <FormControl.Label>City</FormControl.Label>
+            <TextInput
+              style={input}
+              onChange={(event) => handleCityChange(event)}
+              value={city}
             />
           </FormControl>
           <FormControl mt={3}>

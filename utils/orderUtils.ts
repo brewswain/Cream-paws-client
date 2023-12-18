@@ -1,8 +1,10 @@
 import moment from "moment";
 
 import { getAllCustomers, updateOrder } from "../api";
+import { OrderWithChowDetails } from "../models/order";
+import { Customer } from "../models/customer";
 
-export const clearOrders = async (orders: Order[]) => {
+export const clearOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Dinero from "dinero.js";
+import { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import Collapsible from "react-native-collapsible";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -17,8 +17,8 @@ const CollapsibleChowDetails = ({
   index,
 }: CollapsibleChowDetailsProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-  const { brand, target_group, flavour, size, unit, retail_price } =
-    chowDetails;
+  const { brand } = chowDetails;
+  const { size, unit, retail_price } = chowDetails.flavours.varieties;
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
   return (
@@ -42,8 +42,10 @@ const CollapsibleChowDetails = ({
       <Collapsible collapsed={isCollapsed}>
         <View>
           <DetailsText header={"Brand"} details={brand} />
-          <DetailsText header={"Target Group"} details={target_group} />
-          <DetailsText header={"Flavour"} details={flavour} />
+          <DetailsText
+            header={"Flavour"}
+            details={chowDetails.flavours.flavour_name}
+          />
           <DetailsText header={"Size"} details={`${size} ${unit}`} />
           <DetailsText
             header={"Cost"}

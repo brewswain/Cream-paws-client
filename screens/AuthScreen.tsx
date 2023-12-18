@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, Text, View } from "react-native";
 import { getCurrentUser, signIn, signOut, signUp } from "../api/routes/auth";
@@ -25,9 +25,7 @@ const AuthScreen = () => {
   return (
     <View>
       <Text>
-        {user && user.email
-          ? `User ${user.email} is signed in.`
-          : "Please sign In!"}
+        {user?.email ? `User ${user.email} is signed in.` : "Please sign In!"}
       </Text>
       <Text>{`CurrentUserTest: ${currentUser}`}</Text>
       <Button

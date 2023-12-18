@@ -1,21 +1,22 @@
-import { useState, useEffect } from "react";
-import { Text, View, Pressable, StyleSheet, ScrollView } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import Icon from "@expo/vector-icons/AntDesign";
 
-import { getAllChow } from "../api/routes/stock";
-import CreateChowModal from "../components/modals/CreateChowModal";
-import ChowCard from "../components/cards/ChowCard";
-import React from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import React from "react";
+import { getAllChow } from "../api/routes/stock";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
+import BrandCard from "../components/cards/BrandCard";
+import ChowCard from "../components/cards/ChowCard";
+import CreateChowModal from "../components/modals/CreateChowModal";
+import { Chow } from "../models/chow";
 
 const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  const [chow, setChow] = useState<Chow[]>([]);
-  const [customerReservedChow, setCustomerReservedChow] = useState<Chow[]>([]);
-  const [unpaidChow, setUnpaidChow] = useState<Chow[]>([]);
+  const [chows, setChows] = useState<Chow[]>([]);
+
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -30,16 +31,7 @@ const StockScreen = () => {
     try {
       const response: Chow[] = await getAllChow();
 
-      const customerReservedChow = response.filter(
-        (item) => item.is_paid_for === true
-      );
-      const unpaidForChow = response.filter(
-        (item) => item.is_paid_for === false
-      );
-
-      setCustomerReservedChow(customerReservedChow);
-      setUnpaidChow(unpaidForChow);
-      setChow(response);
+      setChows(response);
       setIsLoading(false);
     } catch (error) {
       console.error(error);
@@ -47,26 +39,11 @@ const StockScreen = () => {
     }
   };
 
-  const renderChowCards = (chow: Chow, unpaid: boolean) => {
-    if (isLoading) {
-      return generateSkeletons({ count: 1, type: "ChowSkeleton" });
-    } else {
-      return (
-        <ChowCard
-          unpaid={unpaid}
-          populateStockList={populateChowList}
-          chow={chow}
-          isDeleted={isDeleted}
-          setIsDeleted={setIsDeleted}
-          key={`${chow.id} - paid`}
-        />
-      );
-    }
-  };
-
-  useEffect(() => {
-    populateChowList();
-  }, [isDeleted]);
+  useFocusEffect(
+    useCallback(() => {
+      populateChowList();
+    }, [isDeleted])
+  );
 
   return (
     <View style={container}>
@@ -74,34 +51,18 @@ const StockScreen = () => {
         generateSkeletons({ count: 10, type: "ChowSkeleton" })
       ) : (
         <ScrollView>
-          {unpaidChow.length > 0 ? (
+          {chows.length > 0 ? (
             <View>
-              {unpaidChow.map((chow) => {
+              {chows.map((chow) => {
                 return (
-                  <ChowCard
-                    unpaid
+                  <BrandCard
                     populateStockList={populateChowList}
-                    chow={chow}
-                    isDeleted={isDeleted}
                     setIsDeleted={setIsDeleted}
-                    key={`${chow.id} - unpaid`}
+                    chow={chow}
+                    key={chow.brand_id}
                   />
                 );
               })}
-            </View>
-          ) : null}
-          {customerReservedChow.length > 0 ? (
-            <View>
-              {customerReservedChow.map((chow) => (
-                <ChowCard
-                  unpaid={false}
-                  populateStockList={populateChowList}
-                  chow={chow}
-                  isDeleted={isDeleted}
-                  setIsDeleted={setIsDeleted}
-                  key={`${chow.id} - paid`}
-                />
-              ))}
             </View>
           ) : null}
         </ScrollView>

@@ -1,9 +1,9 @@
 import {
-  View,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  ScrollView,
+  View,
   useWindowDimensions,
 } from "react-native";
 

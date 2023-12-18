@@ -3,31 +3,38 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteChow } from "../../api";
+import { Chow } from "../../models/chow";
 import SettingsModal from "../modals/SettingsModal";
 
-interface ChowCardProps {
+interface BrandCardProps {
 	chow: Chow;
 	populateStockList: () => void;
 	setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
-	isDeleted: boolean | null;
-	unpaid: boolean;
 }
 
-const ChowCard = ({
+const BrandCard = ({
 	chow,
 	populateStockList,
 	setIsDeleted,
-	isDeleted,
-	unpaid,
-}: ChowCardProps) => {
-	const [showModal, setShowModal] = useState<boolean>(false);
+}: BrandCardProps) => {
+	const [showModal, setShowModal] = useState(false);
 
 	const navigation = useNavigation();
 
-	const { buttonContainer, chowCard, icon } = styles;
+	const handleNavigation = () => {
+		navigation.navigate("ChowFlavour", {
+			flavours: chow.flavours,
+			brand: chow.brand,
+			brand_id: chow.brand_id!,
+			populateChowList: populateStockList,
+		});
+	};
 
-	const viewDetails = () => {
-		navigation.navigate("ChowDetails", chow);
+	const handleEdit = () => {
+		setShowModal(false);
+		navigation.navigate("EditChow", {
+			brand_id: chow.brand_id!,
+		});
 	};
 
 	const handleDelete = async (id: string) => {
@@ -42,26 +49,23 @@ const ChowCard = ({
 	};
 
 	return (
-		<>
-			<Pressable onPress={() => viewDetails()}>
-				<View>
-					<View style={chowCard} key={`paid-${chow.id}`}>
-						<Text
-							style={{ color: "white", paddingHorizontal: 26, width: "80%" }}
-						>{`${chow.brand} - ${chow.flavour}`}</Text>
-						<Pressable onPress={() => setShowModal(true)}>
-							<Icon name="ellipsis-h" size={20} style={icon} />
-						</Pressable>
-					</View>
-				</View>
+		<Pressable style={styles.chowCard} onPress={() => handleNavigation()}>
+			<Text style={styles.header}>{chow.brand}</Text>
+			<Pressable onPress={() => setShowModal(true)}>
+				<Icon
+					name="ellipsis-h"
+					size={20}
+					style={{ padding: 12, color: "white" }}
+				/>
 			</Pressable>
 			<SettingsModal
 				showModal={showModal}
 				setShowModal={setShowModal}
-				handlePress={handleDelete}
-				deletionId={chow.id}
+				handleDeletion={handleDelete}
+				handleEdit={handleEdit}
+				deletionId={chow.brand_id}
 			/>
-		</>
+		</Pressable>
 	);
 };
 
@@ -79,8 +83,8 @@ const styles = StyleSheet.create({
 		backgroundColor: "#8099c1",
 	},
 	chowCard: {
-		flexDirection: "row",
 		justifyContent: "space-between",
+		flexDirection: "row",
 		alignSelf: "center",
 		alignItems: "center",
 		borderRadius: 4,
@@ -91,6 +95,12 @@ const styles = StyleSheet.create({
 		color: "white",
 		minHeight: 70,
 	},
+	header: {
+		fontSize: 26,
+		textAlign: "center",
+		padding: 6,
+		color: "#e6e3e3",
+	},
 
 	icon: {
 		marginRight: 30,
@@ -98,4 +108,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default ChowCard;
+export default BrandCard;

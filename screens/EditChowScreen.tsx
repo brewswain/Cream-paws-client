@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -9,27 +10,26 @@ import {
   View,
 } from "react-native";
 
-import { Button, FormControl, Modal } from "native-base";
+import { Button, FormControl } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
-import { useNavigation } from "@react-navigation/native";
-import { createChow } from "../../api";
-import { createChowFlavour, findChow } from "../../api/routes/stock";
-import { Chow } from "../../models/chow";
+import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
-interface CreateChowProps {
-  isOpen: boolean;
-  setShowModal(booleanStatus: boolean): void;
-  populateChowList(): void;
-  brand_id?: string;
+import { useNavigation } from "@react-navigation/native";
+import { Chow } from "../models/chow";
+import { RootTabScreenProps } from "../types";
+
+interface EditChowScreenProps {
+  navigation: RootTabScreenProps<"EditChow">;
+  route: {
+    params: {
+      brand_id: string;
+      flavour_id?: string;
+    };
+  };
 }
 
-const CreateChowModal = ({
-  isOpen,
-  setShowModal,
-  populateChowList,
-  brand_id,
-}: CreateChowProps) => {
+const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
   const [chowPayload, setChowPayload] = useState<Chow>({
     brand: "",
     flavours: [
@@ -46,11 +46,11 @@ const CreateChowModal = ({
       },
     ],
   });
+
   const [unitIndex, setUnitIndex] = useState(0);
+  const [specifiedFlavourIndex, setSpecifiedFlavourIndex] = useState(0);
 
-  const [errors, setErrors] = useState({});
-
-  const navigation = useNavigation();
+  const navigate = useNavigation();
 
   const {
     input,
@@ -61,36 +61,20 @@ const CreateChowModal = ({
     header,
   } = styles;
 
-  const addNewFlavourField = () => {
-    setChowPayload({
-      brand: chowPayload?.brand || "",
-      flavours: [
-        ...chowPayload.flavours,
-        {
-          flavour_name: "",
-          varieties: [
-            {
-              size: 0,
-              unit: "lb",
-              wholesale_price: 0,
-              retail_price: 0,
-            },
-          ],
-        },
-      ],
-    });
-  };
+  const { brand_id, flavour_id } = route.params;
+  const isEmpty = !Object.values(chowPayload).some(
+    (x) => x !== null && x !== ""
+  );
 
-  const removeFlavourField = (index: number) => {
-    const data = [...chowPayload.flavours];
-    data.splice(index, 1);
+  const handleChowChange = (
+    event: NativeSyntheticEvent<TextInputChangeEventData>,
+    name: string
+  ) => {
+    const data: any = { ...chowPayload };
 
-    const newData = {
-      ...chowPayload,
-      flavours: data,
-    };
+    data[name] = event.nativeEvent.text;
 
-    setChowPayload(newData);
+    setChowPayload(data);
   };
 
   const addNewVarietyField = (flavourIndex: number) => {
@@ -112,22 +96,6 @@ const CreateChowModal = ({
 
     targetFlavour.varieties.splice(varietyIndex, 1);
     setChowPayload(data);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const handleChowChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string
-  ) => {
-    const data: any = { ...chowPayload };
-
-    data[name] = event.nativeEvent.text;
-
-    setChowPayload(data);
-    return;
   };
 
   const handleChowFlavourChange = (
@@ -154,43 +122,34 @@ const CreateChowModal = ({
     setChowPayload(data);
   };
 
-  const validateFormEntry = () => {
-    if (chowPayload?.brand === undefined) {
-      setErrors({ ...errors, message: "Brand info is required" });
-      return false;
-    }
-
-    return true;
+  const getChow = async () => {
+    const data = await findChow(brand_id);
+    const flavourIndex = data.flavours.findIndex(
+      (flavour: any) => flavour.flavour_id === flavour_id
+    );
+    setChowPayload(data);
+    setSpecifiedFlavourIndex(flavourIndex);
   };
 
-  const handleChowCreation = async () => {
-    // Heavyhanded use of !, but we should never have undefined here
-    await createChow(chowPayload!);
-    populateChowList();
-  };
-
-  const handleFlavourCreation = async () => {
-    const flavourPayload = chowPayload.flavours;
-    // ! used here since we're only going to run this method if we have  our brand_id
-    await createChowFlavour(brand_id!, flavourPayload);
-    const data: Chow = await findChow(brand_id!);
-
-    navigation.navigate("ChowFlavour", {
-      flavours: data.flavours,
-      brand: data.brand,
-      brand_id: data.brand_id!,
-    });
-  };
-
-  const handleSubmit = () => {
-    if (brand_id) {
-      handleFlavourCreation();
+  const handleUpdate = async () => {
+    if (flavour_id) {
+      await updateChowFlavour(chowPayload.flavours[specifiedFlavourIndex]);
+      navigate.navigate("ChowFlavour", {
+        flavours: chowPayload.flavours,
+        brand: chowPayload.brand,
+        brand_id: route.params.brand_id,
+      });
     } else {
-      handleChowCreation();
+      await updateChow(brand_id, chowPayload);
+      navigate.navigate("Stock");
     }
 
-    closeModal();
+    getChow();
   };
+
+  useEffect(() => {
+    getChow();
+  }, []);
 
   const renderVarietyForm = (flavourIndex: number) => {
     return (
@@ -198,12 +157,12 @@ const CreateChowModal = ({
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
+              <View key={`${varietyIndex} ${variety.size} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.size.toString()}
+                    defaultValue={variety.size ? variety.size.toString() : "0"}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -263,7 +222,11 @@ const CreateChowModal = ({
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.wholesale_price.toString()}
+                    defaultValue={
+                      variety.wholesale_price
+                        ? variety.wholesale_price.toString()
+                        : "0"
+                    }
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -278,7 +241,11 @@ const CreateChowModal = ({
                   <FormControl.Label>Retail Price</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.retail_price.toString()}
+                    defaultValue={
+                      variety.retail_price
+                        ? variety.retail_price.toString()
+                        : "0"
+                    }
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -326,73 +293,79 @@ const CreateChowModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
-      <Modal.Content>
-        <Modal.CloseButton />
-        <Modal.Header>
-          {brand_id ? "Create New Flavour" : "Create Chow Brand"}
-        </Modal.Header>
-        <Modal.Body>
-          {!brand_id && (
-            <FormControl isRequired>
-              <FormControl.Label>Brand</FormControl.Label>
-              <TextInput
-                style={input}
-                onChange={(event) => handleChowChange(event, "brand")}
-              />
-            </FormControl>
-          )}
-          <Text style={header}>Flavours</Text>
+    <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+      <FormControl>
+        <View style={{ alignItems: "center" }}>
+          <FormControl.Label>Brand</FormControl.Label>
+          <TextInput
+            style={input}
+            defaultValue={chowPayload.brand}
+            onChange={(event) => handleChowChange(event, "brand")}
+          />
+        </View>
+      </FormControl>
 
+      {flavour_id && chowPayload.flavours.length > 0 ? (
+        <>
+          <Text style={header}>Flavour</Text>
+          <View>
+            <FormControl.Label mt={4}>Name</FormControl.Label>
+            <TextInput
+              style={input}
+              defaultValue={
+                chowPayload.flavours[specifiedFlavourIndex].flavour_name
+              }
+              onChange={(event) =>
+                handleChowFlavourChange(
+                  event,
+                  "flavour_name",
+                  specifiedFlavourIndex
+                )
+              }
+            />
+            <Text style={header}>
+              {`${chowPayload.flavours[specifiedFlavourIndex].flavour_name} Size Variations`}
+            </Text>
+            {renderVarietyForm(specifiedFlavourIndex)}
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={header}>Flavours</Text>
           {chowPayload.flavours.map((_, index) => {
+            const currentFlavour = chowPayload.flavours[index];
             return (
               <View key={index}>
                 <FormControl.Label mt={4}>Name</FormControl.Label>
                 <TextInput
                   style={input}
-                  defaultValue={chowPayload.flavours[index].flavour_name}
+                  defaultValue={currentFlavour.flavour_name}
                   onChange={(event) =>
                     handleChowFlavourChange(event, "flavour_name", index)
                   }
                 />
                 <Text
                   style={header}
-                >{`${chowPayload.flavours[index].flavour_name} Size Variations`}</Text>
+                >{`${currentFlavour.flavour_name} Size Variations`}</Text>
                 {renderVarietyForm(index)}
-
-                <View style={buttonContainer}>
-                  <Button
-                    onPress={() => addNewFlavourField()}
-                    key={`index: ${index} AddField `}
-                  >
-                    New Flavour
-                  </Button>
-                  <Button
-                    isDisabled={chowPayload.flavours.length <= 1}
-                    onPress={() => removeFlavourField(index)}
-                    key={`index: ${index} RemoveField `}
-                  >
-                    Remove Flavour
-                  </Button>
-                </View>
               </View>
             );
           })}
-        </Modal.Body>
-        <Button.Group space={2} style={confirmationButtonContainer}>
-          <Button variant="ghost" onPress={closeModal}>
-            Cancel
-          </Button>
-          <Button
-            style={confirmationButton}
-            onPress={() => handleSubmit()}
-            isDisabled={!validateFormEntry}
-          >
-            Save
-          </Button>
-        </Button.Group>
-      </Modal.Content>
-    </Modal>
+        </>
+      )}
+      <Button.Group space={2} style={confirmationButtonContainer}>
+        <Button variant="ghost" onPress={() => navigate.navigate("Stock")}>
+          Cancel
+        </Button>
+        <Button
+          style={confirmationButton}
+          onPress={() => handleUpdate()}
+          isDisabled={isEmpty}
+        >
+          Save
+        </Button>
+      </Button.Group>
+    </ScrollView>
   );
 };
 
@@ -459,4 +432,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateChowModal;
+export default EditChowScreen;

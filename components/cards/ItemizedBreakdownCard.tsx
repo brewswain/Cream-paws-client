@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
+import { useFocusEffect } from "@react-navigation/native";
 import { Button, Checkbox } from "native-base";
 import { clearOrders, getTodaysOrders } from "../../utils/orderUtils";
-import { useFocusEffect } from "@react-navigation/native";
+import { OrderWithChowDetails } from "../../models/order";
 
 const ItemizedBreakdownCard = () => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
@@ -14,7 +15,9 @@ const ItemizedBreakdownCard = () => {
     useState("idle");
   const [groupValues, setGroupValues] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [outstandingOrders, setOutstandingOrders] = useState<any[]>([]);
+  const [outstandingOrders, setOutstandingOrders] = useState<
+    OrderWithChowDetails[]
+  >([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -69,14 +72,19 @@ const ItemizedBreakdownCard = () => {
     buttonText,
   } = styles;
 
-  const orders = outstandingOrders;
+  const orders: OrderWithChowDetails[] = outstandingOrders;
   const mappedCostArray = orders
     .filter((order) => order.payment_made === false)
-    .map((order) => order.chow_details.wholesale_price * order.quantity);
+    .map(
+      (order) =>
+        order.chow_details.flavours.varieties.wholesale_price * order.quantity
+    );
 
   const mappedVatArray = orders
     .filter((order) => order.payment_made === false)
-    .map((order) => order.chow_details.wholesale_price * 0.125);
+    .map(
+      (order) => order.chow_details.flavours.varieties.wholesale_price * 0.125
+    );
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
@@ -92,9 +100,9 @@ const ItemizedBreakdownCard = () => {
     ) * 100
   );
 
-  const selectedOrdersArray = groupValues
-    .map((orderId) => orders.filter((order) => order._id === orderId))
-    .flat();
+  const selectedOrdersArray = groupValues.flatMap((orderId) =>
+    orders.filter((order) => order.order_id === orderId)
+  );
 
   const handleClearingSelectedOrders = async () => {
     setButtonStateSelectedOrders("loading"); // Set loading state
@@ -147,7 +155,7 @@ const ItemizedBreakdownCard = () => {
   };
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
       getWarehouseOwedCost();
     }, [])
@@ -209,10 +217,12 @@ const ItemizedBreakdownCard = () => {
               outstandingOrders.map((order) => {
                 const vatExclusivePrice: string = Dinero({
                   amount: Math.round(
-                    order.chow_details.wholesale_price * order.quantity * 100
+                    order.chow_details.flavours.varieties.wholesale_price *
+                      order.quantity *
+                      100
                   ),
                 }).toFormat("$0,0.00");
-                const description = `${order.chow_details.brand} - ${order.chow_details.flavour}`;
+                const description = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
                 const shortenedDescription = description
                   .substring(0, description.indexOf("("))
                   .trim();
@@ -231,7 +241,12 @@ const ItemizedBreakdownCard = () => {
                           <Text style={tableQuantity}>
                             {order.quantity}
                             <Text style={deEmphasis}>x </Text>
-                            <Text>{order.chow_details.wholesale_price}</Text>
+                            <Text>
+                              {
+                                order.chow_details.flavours.varieties
+                                  .wholesale_price
+                              }
+                            </Text>
                           </Text>
                         </View>
                         <Text style={tablePrice}>{vatExclusivePrice}</Text>

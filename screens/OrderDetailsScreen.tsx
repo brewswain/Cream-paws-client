@@ -1,21 +1,25 @@
 import { ReactNode, useEffect, useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { RootTabScreenProps } from "../types";
+import { useNavigation } from "@react-navigation/native";
+import { Button } from "native-base";
+import { updateOrder } from "../api";
 import {
   CustomInput,
   Header,
   SubFields,
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
-import { updateOrder } from "../api";
-import { Button } from "native-base";
-import { useNavigation } from "@react-navigation/native";
+import { RootTabScreenProps } from "../types";
+import { OrderWithChowDetails } from "../models/order";
 
+interface CustomerOrderDetails extends OrderWithChowDetails {
+  client_name: string;
+}
 interface OrderDetailsProps {
   navigation: RootTabScreenProps<"OrderDetails">;
   route: {
-    params: OrderDetails;
+    params: CustomerOrderDetails;
   };
 }
 
@@ -67,17 +71,17 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     },
     {
       title: "Flavour",
-      content: orderPayload.chow_details.flavour,
+      content: orderPayload.chow_details.flavours.flavour_name,
       name: "chow_details.flavour",
     },
     {
       title: "Size",
-      content: orderPayload.chow_details.size,
+      content: orderPayload.chow_details.flavours.varieties.size,
       name: "chow_details.size",
     },
     {
       title: "Unit",
-      content: orderPayload.chow_details.unit,
+      content: orderPayload.chow_details.flavours.varieties.unit,
       name: "chow_details.unit",
     },
     {
@@ -90,12 +94,12 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const costsFields: SubFields[] = [
     {
       title: "Wholesale Price",
-      content: orderPayload.chow_details.wholesale_price,
+      content: orderPayload.chow_details.flavours.varieties.wholesale_price,
       name: "chow_details.wholesale_price",
     },
     {
       title: "Retail Price",
-      content: orderPayload.chow_details.retail_price,
+      content: orderPayload.chow_details.flavours.varieties.retail_price,
       name: "chow_details.retail_price",
     },
     {

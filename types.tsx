@@ -2,6 +2,7 @@
  * Learn more about using TypeScript with React Navigation:
  * https://reactnavigation.org/docs/typescript/
  */
+import { NavigationProp, ParamListBase } from "@react-navigation/native";
 
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import {
@@ -9,10 +10,12 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Chow, ChowFlavour } from "./models/chow";
+import { Customer } from "./models/customer";
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    type RootParamList = RootStackParamList;
   }
 }
 
@@ -28,7 +31,21 @@ export type RootStackParamList = {
   Auth: undefined;
   CustomerDetails: Customer;
   OrderDetails: OrderDetails;
-  ChowDetails: Chow;
+  ChowDetails: {
+    chow: Chow;
+    populateChowList: () => void;
+  };
+  ChowFlavour: {
+    flavours: ChowFlavour[];
+    brand: string;
+    brand_id: string;
+    populateChowList?: () => void;
+  };
+  EditChow: {
+    brand_id: string;
+    flavour_id?: string;
+  };
+  EditCustomer: Customer;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -46,6 +63,17 @@ export type RootTabParamList = {
   CustomerDetails: Customer;
   OrderDetails: OrderDetails;
   ChowDetails: Chow;
+  ChowFlavour: {
+    flavours: ChowFlavour[];
+    brand: string;
+    brand_id: string;
+    populateChowList?: () => void;
+  };
+  EditChow: {
+    brand_id: string;
+    flavour_id?: string;
+  };
+  EditCustomer: Customer;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =

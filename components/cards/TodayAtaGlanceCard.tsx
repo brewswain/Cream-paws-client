@@ -1,19 +1,21 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Collapsible from "react-native-collapsible";
 
-import { getAllOrders, findCustomer } from "../../api";
-import { getTodaysOrders } from "../../utils";
-import { Divider } from "native-base";
 import Dinero from "dinero.js";
+import { Divider } from "native-base";
+import { findCustomer, getAllOrders } from "../../api";
+import { getTodaysOrders } from "../../utils";
+import { OrderWithChowDetails } from "../../models/order";
+import { Customer } from "../../models/customer";
 
 interface ChowInfo {
   quantity: number;
@@ -79,16 +81,18 @@ const TodayAtaGlanceCard = () => {
 
       setCustomers(filteredCustomers);
 
-      const customerChowArray = filteredOutstandingOrders.map((order) => ({
-        quantity: order?.quantity ?? 0,
-        details: {
-          brand: order?.chow_details?.brand ?? "",
-          flavour: order?.chow_details?.flavour ?? "",
-          size: order?.chow_details?.size ?? 0,
-          unit: order?.chow_details?.unit ?? "",
-          order_id: order?.id ?? "",
-        },
-      }));
+      const customerChowArray = filteredOutstandingOrders.map(
+        (order: OrderWithChowDetails) => ({
+          quantity: order?.quantity ?? 0,
+          details: {
+            brand: order?.chow_details?.brand ?? "",
+            flavour: order?.chow_details?.flavours.flavour_name ?? "",
+            size: order?.chow_details?.flavours.varieties.size ?? 0,
+            unit: order?.chow_details?.flavours.varieties.unit ?? "",
+            order_id: order?.order_id ?? "",
+          },
+        })
+      );
 
       const cleanedChowArray: ChowInfo[] = customerChowArray.reduce(
         (unique: ChowInfo[], chowObject) => {
@@ -118,9 +122,11 @@ const TodayAtaGlanceCard = () => {
 
   const mappedCostArray =
     orders
-      .filter((order) => order.payment_made === false)
-      .map((order) => order.chow_details.retail_price * order.quantity) ||
-    undefined;
+      .filter((order: OrderWithChowDetails) => order.payment_made === false)
+      .map(
+        (order: OrderWithChowDetails) =>
+          order.chow_details.flavours.varieties.retail_price * order.quantity
+      ) || undefined;
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
@@ -189,7 +195,7 @@ const TodayAtaGlanceCard = () => {
                   >
                     <Text style={deemphasis}>
                       {customer.name}
-                      {customer.orders!.length > 1
+                      {customer.orders && customer.orders?.length > 1
                         ? ` x ${customerOutstandingOrders(customer)}`
                         : null}
                     </Text>

@@ -1,5 +1,8 @@
+import { ChowFlavour, FilteredChowFlavour } from "./chow";
+
 interface Order {
   delivery_date: string;
+  delivery_cost: number;
   payment_made: boolean;
   payment_date: string;
   is_delivery: boolean;
@@ -11,16 +14,17 @@ interface Order {
   id: string;
   _id?: string;
   order_id?: string;
+  flavour_name?: string;
   version?: number;
 }
 
 type firstTimeOrder = Omit<Order, "id">;
 
-interface OrderWithChowDetails extends Order {
+export interface OrderWithChowDetails extends Order {
   chow_details: {
     brand: string;
     target_group: string;
-    flavour: string;
+    flavours: FilteredChowFlavour;
     size: number;
     unit: string;
     wholesale_price: number;

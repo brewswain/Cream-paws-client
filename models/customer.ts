@@ -1,4 +1,6 @@
-interface Customer {
+import { OrderWithChowDetails } from "./order";
+
+export interface Customer {
   id: string;
   pets?: [
     {
@@ -9,12 +11,14 @@ interface Customer {
   contactNumber?: string;
   location?: string;
   name?: string;
+  city?: string;
   orders?: OrderWithChowDetails[];
 }
 
-interface CustomerPayload {
+export interface CustomerPayload {
   name: string;
   pets?: any[];
+  city?: string;
   contactNumber?: string;
   location?: string;
 }

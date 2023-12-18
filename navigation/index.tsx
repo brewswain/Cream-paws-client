@@ -1,9 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
-  NavigationContainer,
-  DefaultTheme,
   DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
@@ -20,14 +20,17 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import OrdersScreen from "../screens/OrdersScreen";
 import StockScreen from "../screens/StockScreen";
 
+import ChowDetailsScreen from "../screens/ChowDetailsScreen";
+import ChowFlavourScreen from "../screens/ChowFlavourScreen";
+import EditChowScreen from "../screens/EditChowScreen";
+import OrderDetailsScreen from "../screens/OrderDetailsScreen";
 import {
   RootStackParamList,
   RootTabParamList,
   RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
-import ChowDetailsScreen from "../screens/ChowDetailsScreen";
-import OrderDetailsScreen from "../screens/OrderDetailsScreen";
+import EditCustomerScreen from "../screens/EditCustomerScreen";
 
 export default function Navigation({
   colorScheme,
@@ -107,6 +110,21 @@ function RootNavigator() {
         name="ChowDetails"
         component={ChowDetailsScreen}
         options={{ title: "Chow Details" }}
+      />
+      <Stack.Screen
+        name="ChowFlavour"
+        component={ChowFlavourScreen}
+        options={{ title: "Chow Flavour" }}
+      />
+      <Stack.Screen
+        name="EditChow"
+        component={EditChowScreen}
+        options={{ title: "Edit Chow" }}
+      />
+      <Stack.Screen
+        name="EditCustomer"
+        component={EditCustomerScreen}
+        options={{ title: "Edit Customer" }}
       />
       <Stack.Screen
         name="OrderDetails"

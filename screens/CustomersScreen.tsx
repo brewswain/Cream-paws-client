@@ -1,15 +1,15 @@
+import Icon from "@expo/vector-icons/AntDesign";
 import axios from "axios";
 import { ScrollView } from "native-base";
 import { useCallback, useEffect, useState } from "react";
-import { Button, Text, View, StyleSheet, Pressable } from "react-native";
-import Icon from "@expo/vector-icons/AntDesign";
+import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { getAllCustomers } from "../api/routes/customers";
 
+import { useFocusEffect } from "@react-navigation/native";
+import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
-import { generateSkeletons } from "../components/Skeleton/Skeleton";
-import { useFocusEffect } from "@react-navigation/native";
 
 const CustomersScreen = () => {
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
@@ -34,9 +34,12 @@ const CustomersScreen = () => {
           return customer.orders.some((order) => order.payment_made === false);
         }
       });
-      const mappedCustomersWithoutOrders = response.filter(
-        (customer) => customer.orders && customer.orders?.length < 1
-      );
+      const mappedCustomersWithoutOrders = response.filter((customer) => {
+        if (customer.orders) {
+          return customer.orders.every((order) => order.payment_made === true);
+        }
+        return customer;
+      });
 
       setCustomersWithOpenOrders(mappedCustomersWithOrders);
       setCustomersWithoutOpenOrders(mappedCustomersWithoutOrders);
@@ -64,8 +67,8 @@ const CustomersScreen = () => {
         generateSkeletons({ count: 12, type: "CustomerSkeleton" })
       ) : (
         <ScrollView>
-          {customersWithOpenOrders &&
-            customersWithOpenOrders.map((customer, index) => (
+          {customersWithOpenOrders?.map((customer, index) => {
+            return (
               <View
                 key={customer.id}
                 style={index === 0 ? { marginTop: 12 } : null}
@@ -78,22 +81,22 @@ const CustomersScreen = () => {
                   setIsDeleted={setIsDeleted}
                 />
               </View>
-            ))}
-          {customersWithoutOpenOrders &&
-            customersWithoutOpenOrders.map((customer, index) => (
-              <View
+            );
+          })}
+          {customersWithoutOpenOrders?.map((customer, index) => (
+            <View
+              key={customer.id}
+              style={index === 0 ? { marginTop: 12 } : null}
+            >
+              <CustomerCard
+                customer={customer}
                 key={customer.id}
-                style={index === 0 ? { marginTop: 12 } : null}
-              >
-                <CustomerCard
-                  customer={customer}
-                  key={customer.id}
-                  populateCustomersList={populateCustomersList}
-                  isDeleted={isDeleted}
-                  setIsDeleted={setIsDeleted}
-                />
-              </View>
-            ))}
+                populateCustomersList={populateCustomersList}
+                isDeleted={isDeleted}
+                setIsDeleted={setIsDeleted}
+              />
+            </View>
+          ))}
         </ScrollView>
       )}
       <CreateCustomerModal

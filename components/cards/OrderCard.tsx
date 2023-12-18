@@ -1,14 +1,15 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
 import Dinero from "dinero.js";
 import Icon from "react-native-vector-icons/FontAwesome";
-import DeleteModal from "../modals/DeleteModal";
 import { deleteOrder } from "../../api";
 import { deleteCustomersOrder } from "../../api/routes/orders";
+import DeleteModal from "../modals/DeleteModal";
 import SettingsModal from "../modals/SettingsModal";
-import { useNavigation } from "@react-navigation/native";
+import { OrderWithChowDetails } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
@@ -70,14 +71,15 @@ const OrderCard = ({
             <Text style={clientNameHeader}>{client_name}</Text>
             <Text
               style={orderDetails}
-            >{`${order.chow_details.brand} - ${order.chow_details.flavour} x ${order.quantity}`}</Text>
+            >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
           </View>
           <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
                 amount:
                   Math.round(
-                    order.chow_details.retail_price * order.quantity || 0
+                    order.chow_details.flavours.varieties.retail_price *
+                      order.quantity || 0
                   ) * 100,
               }).toFormat("$0,0.00")}
             </Text>
@@ -94,7 +96,7 @@ const OrderCard = ({
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
-        handlePress={() =>
+        handleDeletion={() =>
           handleDelete(order.order_id || "id not found", customerId)
         }
         deletionId={order.order_id}

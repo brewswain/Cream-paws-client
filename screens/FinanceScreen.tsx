@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getAllCustomers, getAllOrders } from "../api";
 import { ItemizedBreakdownCard } from "../components";
 import { testCustomerDetails, testCustomersFinances } from "../data/test_data";
@@ -10,7 +10,7 @@ const FinanceScreen = () => {
 
   return (
     <ScrollView style={container}>
-      <Text style={header}>Finances</Text>
+      <Text style={header}>Total Owed Suppliers</Text>
 
       <ItemizedBreakdownCard />
 
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   },
   header: {
     color: "white",
-    fontSize: 40,
+    fontSize: 20,
     textAlign: "center",
     margin: 2,
   },
