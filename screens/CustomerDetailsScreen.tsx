@@ -17,6 +17,8 @@ import { OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders, clearOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
 import { deleteCustomersOrder } from "../api/routes/orders";
+import { findCustomer } from "../api";
+import { Customer } from "../models/customer";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -34,7 +36,6 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     useState<boolean>(false);
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
-  const [groupValues, setGroupValues] = useState([]);
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
@@ -46,7 +47,13 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       selected: false,
     },
   ]);
+  const [customer, setCustomer] = useState<Customer>();
 
+  const customerData = findCustomer(route.params.id);
+  const populateCustomerData = async () => {
+    const data = await findCustomer(route.params.id);
+    setCustomer(data);
+  };
   const { pets, orders, name, id, contactNumber, location, city } =
     route.params;
   // const { pets, orders, name, id } = testCustomerDetails;

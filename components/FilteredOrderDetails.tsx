@@ -51,7 +51,7 @@ const FilteredOrderDetails = ({
           >
             <View>
               <CheckBox
-                title="Is this a delivery?"
+                title=""
                 checked={
                   selectedOrders[orderIndex]
                     ? selectedOrders[orderIndex].selected
