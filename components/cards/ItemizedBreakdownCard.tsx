@@ -8,7 +8,11 @@ import { Button, Checkbox } from "native-base";
 import { clearOrders, getTodaysOrders } from "../../utils/orderUtils";
 import { OrderWithChowDetails } from "../../models/order";
 
-const ItemizedBreakdownCard = () => {
+interface ItemizedBreakdownCardProps {
+  mode: "suppliers" | "customers";
+}
+
+const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
@@ -22,6 +26,8 @@ const ItemizedBreakdownCard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
+
+  const showSuppliersInformation = mode === "suppliers";
 
   // TODO: Put the heavy logic into our backend once this approach is verified
   const getWarehouseOwedCost = async (): Promise<void> => {
@@ -431,7 +437,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     paddingLeft: 12,
   },
-
   // Button Block
   buttonContainer: {
     display: "flex",
@@ -444,6 +449,11 @@ const styles = StyleSheet.create({
 
   payAllOrderButton: {
     backgroundColor: "green",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
   },
 
   // Orders Block
@@ -505,10 +515,6 @@ const styles = StyleSheet.create({
 
     width: "65%", // Set a maximum width for the text
     maxWidth: "65%",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
   },
 });
 

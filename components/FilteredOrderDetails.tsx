@@ -1,25 +1,65 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 import Collapsible from "react-native-collapsible";
+import { CheckBox } from "@rneui/themed";
 
 import DetailsText from "./DetailsText";
 import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
 import { OrderWithChowDetails } from "../models/order";
+import { SelectedOrder } from "../screens/CustomerDetailsScreen";
 
 interface FilteredOrderDetailsProps {
   orders: OrderWithChowDetails[];
+  selectedOrders: SelectedOrder[];
+  setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
 }
 
-const FilteredOrderDetails = ({ orders }: FilteredOrderDetailsProps) => {
+const FilteredOrderDetails = ({
+  orders,
+  selectedOrders,
+  setSelectedOrders,
+}: FilteredOrderDetailsProps) => {
   const { orderContainer, divider } = styles;
+  interface SelectedOrder {
+    index: number;
+    selected: boolean;
+  }
+
+  useEffect(() => {
+    orders.map((_, index) => {
+      if (!selectedOrders[index]) {
+        setSelectedOrders([...selectedOrders, { index, selected: false }]);
+      }
+    });
+  }, []);
+
+  const handleCheckBoxChange = (orderIndex: number) => {
+    const data = [...selectedOrders];
+    data[orderIndex].selected = !data[orderIndex].selected;
+    setSelectedOrders(data);
+  };
 
   return (
     <View>
-      {orders?.map((order: OrderWithChowDetails, index: number) => {
+      {orders?.map((order: OrderWithChowDetails, orderIndex: number) => {
         return (
-          <View key={`${index} Chow ID:${order.id}`} style={orderContainer}>
+          <View
+            key={`${orderIndex} Chow ID:${order.id}`}
+            style={orderContainer}
+          >
+            <View>
+              <CheckBox
+                title="Is this a delivery?"
+                checked={
+                  selectedOrders[orderIndex]
+                    ? selectedOrders[orderIndex].selected
+                    : false
+                }
+                onPress={() => handleCheckBoxChange(orderIndex)}
+              />
+            </View>
             {/* Payment Made Block */}
             <DetailsText
               header="Summary"
@@ -67,7 +107,7 @@ const FilteredOrderDetails = ({ orders }: FilteredOrderDetailsProps) => {
             />
             <CollapsibleChowDetails
               chowDetails={order.chow_details}
-              index={index}
+              index={orderIndex}
             />
           </View>
         );
@@ -85,6 +125,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     borderBottomColor: "hsl(186, 52%, 61%)",
     borderBottomWidth: 1,
+
+    position: "relative",
   },
   divider: {
     borderBottomColor: "grey",
