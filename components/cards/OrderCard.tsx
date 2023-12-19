@@ -9,11 +9,12 @@ import { deleteOrder } from "../../api";
 import { deleteCustomersOrder } from "../../api/routes/orders";
 import DeleteModal from "../modals/DeleteModal";
 import SettingsModal from "../modals/SettingsModal";
-import { OrderWithChowDetails } from "../../models/order";
+import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
-  order: OrderWithChowDetails;
+  orders: CombinedOrder;
+  // order: OrderWithChowDetails;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
@@ -22,7 +23,7 @@ interface OrderCardProps {
 
 const OrderCard = ({
   client_name,
-  order,
+  orders,
   isDeleted,
   setIsDeleted,
   populateData,
@@ -43,7 +44,7 @@ const OrderCard = ({
   } = styles;
 
   const viewDetails = () => {
-    navigation.navigate("OrderDetails", { ...order, client_name });
+    navigation.navigate("OrderDetails", { ...orders, client_name });
   };
 
   const handleDelete = async (orderId: string, customerId: string) => {
@@ -69,21 +70,30 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            <Text
+            {/* <Text
               style={orderDetails}
-            >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+            >{`${orders.chow_details.brand} - ${orders.chow_details.flavours.flavour_name} x ${orders.quantity}`}</Text>
+          </View> */}
+            {orders.map((order) => {
+              console.log({ order, orders });
+              // return (
+              //   <Text
+              //     style={orderDetails}
+              //   >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+              // );
+            })}
           </View>
-          <View style={priceContainer}>
+          {/* <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
                 amount:
                   Math.round(
-                    order.chow_details.flavours.varieties.retail_price *
-                      order.quantity || 0
+                    orders.chow_details.flavours.varieties.retail_price *
+                      orders.quantity || 0
                   ) * 100,
               }).toFormat("$0,0.00")}
             </Text>
-          </View>
+          </View> */}
         </View>
         <Pressable onPress={() => setShowModal(true)}>
           <Icon
@@ -93,14 +103,14 @@ const OrderCard = ({
           />
         </Pressable>
       </Pressable>
-      <SettingsModal
+      {/* <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
         handleDeletion={() =>
-          handleDelete(order.order_id || "id not found", customerId)
+          handleDelete(orders.order_id || "id not found", customerId)
         }
-        deletionId={order.order_id}
-      />
+        deletionId={orders.order_id}
+      /> */}
     </View>
   );
 };

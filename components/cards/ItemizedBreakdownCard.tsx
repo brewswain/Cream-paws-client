@@ -120,6 +120,17 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
+  const mappedDeliveryCostArray = orders
+    .filter((order) => order.payment_made === false)
+    .map((order) => order.delivery_cost);
+
+  const totalDeliveryCost = Math.round(
+    mappedDeliveryCostArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
+
   const totalVat = Math.round(
     mappedVatArray.reduce(
       (accumulator, currentValue) => accumulator + currentValue,
@@ -379,6 +390,16 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               <Text style={subTotalCost}>
                 {subTotal
                   ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
+                  : null}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={subTotalCost}>Total delivery costs:</Text>
+              <Text style={subTotalCost}>
+                {totalDeliveryCost
+                  ? Dinero({ amount: totalDeliveryCost || 0 }).toFormat(
+                      "$0,0.00"
+                    )
                   : null}
               </Text>
             </View>

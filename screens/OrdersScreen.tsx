@@ -8,12 +8,12 @@ import { v4 as uuid } from "uuid";
 import Icon from "@expo/vector-icons/AntDesign";
 
 import {
-	createOrder,
-	deleteOrder,
-	getAllChow,
-	getAllCustomers,
-	getAllOrders,
-	updateOrder,
+  createOrder,
+  deleteOrder,
+  getAllChow,
+  getAllCustomers,
+  getAllOrders,
+  updateOrder,
 } from "../api";
 
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,153 +22,195 @@ import React from "react";
 import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
+import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
+import { OrderWithChowDetails } from "../models/order";
 
 const OrdersScreen = () => {
-	const [showModal, setShowModal] = useState<boolean>(false);
-	const [chow, setChow] = useState<Chow[]>();
-	const [orders, setOrders] = useState<Order[]>();
-	const [customers, setCustomers] = useState<Customer[]>();
-	const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-	const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [chow, setChow] = useState<Chow[]>();
+  const [orders, setOrders] = useState<Order[]>();
+  const [customers, setCustomers] = useState<Customer[]>();
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [data, setData] = useState<OrderWithChowDetails[]>();
 
-	const { orderHeader, orderContainer, totalOrderDetails } = styles;
+  const { orderHeader, orderContainer, totalOrderDetails } = styles;
 
-	const populateOrdersList = async () => {
-		setIsLoading(true);
-		try {
-			const response = await getAllOrders();
-			setOrders(response);
-			setIsLoading(false);
-		} catch (error) {
-			setIsLoading(false);
-			console.error(error);
-		}
-	};
+  const populateOrdersList = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllOrders();
+      setOrders(response);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
+  };
 
-	const populateChowList = async () => {
-		const response = await getAllChow();
-		setChow(response);
-	};
+  const populateAllData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getUnpaidCustomerOrders();
+      const formattedOrders = response && (await combineOrders(response));
+      console.log({ formattedOrders });
+      setData(response);
 
-	const populateCustomersList = async () => {
-		const response = await getAllCustomers();
-		setCustomers(response);
-	};
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
+  };
+  const populateChowList = async () => {
+    const response = await getAllChow();
+    setChow(response);
+  };
 
-	const populateData = async () => {
-		populateChowList();
-		populateCustomersList();
-		populateOrdersList();
-	};
+  const populateCustomersList = async () => {
+    const response = await getAllCustomers();
+    setCustomers(response);
+  };
 
-	const openModal = () => {
-		setShowModal(true);
-	};
+  const populateData = async () => {
+    // populateChowList();
+    // populateCustomersList();
+    // populateOrdersList();
+    populateAllData();
+  };
 
-	useFocusEffect(
-		useCallback(() => {
-			populateData();
-		}, [isDeleted]),
-	);
+  const openModal = () => {
+    setShowModal(true);
+  };
 
-	const customersArray = customers && customers;
+  useFocusEffect(
+    useCallback(() => {
+      populateData();
+    }, [isDeleted])
+  );
 
-	return (
-		<View style={styles.container}>
-			<ScrollView>
-				{isLoading ? (
-					generateSkeletons({ count: 4, type: "OrderSkeleton" })
-				) : (
-					<View>
-						{/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-						{customersArray?.map((customer: Customer, index: number) => {
-							return (
-								<View style={orderContainer} key={customer.id + index}>
-									<View>
-										{customer.orders &&
-											customer.orders
-												.flat()
-												.filter((order) => order.payment_made === false)
-												.map((order, index) => {
-													return (
-														<View
-															key={
-																order._id
-																	? order._id + index
-																	: `order id not found - ${index}`
-															}
-															style={index === 0 ? { paddingTop: 20 } : null}
-														>
-															<OrderCard
-																isDeleted={isDeleted}
-																setIsDeleted={setIsDeleted}
-																populateData={populateData}
-																client_name={customer.name}
-																customerId={customer.id}
-																order={order}
-															/>
-														</View>
-													);
-												})}
-									</View>
-								</View>
-							);
-						})}
-					</View>
-				)}
+  const customersArray = customers && customers;
 
-				<CreateOrderModal
-					isOpen={showModal}
-					setShowModal={setShowModal}
-					populateCustomersList={populateCustomersList}
-					chow={chow}
-					customers={customers}
-				/>
-			</ScrollView>
-			<Pressable style={styles.buttonContainer} onPress={openModal}>
-				<Icon name="plus" size={20} />
-			</Pressable>
-		</View>
-	);
+  return (
+    <View style={styles.container}>
+      <ScrollView>
+        {isLoading
+          ? generateSkeletons({ count: 4, type: "OrderSkeleton" })
+          : //   <View>
+            //     {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
+            //     {customersArray?.map((customer: Customer, index: number) => {
+            //       return (
+            //         <View style={orderContainer} key={customer.id + index}>
+            //           <View>
+            //             {customer.orders &&
+            //               customer.orders
+            //                 .flat()
+            //                 .filter((order) => order.payment_made === false)
+            //                 .map((order, index) => {
+            //                   const formattedOrders = combineOrders(
+            //                     customer.orders
+            //                   );
+            //                   return (
+            //                     <View
+            //                       key={
+            //                         order._id
+            //                           ? order._id + index
+            //                           : `order id not found - ${index}`
+            //                       }
+            //                       style={index === 0 ? { paddingTop: 20 } : null}
+            //                     >
+            //                       <OrderCard
+            //                         isDeleted={isDeleted}
+            //                         setIsDeleted={setIsDeleted}
+            //                         populateData={populateData}
+            //                         client_name={customer.name}
+            //                         customerId={customer.id}
+            //                         orders={formattedOrders}
+            //                       />
+            //                       {/* <OrderCard
+            //                         isDeleted={isDeleted}
+            //                         setIsDeleted={setIsDeleted}
+            //                         populateData={populateData}
+            //                         client_name={customer.name}
+            //                         customerId={customer.id}
+            //                         orders={order}
+            //                       /> */}
+            //                     </View>
+            //                   );
+            //                 })}
+            //           </View>
+            //         </View>
+            //       );
+            //     })}
+
+            //  </View>
+            null}
+
+        {/* {formattedOrders?.map((order) => {
+          return (
+            <OrderCard
+              isDeleted={isDeleted}
+              setIsDeleted={setIsDeleted}
+              populateData={populateData}
+              client_name={name}
+              customerId={customer.id}
+              orders={order}
+            />
+          );
+        })} */}
+
+        <CreateOrderModal
+          isOpen={showModal}
+          setShowModal={setShowModal}
+          populateCustomersList={populateCustomersList}
+          chow={chow}
+          customers={customers}
+        />
+      </ScrollView>
+      <Pressable style={styles.buttonContainer} onPress={openModal}>
+        <Icon name="plus" size={20} />
+      </Pressable>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "white",
-	},
-	buttonContainer: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		position: "absolute",
-		height: 40,
-		width: 40,
-		bottom: 20,
-		right: 10,
-		borderRadius: 50,
-		backgroundColor: "#8099c1",
-	},
-	orderContainer: {
-		display: "flex",
-		flexDirection: "column",
-		width: "100%",
-	},
-	orderHeader: {
-		display: "flex",
-		alignSelf: "center",
-		textAlign: "center",
-		color: "white",
-		fontSize: 28,
-		width: "100%",
-		// borderBottomWidth: 1,
-		// borderBottomColor: "black",
-	},
-	totalOrderDetails: {
-		color: "white",
-		fontSize: 16,
-		paddingLeft: 4,
-	},
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  buttonContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    height: 40,
+    width: 40,
+    bottom: 20,
+    right: 10,
+    borderRadius: 50,
+    backgroundColor: "#8099c1",
+  },
+  orderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+  },
+  orderHeader: {
+    display: "flex",
+    alignSelf: "center",
+    textAlign: "center",
+    color: "white",
+    fontSize: 28,
+    width: "100%",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "black",
+  },
+  totalOrderDetails: {
+    color: "white",
+    fontSize: 16,
+    paddingLeft: 4,
+  },
 });
 
 export default OrdersScreen;

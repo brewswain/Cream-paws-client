@@ -1,6 +1,6 @@
 import moment from "moment";
 
-import { getAllCustomers, updateOrder } from "../api";
+import { findCustomer, getAllCustomers, updateOrder } from "../api";
 import { OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
 import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
@@ -79,4 +79,48 @@ export const getUnpaidWarehouseOrders = async () => {
     [].filter((order) => order !== undefined);
 
   return filteredOutstandingOrders;
+};
+
+export const combineOrders = async (orders: OrderWithChowDetails[]) => {
+  const combinedOrders = {};
+
+  for (const order of orders) {
+    const customerName = await findCustomer(order.customer_id);
+    const {
+      delivery_date,
+      delivery_cost,
+      quantity,
+      chow_id,
+      ...restOrderDetails
+    } = order;
+
+    const orderKey = `${delivery_date}_${delivery_cost}`;
+
+    if (!combinedOrders[orderKey]) {
+      combinedOrders[orderKey] = {
+        delivery_date,
+        delivery_cost,
+        name: customerName.name,
+        orders: [],
+      };
+    }
+
+    const existingOrderIndex = combinedOrders[orderKey].orders.findIndex(
+      (existingOrder) => existingOrder.chow_id === chow_id
+    );
+
+    if (existingOrderIndex !== -1) {
+      // Update quantity if the same chow_id is detected
+      combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
+    } else {
+      // Add a new order if chow_id is not present
+      combinedOrders[orderKey].orders.push({
+        chow_id,
+        quantity,
+        ...restOrderDetails,
+      });
+    }
+  }
+
+  return Object.values(combinedOrders);
 };
