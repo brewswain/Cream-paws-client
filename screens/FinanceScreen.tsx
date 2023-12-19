@@ -6,13 +6,18 @@ import { testCustomerDetails, testCustomersFinances } from "../data/test_data";
 import { getTodaysOrders } from "../utils";
 
 const FinanceScreen = () => {
+  const [showSupplierOwed, setShowSupplierOwed] = useState(false);
   const { container, header } = styles;
 
   return (
     <ScrollView style={container}>
-      <Text style={header}>Total Owed Suppliers</Text>
+      <Text style={header}>
+        {showSupplierOwed ? "Total Owed Supplier" : "Total Owed Cream Paws"}
+      </Text>
 
-      <ItemizedBreakdownCard />
+      <ItemizedBreakdownCard
+        mode={showSupplierOwed ? "suppliers" : "customers"}
+      />
 
       {/* New Card Block */}
     </ScrollView>

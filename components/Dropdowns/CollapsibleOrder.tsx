@@ -4,12 +4,16 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import FilteredOrderDetails from "../FilteredOrderDetails";
 import { OrderWithChowDetails } from "../../models/order";
+import { SelectedOrder } from "../../screens/CustomerDetailsScreen";
+import { useEffect } from "react";
 
 interface CollapsibleOrderProps {
   setOutstandingCollapsible: React.Dispatch<React.SetStateAction<boolean>>;
   outstandingCollapsible: boolean;
   outstandingOrders: OrderWithChowDetails[];
   children: React.ReactNode;
+  selectedOrders: SelectedOrder[];
+  setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
 }
 
 const CollapsibleOrder = ({
@@ -17,8 +21,11 @@ const CollapsibleOrder = ({
   setOutstandingCollapsible,
   outstandingOrders,
   children,
+  selectedOrders,
+  setSelectedOrders,
 }: CollapsibleOrderProps) => {
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
+
   return (
     <View>
       <TouchableOpacity
@@ -36,7 +43,12 @@ const CollapsibleOrder = ({
       </TouchableOpacity>
 
       <Collapsible collapsed={outstandingCollapsible}>
-        <FilteredOrderDetails orders={outstandingOrders} />
+        {/*  We engage in some prop drilling as a treat--I should honestly see about better state management*/}
+        <FilteredOrderDetails
+          orders={outstandingOrders}
+          selectedOrders={selectedOrders}
+          setSelectedOrders={setSelectedOrders}
+        />
       </Collapsible>
     </View>
   );

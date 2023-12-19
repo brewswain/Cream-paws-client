@@ -3,32 +3,33 @@ import moment from "moment";
 import { getAllCustomers, updateOrder } from "../api";
 import { OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
+import { deleteCustomersOrder } from "../api/routes/orders";
 
 export const clearOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
         const updatedOrder = {
-          delivery_date: order.delivery_date,
-          payment_date: order.payment_date,
+          ...order,
           payment_made: true,
-          is_delivery: order.is_delivery,
-          driver_paid: order.driver_paid,
-          warehouse_paid: order.warehouse_paid,
-          customer_id: order.customer_id,
-          chow_id: order.chow_id,
-          version: order.version,
-          quantity: order.quantity,
-          id: order._id,
-          _id: order._id,
-          order_id: order.order_id,
         };
 
         await updateOrder(updatedOrder);
       })
     );
-
     return;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
+  try {
+    await Promise.all(
+      orders.map(async (order) => {
+        await deleteCustomersOrder(order.order_id!, order.customer_id);
+      })
+    );
   } catch (error) {
     console.error(error);
   }

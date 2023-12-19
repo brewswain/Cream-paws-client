@@ -6,6 +6,7 @@ import Collapsible from "react-native-collapsible";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import DetailsText from "../DetailsText";
+import { Divider } from "native-base";
 
 interface CollapsibleChowDetailsProps {
   chowDetails: Chow;
@@ -47,6 +48,7 @@ const CollapsibleChowDetails = ({
             details={chowDetails.flavours.flavour_name}
           />
           <DetailsText header={"Size"} details={`${size} ${unit}`} />
+
           <DetailsText
             header={"Cost"}
             details={Dinero({
@@ -64,14 +66,14 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "white",
     padding: 4,
     borderRadius: 4,
     width: "70%",
   },
   dropdownText: {
     // TODO: font family+ aliasing please for the love of god
-    fontSize: 16,
+    fontSize: 14,
+    color: "white",
   },
   dropdownIcon: {
     paddingLeft: 20,
