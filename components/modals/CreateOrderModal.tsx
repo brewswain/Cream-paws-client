@@ -295,12 +295,13 @@ const CreateOrderModal = ({
 
     Promise.all(
       chowArray.map(async (chowDetails: ChowDetails) => {
-        const { chow_id, quantity, flavour_id } = chowDetails;
+        const { chow_id, quantity, flavour_id, brand } = chowDetails;
         const { customer_id, delivery_date, payment_date, delivery_cost } =
           orderPayload;
 
         const newOrderPayload = {
           delivery_date,
+          brand,
           payment_date,
           quantity,
           delivery_cost,
