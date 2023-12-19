@@ -19,3 +19,5 @@ emulator.bat
 package-lock.json
 
 .env
+
+api/api.ts
