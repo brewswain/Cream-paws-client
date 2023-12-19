@@ -51,15 +51,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   };
 
   const getWarehouseOwedCost = async (): Promise<void> => {
-    // TODO: stopgap for development speed--Instead of extracting our prices
-    // here, do this in API
-    // const orderCostArray = response.map(order => order.)
-    // Okay. We need to get our orders here. The problem is, they're attached to our customers. This means that we'll need to make a call to our Customers route while looking for orders. Some logic routes i can see include:
-    // - Make a call to our getAllOrders() route. from there, we can iterate through and extract every customerId, and pull a list of those orders. From there, we extract warehouse_price from each customer and then run our reduce.
-    //   This approach is obviously incredibly expensive and incredibly naive. However, it IS a solution and should be seen as nothing more than a framework for getting our mindMap under control.
-    /* - Make a call to getAllCustomers(). From here, we filter those that have an orders[] length of 1 or higher, while extracting  our wholesale_price x quantity. This method still isn't good but it's better than the above.
-     */
-
     try {
       const outstandingWarehouseOrders = await getUnpaidWarehouseOrders();
       setOutstandingOrders(outstandingWarehouseOrders);
@@ -258,7 +249,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   .trim();
 
                 return (
-                  <View key={order._id} style={orderContainer}>
+                  <View key={order.order_id} style={orderContainer}>
                     <View style={orderCard}>
                       <Checkbox
                         value={`${order._id}`}
