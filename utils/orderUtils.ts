@@ -27,12 +27,7 @@ export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        const updatedOrder = {
-          ...order,
-          warehouse_paid: true,
-        };
-
-        await updateOrder(updatedOrder);
+        await deleteCustomersOrder(order.order_id!, order.customer_id);
       })
     );
 
