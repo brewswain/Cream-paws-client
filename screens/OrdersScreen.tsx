@@ -93,70 +93,72 @@ const OrdersScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        {isLoading
-          ? generateSkeletons({ count: 4, type: "OrderSkeleton" })
-          : //   <View>
-            //     {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-            //     {customersArray?.map((customer: Customer, index: number) => {
-            //       return (
-            //         <View style={orderContainer} key={customer.id + index}>
-            //           <View>
-            //             {customer.orders &&
-            //               customer.orders
-            //                 .flat()
-            //                 .filter((order) => order.payment_made === false)
-            //                 .map((order, index) => {
-            //                   const formattedOrders = combineOrders(
-            //                     customer.orders
-            //                   );
-            //                   return (
-            //                     <View
-            //                       key={
-            //                         order._id
-            //                           ? order._id + index
-            //                           : `order id not found - ${index}`
-            //                       }
-            //                       style={index === 0 ? { paddingTop: 20 } : null}
-            //                     >
-            //                       <OrderCard
-            //                         isDeleted={isDeleted}
-            //                         setIsDeleted={setIsDeleted}
-            //                         populateData={populateData}
-            //                         client_name={customer.name}
-            //                         customerId={customer.id}
-            //                         orders={formattedOrders}
-            //                       />
-            //                       {/* <OrderCard
-            //                         isDeleted={isDeleted}
-            //                         setIsDeleted={setIsDeleted}
-            //                         populateData={populateData}
-            //                         client_name={customer.name}
-            //                         customerId={customer.id}
-            //                         orders={order}
-            //                       /> */}
-            //                     </View>
-            //                   );
-            //                 })}
-            //           </View>
-            //         </View>
-            //       );
-            //     })}
+        {isLoading ? (
+          generateSkeletons({ count: 4, type: "OrderSkeleton" })
+        ) : (
+          //   <View>
+          //     {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
+          //     {customersArray?.map((customer: Customer, index: number) => {
+          //       return (
+          //         <View style={orderContainer} key={customer.id + index}>
+          //           <View>
+          //             {customer.orders &&
+          //               customer.orders
+          //                 .flat()
+          //                 .filter((order) => order.payment_made === false)
+          //                 .map((order, index) => {
+          //                   const formattedOrders = combineOrders(
+          //                     customer.orders
+          //                   );
+          //                   return (
+          //                     <View
+          //                       key={
+          //                         order._id
+          //                           ? order._id + index
+          //                           : `order id not found - ${index}`
+          //                       }
+          //                       style={index === 0 ? { paddingTop: 20 } : null}
+          //                     >
+          //                       <OrderCard
+          //                         isDeleted={isDeleted}
+          //                         setIsDeleted={setIsDeleted}
+          //                         populateData={populateData}
+          //                         client_name={customer.name}
+          //                         customerId={customer.id}
+          //                         orders={formattedOrders}
+          //                       />
+          //                       {/* <OrderCard
+          //                         isDeleted={isDeleted}
+          //                         setIsDeleted={setIsDeleted}
+          //                         populateData={populateData}
+          //                         client_name={customer.name}
+          //                         customerId={customer.id}
+          //                         orders={order}
+          //                       /> */}
+          //                     </View>
+          //                   );
+          //                 })}
+          //           </View>
+          //         </View>
+          //       );
+          //     })}
 
-            //  </View>
-            null}
-
-        {data?.map((order) => {
-          return (
-            <OrderCard
-              isDeleted={isDeleted}
-              setIsDeleted={setIsDeleted}
-              populateData={populateData}
-              client_name={order.name}
-              customerId={order.customer_id}
-              data={order}
-            />
-          );
-        })}
+          //  </View>
+          <View>
+            {data?.map((order) => {
+              return (
+                <OrderCard
+                  isDeleted={isDeleted}
+                  setIsDeleted={setIsDeleted}
+                  populateData={populateData}
+                  client_name={order.name}
+                  customerId={order.customer_id}
+                  data={order}
+                />
+              );
+            })}
+          </View>
+        )}
 
         <CreateOrderModal
           isOpen={showModal}
