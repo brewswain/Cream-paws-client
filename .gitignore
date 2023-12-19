@@ -20,4 +20,4 @@ package-lock.json
 
 .env
 
-api/api.ts
+/api/api.ts
