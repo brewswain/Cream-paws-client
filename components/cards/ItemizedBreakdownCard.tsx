@@ -272,10 +272,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                             {order.quantity}
                             <Text style={deEmphasis}>x </Text>
                             <Text>
-                              {
-                                order.chow_details.flavours.varieties
-                                  .wholesale_price
-                              }
+                              {isWarehouseOrders
+                                ? order.chow_details.flavours.varieties
+                                    .wholesale_price
+                                : order.chow_details.flavours.varieties
+                                    .retail_price}
                             </Text>
                           </Text>
                         </View>
