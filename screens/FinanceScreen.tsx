@@ -34,7 +34,9 @@ const FinanceScreen = () => {
         {showSupplierOwed ? "Total Owed Supplier" : "Total Owed Cream Paws"}
       </Text>
 
-      <ItemizedBreakdownCard mode={showSupplierOwed} />
+      <ItemizedBreakdownCard
+        mode={showSupplierOwed ? "suppliers" : "customers"}
+      />
 
       {/* New Card Block */}
     </ScrollView>
