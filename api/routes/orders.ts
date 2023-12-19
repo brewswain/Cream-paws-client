@@ -67,3 +67,5 @@ export const updateOrder = async (order: OrderWithChowDetails) => {
     console.error({ error });
   }
 };
+
+export const payWarehouseOrders = async (orders: OrderWithChowDetails[]) => {};

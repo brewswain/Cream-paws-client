@@ -3,25 +3,33 @@ import moment from "moment";
 import { getAllCustomers, updateOrder } from "../api";
 import { OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
+import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
 
-export const clearOrders = async (orders: OrderWithChowDetails[]) => {
+export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
         const updatedOrder = {
-          delivery_date: order.delivery_date,
-          payment_date: order.payment_date,
-          payment_made: true,
-          is_delivery: order.is_delivery,
-          driver_paid: order.driver_paid,
-          warehouse_paid: order.warehouse_paid,
-          customer_id: order.customer_id,
-          chow_id: order.chow_id,
-          version: order.version,
-          quantity: order.quantity,
-          id: order._id,
-          _id: order._id,
-          order_id: order.order_id,
+          ...order,
+          warehouse_paid: true,
+        };
+
+        await updateOrder(updatedOrder);
+      })
+    );
+
+    return;
+  } catch (error) {
+    console.error(error);
+  }
+};
+export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
+  try {
+    await Promise.all(
+      orders.map(async (order) => {
+        const updatedOrder = {
+          ...order,
+          warehouse_paid: true,
         };
 
         await updateOrder(updatedOrder);
@@ -37,12 +45,43 @@ export const clearOrders = async (orders: OrderWithChowDetails[]) => {
 export const getTodaysOrders = async () => {
   const customerResponse: Customer[] = await getAllCustomers();
 
-  const filteredOutstandingOrders = customerResponse.map((customer) => {
-    return customer.orders?.filter(
-      (order: OrderWithChowDetails) => order.payment_made === false
-      //  && order.payment_date === moment()
-    );
-  });
+  const filteredOutstandingOrders = customerResponse
+    .flatMap(
+      (customer) =>
+        customer.orders?.filter((order: OrderWithChowDetails) => {
+          const parsedPaymentDate = moment(order.delivery_date).format(
+            "YYYY-MM-DD"
+          );
+          const today = moment().format("YYYY-MM-DD");
+          return order.payment_made === false && parsedPaymentDate === today;
+        }) ?? []
+    )
+    .filter((order) => order !== undefined);
 
-  return filteredOutstandingOrders.flat();
+  return filteredOutstandingOrders;
+};
+
+export const getUnpaidCustomerOrders = async () => {
+  const customerResponse: Customer[] = await getAllCustomers();
+
+  const filteredOutstandingOrders = customerResponse
+    .flatMap(
+      (customer) =>
+        customer.orders?.filter(
+          (order: OrderWithChowDetails) => order.payment_made === false
+        ) ?? []
+    )
+    .filter((order) => order !== undefined);
+
+  return filteredOutstandingOrders;
+};
+
+export const getUnpaidWarehouseOrders = async () => {
+  const orderResponse: OrderWithChowDetails[] = await getAllOrders();
+
+  const filteredOutstandingOrders =
+    orderResponse.filter((order) => order.warehouse_paid === false) ??
+    [].filter((order) => order !== undefined);
+
+  return filteredOutstandingOrders;
 };

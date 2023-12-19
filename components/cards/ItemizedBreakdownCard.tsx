@@ -5,10 +5,20 @@ import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, Checkbox } from "native-base";
-import { clearOrders, getTodaysOrders } from "../../utils/orderUtils";
+import {
+  clearCustomerOrders,
+  clearWarehouseOrders,
+  getUnpaidCustomerOrders,
+  getUnpaidWarehouseOrders,
+} from "../../utils/orderUtils";
 import { OrderWithChowDetails } from "../../models/order";
+import FilteredOrderDetails from "../FilteredOrderDetails";
 
-const ItemizedBreakdownCard = () => {
+interface ItemizedBreakdownCardProps {
+  mode: "suppliers" | "customers";
+}
+
+const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
@@ -23,7 +33,23 @@ const ItemizedBreakdownCard = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const isWarehouseOrders = mode === "suppliers";
+
   // TODO: Put the heavy logic into our backend once this approach is verified
+
+  const getCustomerOrders = async () => {
+    try {
+      const filteredOutstandingOrders = await getUnpaidCustomerOrders();
+      setOutstandingOrders(filteredOutstandingOrders);
+      setIsLoading(false);
+      setIsSuccess(true);
+    } catch (error) {
+      setIsLoading(false);
+      setIsError(true);
+      console.error("Error fetching data:", error);
+    }
+  };
+
   const getWarehouseOwedCost = async (): Promise<void> => {
     // TODO: stopgap for development speed--Instead of extracting our prices
     // here, do this in API
@@ -35,14 +61,23 @@ const ItemizedBreakdownCard = () => {
      */
 
     try {
-      const filteredOutstandingOrders = await getTodaysOrders();
-      setOutstandingOrders(filteredOutstandingOrders);
+      const outstandingWarehouseOrders = await getUnpaidWarehouseOrders();
+      setOutstandingOrders(outstandingWarehouseOrders);
+
       setIsLoading(false);
       setIsSuccess(true);
     } catch (error) {
       setIsLoading(false);
       setIsError(true);
       console.error("Error fetching data:", error);
+    }
+  };
+
+  const populateData = () => {
+    if (mode === "customers") {
+      getCustomerOrders();
+    } else {
+      getWarehouseOwedCost();
     }
   };
 
@@ -75,9 +110,10 @@ const ItemizedBreakdownCard = () => {
   const orders: OrderWithChowDetails[] = outstandingOrders;
   const mappedCostArray = orders
     .filter((order) => order.payment_made === false)
-    .map(
-      (order) =>
-        order.chow_details.flavours.varieties.wholesale_price * order.quantity
+    .map((order) =>
+      isWarehouseOrders
+        ? order.chow_details.flavours.varieties.wholesale_price * order.quantity
+        : order.chow_details.flavours.varieties.retail_price * order.quantity
     );
 
   const mappedVatArray = orders
@@ -108,13 +144,14 @@ const ItemizedBreakdownCard = () => {
     setButtonStateSelectedOrders("loading"); // Set loading state
 
     try {
-      await clearOrders(selectedOrdersArray);
+      isWarehouseOrders
+        ? await clearWarehouseOrders(selectedOrdersArray)
+        : await clearCustomerOrders(selectedOrdersArray);
       // On success, set success state
       setButtonStateSelectedOrders("success");
       setIsFetching(true);
 
-      getWarehouseOwedCost();
-      // Revert to idle state after a delay
+      populateData(); // Revert to idle state after a delay
       setTimeout(() => {
         setButtonStateSelectedOrders("idle");
       }, 1000);
@@ -133,13 +170,14 @@ const ItemizedBreakdownCard = () => {
     setButtonStateClearAllOrders("loading"); // Set loading state
 
     try {
-      await clearOrders(orders);
+      isWarehouseOrders
+        ? await clearWarehouseOrders(orders)
+        : await clearCustomerOrders(orders);
       // On success, set success state
       setButtonStateClearAllOrders("success");
       setIsFetching(true);
 
-      getWarehouseOwedCost();
-      // Revert to idle state after a delay
+      populateData(); // Revert to idle state after a delay
       setTimeout(() => {
         setButtonStateClearAllOrders("idle");
       }, 1000);
@@ -157,16 +195,9 @@ const ItemizedBreakdownCard = () => {
   useFocusEffect(
     useCallback(() => {
       // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
-      getWarehouseOwedCost();
-    }, [])
+      populateData();
+    }, [mode])
   );
-
-  // useEffect(() => {
-  //   if (isFetching === true) {
-  //     getWarehouseOwedCost();
-  //     setIsFetching(false);
-  //   }
-  // }, [isFetching]);
 
   return (
     <View style={container}>
@@ -215,12 +246,11 @@ const ItemizedBreakdownCard = () => {
           <Checkbox.Group onChange={setGroupValues} value={groupValues}>
             {outstandingOrders.length > 0 ? (
               outstandingOrders.map((order) => {
+                const chosenPrice = isWarehouseOrders
+                  ? order.chow_details.flavours.varieties.wholesale_price
+                  : order.chow_details.flavours.varieties.retail_price;
                 const vatExclusivePrice: string = Dinero({
-                  amount: Math.round(
-                    order.chow_details.flavours.varieties.wholesale_price *
-                      order.quantity *
-                      100
-                  ),
+                  amount: Math.round(chosenPrice * order.quantity * 100),
                 }).toFormat("$0,0.00");
                 const description = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
                 const shortenedDescription = description
@@ -252,31 +282,6 @@ const ItemizedBreakdownCard = () => {
                         <Text style={tablePrice}>{vatExclusivePrice}</Text>
                       </Checkbox>
                     </View>
-                    {/* <View>
-                      <Checkbox
-                        value={`${order._id}`}
-                        accessibilityLabel="Checkbox for identifying individual orders to pay"
-                      >
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            width: "90%",
-                          }}
-                        >
-                          <Text style={tableQuantity}>
-                            {order.quantity}
-                            <Text style={deEmphasis}>x </Text>
-                          </Text>
-                          <Text style={tableChowDescription}>
-                            {`${order.chow_details.brand} - ${order.chow_details.flavour}`}
-                            :
-                          </Text>
-                          <Text style={tablePrice}> {vatExclusivePrice}</Text>
-                        </View>
-                      </Checkbox>
-                    </View> */}
                   </View>
                 );
               })
@@ -345,35 +350,48 @@ const ItemizedBreakdownCard = () => {
 
       {/* Problem detected here */}
       <View style={totalsContainer}>
-        <View style={totalWrapper}>
-          <View style={priceWrapper}>
-            <Text style={subTotalCost}>Subtotal:</Text>
-            <Text style={subTotalCost}>
-              {subTotal
-                ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
-                : null}
-            </Text>
+        {isWarehouseOrders ? (
+          <View style={totalWrapper}>
+            <View style={priceWrapper}>
+              <Text style={subTotalCost}>Subtotal:</Text>
+              <Text style={subTotalCost}>
+                {subTotal
+                  ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
+                  : null}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={vatCost}>VAT:</Text>
+              <Text style={vatCost}>
+                {totalVat
+                  ? Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")
+                  : null}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={totalCost}>Total:</Text>
+              <Text style={totalCost}>
+                {subTotal && totalVat
+                  ? Dinero({
+                      amount: subTotal + totalVat || 0,
+                      precision: 2,
+                    }).toFormat("$0,0.00")
+                  : null}
+              </Text>
+            </View>
           </View>
-          <View style={priceWrapper}>
-            <Text style={vatCost}>VAT:</Text>
-            <Text style={vatCost}>
-              {totalVat
-                ? Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")
-                : null}
-            </Text>
+        ) : (
+          <View style={totalWrapper}>
+            <View style={priceWrapper}>
+              <Text style={subTotalCost}>Total:</Text>
+              <Text style={subTotalCost}>
+                {subTotal
+                  ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
+                  : null}
+              </Text>
+            </View>
           </View>
-          <View style={priceWrapper}>
-            <Text style={totalCost}>Total:</Text>
-            <Text style={totalCost}>
-              {subTotal && totalVat
-                ? Dinero({
-                    amount: subTotal + totalVat || 0,
-                    precision: 2,
-                  }).toFormat("$0,0.00")
-                : null}
-            </Text>
-          </View>
-        </View>
+        )}
       </View>
     </View>
   );
