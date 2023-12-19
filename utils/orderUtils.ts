@@ -91,6 +91,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       delivery_cost,
       quantity,
       chow_id,
+      customer_id,
       ...restOrderDetails
     } = order;
 
@@ -100,6 +101,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       combinedOrders[orderKey] = {
         delivery_date,
         delivery_cost,
+        customer_id,
         name: customerName.name,
         orders: [],
       };

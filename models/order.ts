@@ -43,6 +43,8 @@ interface OrderDetails extends OrderWithChowDetails {
 export interface CombinedOrder {
   delivery_date: string;
   delivery_cost: number;
+  name: string;
+  customer_id: string;
   orders: {
     chow_id: string;
     quantity: number;

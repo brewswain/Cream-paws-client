@@ -13,7 +13,7 @@ import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
-  orders: CombinedOrder;
+  data: CombinedOrder;
   // order: OrderWithChowDetails;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
@@ -23,7 +23,7 @@ interface OrderCardProps {
 
 const OrderCard = ({
   client_name,
-  orders,
+  data,
   isDeleted,
   setIsDeleted,
   populateData,
@@ -32,6 +32,7 @@ const OrderCard = ({
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const navigation = useNavigation();
+  const { orders } = data;
 
   const {
     container,
@@ -59,6 +60,20 @@ const OrderCard = ({
     }
   };
 
+  const mappedCostArray = orders
+    .filter((order) => order.payment_made === false)
+    .map(
+      (order) =>
+        order.chow_details.flavours.varieties.retail_price * order.quantity
+    );
+
+  const subTotal = Math.round(
+    mappedCostArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
+
   return (
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
@@ -75,33 +90,28 @@ const OrderCard = ({
             >{`${orders.chow_details.brand} - ${orders.chow_details.flavours.flavour_name} x ${orders.quantity}`}</Text>
           </View> */}
             {orders.map((order) => {
-              console.log({ order, orders });
-              // return (
-              //   <Text
-              //     style={orderDetails}
-              //   >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
-              // );
+              return (
+                <Text
+                  style={orderDetails}
+                >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+              );
             })}
           </View>
-          {/* <View style={priceContainer}>
+          <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
-                amount:
-                  Math.round(
-                    orders.chow_details.flavours.varieties.retail_price *
-                      orders.quantity || 0
-                  ) * 100,
+                amount: Math.round(subTotal || 0),
               }).toFormat("$0,0.00")}
             </Text>
-          </View> */}
+          </View>
         </View>
-        <Pressable onPress={() => setShowModal(true)}>
+        {/* <Pressable onPress={() => setShowModal(true)}>
           <Icon
             name="ellipsis-h"
             size={20}
             style={{ padding: 12, color: "white" }}
           />
-        </Pressable>
+        </Pressable> */}
       </Pressable>
       {/* <SettingsModal
         showModal={showModal}

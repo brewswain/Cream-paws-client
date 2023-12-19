@@ -23,7 +23,7 @@ import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
-import { OrderWithChowDetails } from "../models/order";
+import { CombinedOrder, OrderWithChowDetails } from "../models/order";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -32,7 +32,7 @@ const OrdersScreen = () => {
   const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [data, setData] = useState<OrderWithChowDetails[]>();
+  const [data, setData] = useState<CombinedOrder[]>();
 
   const { orderHeader, orderContainer, totalOrderDetails } = styles;
 
@@ -53,8 +53,7 @@ const OrdersScreen = () => {
     try {
       const response = await getUnpaidCustomerOrders();
       const formattedOrders = response && (await combineOrders(response));
-      console.log({ formattedOrders });
-      setData(response);
+      setData(formattedOrders);
 
       setIsLoading(false);
     } catch (error) {
@@ -146,18 +145,18 @@ const OrdersScreen = () => {
             //  </View>
             null}
 
-        {/* {formattedOrders?.map((order) => {
+        {data?.map((order) => {
           return (
             <OrderCard
               isDeleted={isDeleted}
               setIsDeleted={setIsDeleted}
               populateData={populateData}
-              client_name={name}
-              customerId={customer.id}
-              orders={order}
+              client_name={order.name}
+              customerId={order.customer_id}
+              data={order}
             />
           );
-        })} */}
+        })}
 
         <CreateOrderModal
           isOpen={showModal}
