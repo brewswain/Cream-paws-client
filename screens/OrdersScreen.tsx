@@ -34,24 +34,12 @@ const OrdersScreen = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<CombinedOrder[]>();
 
-  const { orderHeader, orderContainer, totalOrderDetails } = styles;
-
-  const populateOrdersList = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getAllOrders();
-      setOrders(response);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.error(error);
-    }
-  };
-
   const populateAllData = async () => {
     setIsLoading(true);
     try {
       const response = await getUnpaidCustomerOrders();
+      populateCustomersList();
+      populateChowList();
       const formattedOrders = response && (await combineOrders(response));
       setData(formattedOrders);
 
@@ -61,20 +49,18 @@ const OrdersScreen = () => {
       console.error(error);
     }
   };
-  const populateChowList = async () => {
-    const response = await getAllChow();
-    setChow(response);
-  };
 
   const populateCustomersList = async () => {
     const response = await getAllCustomers();
     setCustomers(response);
   };
+  const populateChowList = async () => {
+    const response = await getAllChow();
+    setChow(response);
+  };
 
   const populateData = async () => {
-    // populateChowList();
-    // populateCustomersList();
-    // populateOrdersList();
+    // while this is an unnecessary layer for now, i'd rather just keep this code as unchanged as possible for the interim
     populateAllData();
   };
 
@@ -88,66 +74,17 @@ const OrdersScreen = () => {
     }, [isDeleted])
   );
 
-  const customersArray = customers && customers;
-
   return (
     <View style={styles.container}>
       <ScrollView>
         {isLoading ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
-          //   <View>
-          //     {/* Nested Map isn't the best pattern but it's functional and performance cost shouldn't be atrocious based on scale*/}
-          //     {customersArray?.map((customer: Customer, index: number) => {
-          //       return (
-          //         <View style={orderContainer} key={customer.id + index}>
-          //           <View>
-          //             {customer.orders &&
-          //               customer.orders
-          //                 .flat()
-          //                 .filter((order) => order.payment_made === false)
-          //                 .map((order, index) => {
-          //                   const formattedOrders = combineOrders(
-          //                     customer.orders
-          //                   );
-          //                   return (
-          //                     <View
-          //                       key={
-          //                         order._id
-          //                           ? order._id + index
-          //                           : `order id not found - ${index}`
-          //                       }
-          //                       style={index === 0 ? { paddingTop: 20 } : null}
-          //                     >
-          //                       <OrderCard
-          //                         isDeleted={isDeleted}
-          //                         setIsDeleted={setIsDeleted}
-          //                         populateData={populateData}
-          //                         client_name={customer.name}
-          //                         customerId={customer.id}
-          //                         orders={formattedOrders}
-          //                       />
-          //                       {/* <OrderCard
-          //                         isDeleted={isDeleted}
-          //                         setIsDeleted={setIsDeleted}
-          //                         populateData={populateData}
-          //                         client_name={customer.name}
-          //                         customerId={customer.id}
-          //                         orders={order}
-          //                       /> */}
-          //                     </View>
-          //                   );
-          //                 })}
-          //           </View>
-          //         </View>
-          //       );
-          //     })}
-
-          //  </View>
           <View>
-            {data?.map((order) => {
+            {data?.map((order, index) => {
               return (
                 <OrderCard
+                  key={order.orders[0].order_id}
                   isDeleted={isDeleted}
                   setIsDeleted={setIsDeleted}
                   populateData={populateData}
