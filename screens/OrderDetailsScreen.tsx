@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import { Button, ScrollView } from "native-base";
-import { updateOrder } from "../api";
+import { deleteOrder, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
@@ -12,6 +12,7 @@ import {
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import { OrderWithChowDetails } from "../models/order";
+import { clearCustomerOrders } from "../utils/orderUtils";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -78,6 +79,18 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     delete selectedOrder.orders;
 
     await updateOrder(selectedOrder);
+    navigate.navigate("Orders");
+  };
+
+  const handleDelete = async (index: number) => {
+    const deleteCustomerOrderPayload = [
+      {
+        order_id: orderPayload.orders[index].order_id,
+        customer_id: orderPayload.customer_id,
+      },
+    ];
+
+    await clearCustomerOrders(deleteCustomerOrderPayload);
     navigate.navigate("Orders");
   };
 
@@ -179,6 +192,17 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             onPress={() => handleUpdate(index)}
           >
             Update Order
+          </Button>
+          <Button
+            colorScheme="danger"
+            style={{
+              marginTop: 20,
+              width: 150,
+              alignSelf: "center",
+            }}
+            onPress={() => handleDelete(index)}
+          >
+            Delete Order
           </Button>
         </>
       ))}

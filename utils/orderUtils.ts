@@ -23,7 +23,14 @@ export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
     console.error(error);
   }
 };
-export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
+export const clearCustomerOrders = async (
+  orders:
+    | OrderWithChowDetails[]
+    | {
+        order_id: string;
+        customer_id: string;
+      }[]
+) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
