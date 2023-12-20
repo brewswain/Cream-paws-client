@@ -42,7 +42,7 @@ const OrderCard = ({
   } = styles;
 
   const viewDetails = () => {
-    navigation.navigate("OrderDetails", { ...orders, client_name });
+    navigation.navigate("OrderDetails", { orders, client_name });
   };
 
   const handleDelete = async (orderId: string, customerId: string) => {
