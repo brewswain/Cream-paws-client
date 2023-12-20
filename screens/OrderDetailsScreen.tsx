@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button } from "native-base";
+import { Button, ScrollView } from "native-base";
 import { updateOrder } from "../api";
 import {
   CustomInput,
@@ -29,29 +29,55 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     id: route.params._id || "unknown id",
   });
   const navigate = useNavigation();
-
   // TODO: sanitize our inputs
-  const handleChange = (name: string, value: string | number) => {
+
+  const handleChange = (
+    name: string,
+    value: string | number,
+    selectedIndex: number
+  ) => {
     if (name.includes("chow_details")) {
       const [nestedKey, propertyName] = name.split(".");
 
       setOrderPayload((prevState) => ({
         ...prevState,
-        [nestedKey]: {
-          ...prevState.chow_details,
-          [propertyName]: value,
-        },
+        orders: prevState.orders.map((order, index) => {
+          if (index === selectedIndex) {
+            return {
+              ...order,
+              chow_details: {
+                ...order.chow_details,
+                [propertyName]: value,
+              },
+            };
+          }
+          return order;
+        }),
       }));
     } else {
       setOrderPayload((prevState) => ({
         ...prevState,
-        [name]: value,
+        orders: prevState.orders.map((order, index) => {
+          if (index === selectedIndex) {
+            return {
+              ...order,
+              [name]: value,
+            };
+          }
+          return order;
+        }),
       }));
     }
   };
 
-  const handleUpdate = async () => {
-    await updateOrder(orderPayload);
+  const handleUpdate = async (index: number) => {
+    const selectedOrder = {
+      ...orderPayload,
+      ...orderPayload.orders[index],
+    };
+    delete selectedOrder.orders;
+
+    await updateOrder(selectedOrder);
     navigate.navigate("Orders");
   };
 
@@ -63,43 +89,18 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
-  const chowFields: SubFields[] = [
-    {
-      title: "Brand",
-      content: orderPayload.chow_details.brand,
-      name: "chow_details.brand",
-    },
-    {
-      title: "Flavour",
-      content: orderPayload.chow_details.flavours.flavour_name,
-      name: "chow_details.flavour",
-    },
-    {
-      title: "Size",
-      content: orderPayload.chow_details.flavours.varieties.size,
-      name: "chow_details.size",
-    },
-    {
-      title: "Unit",
-      content: orderPayload.chow_details.flavours.varieties.unit,
-      name: "chow_details.unit",
-    },
-    {
-      title: "Quantity",
-      content: orderPayload.quantity,
-      name: "quantity",
-    },
-  ];
-
-  const costsFields: SubFields[] = [
+  const costsFields = (index: number) => [
     {
       title: "Wholesale Price",
-      content: orderPayload.chow_details.flavours.varieties.wholesale_price,
+      content:
+        orderPayload.orders[index].chow_details.flavours.varieties
+          .wholesale_price,
       name: "chow_details.wholesale_price",
     },
     {
       title: "Retail Price",
-      content: orderPayload.chow_details.flavours.varieties.retail_price,
+      content:
+        orderPayload.orders[index].chow_details.flavours.varieties.retail_price,
       name: "chow_details.retail_price",
     },
     {
@@ -114,40 +115,74 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     },
   ];
 
+  const chowFields = (index: number) => [
+    {
+      title: "Brand",
+      content: orderPayload.orders[index].chow_details.brand,
+      name: "chow_details.brand",
+    },
+    {
+      title: "Flavour",
+      content: orderPayload.orders[index].chow_details.flavours.flavour_name,
+      name: "chow_details.flavour",
+    },
+    {
+      title: "Size",
+      content: orderPayload.orders[index].chow_details.flavours.varieties.size,
+      name: "chow_details.size",
+    },
+    {
+      title: "Unit",
+      content: orderPayload.orders[index].chow_details.flavours.varieties.unit,
+      name: "chow_details.unit",
+    },
+    {
+      title: "Quantity",
+      content: orderPayload.orders[index].quantity,
+      name: "quantity",
+    },
+  ];
+
   return (
-    <View style={{ backgroundColor: "white", flex: 1 }}>
-      <View style={{ width: "90%" }}>
-        {/* Checkmarks like Driver Paid, etc */}
-        <Text style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}>
-          {orderPayload.client_name}
-        </Text>
+    <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
+      {orderPayload.orders.map((order, index: number) => (
+        <>
+          <View style={{ width: "90%" }}>
+            {/* Checkmarks like Driver Paid, etc */}
+            <Text
+              style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
+            >
+              {orderPayload.client_name}
+            </Text>
 
-        <Header>Delivery Date</Header>
-        {/*  ignore this error till we implement the date-selector */}
-        {/* @ts-ignore */}
-        <CustomInput handleChange={handleChange}>
-          {formattedDeliveryDate}
-        </CustomInput>
+            <Header>Delivery Date</Header>
+            {/*  ignore this error till we implement the date-selector */}
+            {/* @ts-ignore */}
+            <CustomInput handleChange={handleChange}>
+              {formattedDeliveryDate}
+            </CustomInput>
 
-        <Header>Chow Details</Header>
-        {renderDetailInputs(chowFields, handleChange)}
+            <Header>Chow Details</Header>
+            {renderDetailInputs(chowFields(index), handleChange, index)}
 
-        {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
-        <Header>Costs</Header>
-        {renderDetailInputs(costsFields, handleChange)}
-      </View>
-      <Button
-        colorScheme="danger"
-        style={{
-          marginTop: 20,
-          width: 150,
-          alignSelf: "center",
-        }}
-        onPress={() => handleUpdate()}
-      >
-        Update Order
-      </Button>
-    </View>
+            {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
+            <Header>Costs</Header>
+            {renderDetailInputs(costsFields(index), handleChange, index)}
+          </View>
+          <Button
+            colorScheme="danger"
+            style={{
+              marginTop: 20,
+              width: 150,
+              alignSelf: "center",
+            }}
+            onPress={() => handleUpdate(index)}
+          >
+            Update Order
+          </Button>
+        </>
+      ))}
+    </ScrollView>
   );
 };
 
