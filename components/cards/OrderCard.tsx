@@ -1,20 +1,17 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import Dinero from "dinero.js";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { deleteOrder } from "../../api";
+
 import { deleteCustomersOrder } from "../../api/routes/orders";
-import DeleteModal from "../modals/DeleteModal";
-import SettingsModal from "../modals/SettingsModal";
-import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
+
+import { CombinedOrder } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
   data: CombinedOrder;
-  // order: OrderWithChowDetails;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
