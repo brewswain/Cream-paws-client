@@ -5,7 +5,6 @@ import { OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
 import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
 
-
 export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
@@ -39,18 +38,6 @@ export const clearCustomerOrders = async (
     );
 
     return;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
-  try {
-    await Promise.all(
-      orders.map(async (order) => {
-        await deleteCustomersOrder(order.order_id!, order.customer_id);
-      })
-    );
   } catch (error) {
     console.error(error);
   }
