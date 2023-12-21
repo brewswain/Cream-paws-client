@@ -136,9 +136,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   clientNameHeader: {
-    fontSize: 16,
+    fontSize: 20,
     color: "black",
-    fontFamily: "Poppins-semibold",
+    marginVertical: 4,
+    // fontFamily: "Poppins-semibold",
   },
   clientDetails: {
     fontSize: 14,

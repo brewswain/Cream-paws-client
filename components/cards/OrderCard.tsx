@@ -38,6 +38,7 @@ const OrderCard = ({
     orderDetails,
     priceContainer,
     price,
+    timestamp,
     flexRow,
   } = styles;
 
@@ -76,26 +77,28 @@ const OrderCard = ({
     ) * 100
   );
 
+  const formattedDeliveryDate = new Date(data.delivery_date).toDateString();
+  const today = new Date().toDateString();
   return (
     <View style={container}>
-      {/* Separated items into two Views to allow for better layout */}
       <Pressable style={flexRow} onPress={() => viewDetails()}>
+        <Text style={timestamp}>
+          {formattedDeliveryDate === today ? "Today" : formattedDeliveryDate}
+        </Text>
         <View
           style={{
-            width: "80%",
+            width: "90%",
           }}
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            {/* <Text
-              style={orderDetails}
-            >{`${orders.chow_details.brand} - ${orders.chow_details.flavours.flavour_name} x ${orders.quantity}`}</Text>
-          </View> */}
             {orders.map((order) => {
               return (
-                <Text
-                  style={orderDetails}
-                >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+                <View key={order.id}>
+                  <Text style={orderDetails}>
+                    {`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}
+                  </Text>
+                </View>
               );
             })}
           </View>
@@ -107,22 +110,7 @@ const OrderCard = ({
             </Text>
           </View>
         </View>
-        {/* <Pressable onPress={() => setShowModal(true)}>
-          <Icon
-            name="ellipsis-h"
-            size={20}
-            style={{ padding: 12, color: "white" }}
-          />
-        </Pressable> */}
       </Pressable>
-      {/* <SettingsModal
-        showModal={showModal}
-        setShowModal={setShowModal}
-        handleDeletion={() =>
-          handleDelete(orders.order_id || "id not found", customerId)
-        }
-        deletionId={orders.order_id}
-      /> */}
     </View>
   );
 };
@@ -130,11 +118,17 @@ const OrderCard = ({
 const styles = StyleSheet.create({
   container: {
     display: "flex",
+    position: "relative",
     justifyContent: "space-between",
     alignSelf: "center",
-    borderRadius: 4,
     width: "90%",
-    backgroundColor: "#434949",
+    backgroundColor: "#f9f9f9",
+    borderRadius: 6,
+    borderColor: "#e3e3e3",
+    borderWidth: 1,
+    marginVertical: 4,
+    padding: 10,
+    // backgroundColor: "#434949",
     minHeight: 120,
   },
   flexRow: {
@@ -148,20 +142,29 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   clientNameHeader: {
-    fontSize: 26,
-    color: "white",
-    paddingBottom: 4,
+    fontSize: 22,
+    color: "black",
+    paddingVertical: 4,
   },
   orderDetails: {
-    color: "white",
-    width: "80%",
+    color: "#6c747a",
+    width: "100%",
+    marginVertical: 2,
   },
   priceContainer: {
     marginLeft: 8,
   },
   price: {
-    color: "#55E8D9",
+    color: "#38d180",
     fontSize: 20,
+  },
+  timestamp: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    fontSize: 12,
+    color: "#588ca8",
+    fontFamily: "Poppins",
   },
 });
 

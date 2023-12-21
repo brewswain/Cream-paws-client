@@ -42,6 +42,24 @@ const OrdersScreen = () => {
       populateCustomersList();
       populateChowList();
       const formattedOrders = response && (await combineOrders(response));
+
+      // Sort the orders first by delivery_date in ascending order, then by name
+      formattedOrders.sort((a, b) => {
+        // Compare delivery_date
+        const dateA = new Date(a.delivery_date);
+        const dateB = new Date(b.delivery_date);
+        const dateComparison = dateA - dateB;
+
+        // If delivery_date is the same, compare by name
+        if (dateComparison === 0) {
+          const nameA = a.name.toLowerCase(); // assuming case-insensitive comparison
+          const nameB = b.name.toLowerCase();
+          return nameA.localeCompare(nameB);
+        }
+
+        return dateComparison;
+      });
+
       setData(formattedOrders);
 
       setIsLoading(false);
@@ -75,6 +93,10 @@ const OrdersScreen = () => {
     }, [isDeleted])
   );
 
+  const deliveryDates = data?.map((order) =>
+    new Date(order.delivery_date).toDateString()
+  );
+  const today = new Date().toDateString();
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -84,15 +106,17 @@ const OrdersScreen = () => {
           <View>
             {data?.map((order, index) => {
               return (
-                <OrderCard
-                  key={order.orders[0].order_id}
-                  isDeleted={isDeleted}
-                  setIsDeleted={setIsDeleted}
-                  populateData={populateData}
-                  client_name={order.name}
-                  customerId={order.customer_id}
-                  data={order}
-                />
+                <View>
+                  <OrderCard
+                    key={`${order.orders[0].order_id} - ${index}`}
+                    isDeleted={isDeleted}
+                    setIsDeleted={setIsDeleted}
+                    populateData={populateData}
+                    client_name={order.name}
+                    customerId={order.customer_id}
+                    data={order}
+                  />
+                </View>
               );
             })}
           </View>
@@ -116,7 +140,7 @@ const OrdersScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#f1f2f3",
   },
   buttonContainer: {
     flex: 1,
@@ -142,14 +166,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 28,
     width: "100%",
-    // borderBottomWidth: 1,
-    // borderBottomColor: "black",
   },
   totalOrderDetails: {
     color: "white",
     fontSize: 16,
     paddingLeft: 4,
   },
+  timeStamp: {},
 });
 
 export default OrdersScreen;
