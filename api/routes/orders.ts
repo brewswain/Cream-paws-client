@@ -1,23 +1,10 @@
 import { OrderWithChowDetails } from "../../models/order";
 import { axiosInstance } from "../api";
 
-export const createOrder = async (order: firstTimeOrder) => {
-  const {
-    delivery_date,
-    payment_made,
-    delivery_cost,
-    payment_date,
-    is_delivery,
-    driver_paid,
-    quantity,
-    warehouse_paid,
-    customer_id,
-    flavour_name,
-    chow_id,
-  } = order;
-
+export const createOrder = async (order: OrderWithChowDetails) => {
   try {
     const response = await axiosInstance.post("/orders", order);
+
     return response.data;
   } catch (error) {
     console.error(error);
@@ -67,3 +54,5 @@ export const updateOrder = async (order: OrderWithChowDetails) => {
     console.error({ error });
   }
 };
+
+export const payWarehouseOrders = async (orders: OrderWithChowDetails[]) => {};

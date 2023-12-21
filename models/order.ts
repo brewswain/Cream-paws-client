@@ -39,3 +39,38 @@ export interface OrderWithChowDetails extends Order {
 interface OrderDetails extends OrderWithChowDetails {
   client_name: string;
 }
+
+export interface CombinedOrder {
+  delivery_date: string;
+  delivery_cost: number;
+  name: string;
+  customer_id: string;
+  orders: {
+    chow_id: string;
+    quantity: number;
+    payment_date: string;
+    payment_made: boolean;
+    is_delivery: boolean;
+    driver_paid: boolean;
+    warehouse_paid: boolean;
+    customer_id: string;
+    chow_details: {
+      brand: string;
+      target_group: string;
+      flavours: FilteredChowFlavour;
+      size: number;
+      unit: string;
+      wholesale_price: number;
+      retail_price: number;
+      is_paid_for: boolean;
+      version: number;
+      warehouse_paid: boolean;
+      id: string;
+    };
+    id: string;
+    _id?: string;
+    order_id?: string;
+    flavour_name?: string;
+    version?: number;
+  }[];
+}

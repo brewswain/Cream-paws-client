@@ -29,12 +29,17 @@ export const SubHeader = ({ children }: HeaderProps) => {
 export const CustomInput = (props: {
   children: string | number;
   name: string;
-  handleChange: (name: string, value: string | number) => void;
+  handleChange: (name: string, value: string | number, index?: number) => void;
+  selectedIndex?: number;
 }) => {
   return (
     <TextInput
       style={styles.input}
-      onChangeText={(text: string) => props.handleChange(props.name, text)}
+      onChangeText={(text: string) =>
+        props.selectedIndex
+          ? props.handleChange(props.name, text, props.selectedIndex)
+          : props.handleChange(props.name, text, 0)
+      }
     >
       {props.children}
     </TextInput>
@@ -43,13 +48,18 @@ export const CustomInput = (props: {
 
 export const renderDetailInputs = (
   fields: SubFields[],
-  handleChange: (name: string, value: string | number) => void
+  handleChange: (name: string, value: string | number, index?: number) => void,
+  selectedIndex?: number
 ) => {
   return fields.map((field, index) => (
     // While usually an anti-pattern, using index as a key here *should* be fine as our fields sent are static and will not be filtered or re-ordered
     <View key={index}>
       <SubHeader>{field.title}</SubHeader>
-      <CustomInput handleChange={handleChange} name={field.name}>
+      <CustomInput
+        handleChange={handleChange}
+        name={field.name}
+        selectedIndex={selectedIndex}
+      >
         {field.content}
       </CustomInput>
     </View>

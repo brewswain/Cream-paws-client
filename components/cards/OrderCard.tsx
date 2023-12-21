@@ -1,19 +1,17 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import Dinero from "dinero.js";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { deleteOrder } from "../../api";
+
 import { deleteCustomersOrder } from "../../api/routes/orders";
-import DeleteModal from "../modals/DeleteModal";
-import SettingsModal from "../modals/SettingsModal";
-import { OrderWithChowDetails } from "../../models/order";
+
+import { CombinedOrder } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
-  order: OrderWithChowDetails;
+  data: CombinedOrder;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
@@ -22,7 +20,7 @@ interface OrderCardProps {
 
 const OrderCard = ({
   client_name,
-  order,
+  data,
   isDeleted,
   setIsDeleted,
   populateData,
@@ -31,6 +29,7 @@ const OrderCard = ({
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const navigation = useNavigation();
+  const { orders } = data;
 
   const {
     container,
@@ -43,7 +42,12 @@ const OrderCard = ({
   } = styles;
 
   const viewDetails = () => {
-    navigation.navigate("OrderDetails", { ...order, client_name });
+    navigation.navigate("OrderDetails", {
+      orders,
+      client_name,
+      delivery_date: data.delivery_date,
+      customer_id: data.customer_id,
+    });
   };
 
   const handleDelete = async (orderId: string, customerId: string) => {
@@ -58,6 +62,20 @@ const OrderCard = ({
     }
   };
 
+  const mappedCostArray = orders
+    .filter((order) => order.payment_made === false)
+    .map(
+      (order) =>
+        order.chow_details.flavours.varieties.retail_price * order.quantity
+    );
+
+  const subTotal = Math.round(
+    mappedCostArray.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
+
   return (
     <View style={container}>
       {/* Separated items into two Views to allow for better layout */}
@@ -69,38 +87,42 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            <Text
+            {/* <Text
               style={orderDetails}
-            >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+            >{`${orders.chow_details.brand} - ${orders.chow_details.flavours.flavour_name} x ${orders.quantity}`}</Text>
+          </View> */}
+            {orders.map((order) => {
+              return (
+                <Text
+                  style={orderDetails}
+                >{`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}</Text>
+              );
+            })}
           </View>
           <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
-                amount:
-                  Math.round(
-                    order.chow_details.flavours.varieties.retail_price *
-                      order.quantity || 0
-                  ) * 100,
+                amount: Math.round(subTotal || 0),
               }).toFormat("$0,0.00")}
             </Text>
           </View>
         </View>
-        <Pressable onPress={() => setShowModal(true)}>
+        {/* <Pressable onPress={() => setShowModal(true)}>
           <Icon
             name="ellipsis-h"
             size={20}
             style={{ padding: 12, color: "white" }}
           />
-        </Pressable>
+        </Pressable> */}
       </Pressable>
-      <SettingsModal
+      {/* <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
         handleDeletion={() =>
-          handleDelete(order.order_id || "id not found", customerId)
+          handleDelete(orders.order_id || "id not found", customerId)
         }
-        deletionId={order.order_id}
-      />
+        deletionId={orders.order_id}
+      /> */}
     </View>
   );
 };
