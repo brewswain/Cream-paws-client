@@ -24,11 +24,12 @@ import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../models/order";
+import { Chow } from "../models/chow";
+import { Customer } from "../models/customer";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [chow, setChow] = useState<Chow[]>();
-  const [orders, setOrders] = useState<Order[]>();
   const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);

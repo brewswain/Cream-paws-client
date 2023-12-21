@@ -102,13 +102,12 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       ...restOrderDetails
     } = order;
 
-    const orderKey = `${delivery_date}_${delivery_cost}`;
+    const orderKey = `${delivery_date}`;
 
     if (!combinedOrders[orderKey]) {
       combinedOrders[orderKey] = {
         delivery_date,
-        delivery_cost,
-        customer_id,
+        delivery_cost, // Place delivery_cost at the root level
         name: customerName.name,
         orders: [],
       };
