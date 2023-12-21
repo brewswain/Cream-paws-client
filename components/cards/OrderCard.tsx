@@ -26,8 +26,6 @@ const OrderCard = ({
   populateData,
   customerId,
 }: OrderCardProps) => {
-  const [showModal, setShowModal] = useState<boolean>(false);
-
   const navigation = useNavigation();
   const { orders } = data;
 
@@ -77,6 +75,10 @@ const OrderCard = ({
     ) * 100
   );
 
+  const totalWithDeliveryCost = data.delivery_cost
+    ? subTotal + data.delivery_cost * 100
+    : subTotal;
+
   const formattedDeliveryDate = new Date(data.delivery_date).toDateString();
   const today = new Date().toDateString();
   return (
@@ -105,7 +107,7 @@ const OrderCard = ({
           <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
-                amount: Math.round(subTotal || 0),
+                amount: Math.round(totalWithDeliveryCost || 0),
               }).toFormat("$0,0.00")}
             </Text>
           </View>
