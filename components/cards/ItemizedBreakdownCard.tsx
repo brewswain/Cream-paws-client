@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
@@ -8,11 +8,11 @@ import { Button, Checkbox } from "native-base";
 import {
   clearCustomerOrders,
   clearWarehouseOrders,
+  combineOrders,
   getUnpaidCustomerOrders,
   getUnpaidWarehouseOrders,
 } from "../../utils/orderUtils";
-import { OrderWithChowDetails } from "../../models/order";
-import FilteredOrderDetails from "../FilteredOrderDetails";
+import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
 interface ItemizedBreakdownCardProps {
   mode: "suppliers" | "customers";
@@ -28,6 +28,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [outstandingOrders, setOutstandingOrders] = useState<
     OrderWithChowDetails[]
   >([]);
+  const [formattedOrders, setFormattedOrders] = useState<CombinedOrder[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -40,6 +41,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const getCustomerOrders = async () => {
     try {
       const filteredOutstandingOrders = await getUnpaidCustomerOrders();
+      formatOrders();
       setOutstandingOrders(filteredOutstandingOrders);
       setIsLoading(false);
       setIsSuccess(true);
@@ -120,9 +122,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
-  const mappedDeliveryCostArray = orders
-    .filter((order) => order.payment_made === false)
-    .map((order) => order.delivery_cost);
+  const formatOrders = async () => {
+    const response = await combineOrders(orders);
+    setFormattedOrders(response);
+  };
+  const mappedDeliveryCostArray = formattedOrders.map(
+    (order) => order.delivery_cost
+  );
 
   const totalDeliveryCost = Math.round(
     mappedDeliveryCostArray.reduce(
@@ -386,7 +392,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         ) : (
           <View style={totalWrapper}>
             <View style={priceWrapper}>
-              <Text style={subTotalCost}>Total:</Text>
+              <Text style={subTotalCost}>Subtotal:</Text>
               <Text style={subTotalCost}>
                 {subTotal
                   ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
@@ -394,12 +400,22 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               </Text>
             </View>
             <View style={priceWrapper}>
-              <Text style={subTotalCost}>Total delivery costs:</Text>
+              <Text style={subTotalCost}>Delivery costs:</Text>
               <Text style={subTotalCost}>
                 {totalDeliveryCost
                   ? Dinero({ amount: totalDeliveryCost || 0 }).toFormat(
                       "$0,0.00"
                     )
+                  : null}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={subTotalCost}>Total:</Text>
+              <Text style={subTotalCost}>
+                {totalDeliveryCost
+                  ? Dinero({
+                      amount: totalDeliveryCost + subTotal || 0,
+                    }).toFormat("$0,0.00")
                   : null}
               </Text>
             </View>
