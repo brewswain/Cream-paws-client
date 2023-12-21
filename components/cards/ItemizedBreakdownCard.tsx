@@ -14,6 +14,7 @@ import {
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
+
 interface ItemizedBreakdownCardProps {
   mode: "suppliers" | "customers";
 }
@@ -35,6 +36,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [isError, setIsError] = useState(false);
 
   const isWarehouseOrders = mode === "suppliers";
+
 
   // TODO: Put the heavy logic into our backend once this approach is verified
 
@@ -478,7 +480,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     paddingLeft: 12,
   },
-
   // Button Block
   buttonContainer: {
     display: "flex",
@@ -491,6 +492,11 @@ const styles = StyleSheet.create({
 
   payAllOrderButton: {
     backgroundColor: "green",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
   },
 
   // Orders Block
@@ -552,10 +558,6 @@ const styles = StyleSheet.create({
 
     width: "65%", // Set a maximum width for the text
     maxWidth: "65%",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
   },
 });
 

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,10 +14,20 @@ import { RootTabScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
 import { OrderWithChowDetails } from "../models/order";
+import { clearCustomerOrders, clearOrders } from "../utils/orderUtils";
+import { Button } from "native-base";
+import { deleteCustomersOrder } from "../api/routes/orders";
+import { findCustomer } from "../api";
+import { Customer } from "../models/customer";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
   route: any;
+}
+
+export interface SelectedOrder {
+  index: number;
+  selected: boolean;
 }
 
 const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
@@ -25,11 +36,38 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     useState<boolean>(false);
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
+  const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
+    useState("idle");
+  const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
+    useState("idle");
+  const [isFetching, setIsFetching] = useState<boolean>(true);
+  const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([
+    {
+      index: 0,
+      selected: false,
+    },
+  ]);
+  const [customer, setCustomer] = useState<Customer>();
 
+  const customerData = findCustomer(route.params.id);
+  const populateCustomerData = async () => {
+    const data = await findCustomer(route.params.id);
+    setCustomer(data);
+  };
   const { pets, orders, name, id, contactNumber, location, city } =
     route.params;
   // const { pets, orders, name, id } = testCustomerDetails;
-  const { container, header, subHeader, deEmphasis, outstandingCosts } = styles;
+  const {
+    container,
+    header,
+    subHeader,
+    deEmphasis,
+    outstandingCosts,
+    buttonText,
+    buttonContainer,
+    button,
+    payAllOrderButton,
+  } = styles;
 
   const { height, width } = useWindowDimensions();
 
@@ -60,6 +98,65 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
   const capitalizedName = (name: string) => {
     return name[0].toUpperCase() + name.substring(1);
+  };
+
+  // TODO: make this more elegant, this is a pretty clumsy solution. filter on a map that's then used to do a separate map...
+  const selectedIndicesArray = selectedOrders
+    .filter((order) => order.selected === true)
+    .map((order) => order.index);
+
+  const ordersChosenForClearing = selectedIndicesArray.map(
+    (selectedIndex) => orders[selectedIndex]
+  );
+
+  const handleClearingSelectedOrders = async () => {
+    setButtonStateSelectedOrders("loading"); // Set loading state
+
+    try {
+      // await clearOrders(ordersChosenForClearing);
+      clearCustomerOrders(ordersChosenForClearing);
+
+      // On success, set success state
+      setButtonStateSelectedOrders("success");
+      setIsFetching(true);
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateSelectedOrders("error");
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    }
+  };
+
+  const handleClearingAllOrders = async () => {
+    setButtonStateClearAllOrders("loading"); // Set loading state
+
+    try {
+      clearCustomerOrders(orders);
+      // On success, set success state
+      setButtonStateClearAllOrders("success");
+      setIsFetching(true);
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateClearAllOrders("error");
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    }
   };
 
   const renderContactNumber = () => {
@@ -108,6 +205,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
           outstandingCollapsible={outstandingCollapsible}
           setOutstandingCollapsible={setOutstandingCollapsible}
           outstandingOrders={outstandingOrders}
+          selectedOrders={selectedOrders}
+          setSelectedOrders={setSelectedOrders}
         >
           Outstanding Orders
         </CollapsibleOrder>
@@ -118,6 +217,75 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
             >
               Completed Orders
             </CollapsibleOrder> */}
+
+        <View style={buttonContainer}>
+          <Button
+            onPress={async () => {
+              if (
+                buttonStateSelectedOrders === "idle" &&
+                selectedIndicesArray.length >= 1
+              ) {
+                setButtonStateSelectedOrders("loading");
+                try {
+                  await handleClearingSelectedOrders();
+                  setButtonStateSelectedOrders("success");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+                } catch (error) {
+                  setButtonStateSelectedOrders("error");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+                }
+              }
+            }}
+            isDisabled={selectedIndicesArray.length < 1}
+            style={button}
+          >
+            {buttonStateSelectedOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateSelectedOrders === "success" ? (
+              <>
+                <Text style={buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateSelectedOrders === "error" ? (
+              <>
+                <Text style={buttonText}>Error!</Text>
+              </>
+            ) : (
+              "Set selected orders to 'Paid'"
+            )}
+          </Button>
+        </View>
+        <View style={buttonContainer}>
+          <Button
+            onPress={async () => {
+              if (buttonStateClearAllOrders === "idle") {
+                setButtonStateClearAllOrders("loading");
+                try {
+                  await handleClearingAllOrders();
+                  setButtonStateClearAllOrders("success");
+                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
+                } catch (error) {
+                  setButtonStateClearAllOrders("error");
+                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
+                }
+              }
+            }}
+            style={button}
+          >
+            {buttonStateClearAllOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateClearAllOrders === "success" ? (
+              <>
+                <Text style={buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateClearAllOrders === "error" ? (
+              <>
+                <Text style={buttonText}>Error!</Text>
+              </>
+            ) : (
+              "Pay all outstanding orders"
+            )}
+          </Button>
+        </View>
       </View>
     );
   };
@@ -190,6 +358,25 @@ const styles = StyleSheet.create({
   },
   regular: {
     fontWeight: "400",
+  },
+
+  // Button Block
+  buttonContainer: {
+    display: "flex",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  button: {
+    width: "60%",
+  },
+
+  payAllOrderButton: {
+    backgroundColor: "green",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
   },
 });
 

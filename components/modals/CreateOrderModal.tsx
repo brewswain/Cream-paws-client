@@ -211,6 +211,7 @@ const CreateOrderModal = ({
     ...(orderInputs.is_delivery && {
       delivery_cost: orderInputs.delivery_cost,
     }),
+
     driver_paid: orderInputs.driver_paid,
     warehouse_paid: orderInputs.warehouse_paid,
     // add chow object

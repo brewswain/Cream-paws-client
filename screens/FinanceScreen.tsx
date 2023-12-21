@@ -30,6 +30,7 @@ const FinanceScreen = () => {
           />
         </View>
       </View>
+
       <Text style={header}>
         {showSupplierOwed ? "Total Owed Supplier" : "Total Owed Cream Paws"}
       </Text>
