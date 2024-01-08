@@ -1,9 +1,9 @@
 import { ReactNode, useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button, ScrollView } from "native-base";
-import { deleteOrder, updateOrder } from "../api";
+import { Button, CheckIcon, ScrollView, Select } from "native-base";
+import { deleteOrder, getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
@@ -13,6 +13,7 @@ import {
 import { RootTabScreenProps } from "../types";
 import { OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
+import { Chow } from "../models/chow";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -20,7 +21,13 @@ interface CustomerOrderDetails extends OrderWithChowDetails {
 interface OrderDetailsProps {
   navigation: RootTabScreenProps<"OrderDetails">;
   route: {
-    params: CustomerOrderDetails;
+    params: {
+      client_name: string;
+      delivery_date: string;
+      customer_id: string;
+      id: string;
+      orders: CustomerOrderDetails[];
+    };
   };
 }
 
@@ -30,7 +37,78 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     id: route.params._id || "unknown id",
   });
   const navigate = useNavigation();
+  const [chosenBrand, setChosenBrand] = useState();
+  const [chow, setChow] = useState<Chow[]>();
+
+  const populateChowList = async () => {
+    const response = await getAllChow();
+    setChow(response);
+  };
   // TODO: sanitize our inputs
+
+  const selectedBrand = (chowInputIndex: number) => {
+    const filteredChow = chow
+      ?.map((brand) => brand)
+      .filter(
+        (item) =>
+          item.brand === orderPayload.orders[chowInputIndex].chow_details.brand
+      );
+
+    if (filteredChow) {
+      return filteredChow[0];
+    }
+  };
+
+  const selectedFlavour = (chowInputIndex: number, flavour_id: string) => {
+    const chow = selectedBrand(chowInputIndex);
+    const filteredFlavour = chow?.flavours.filter(
+      (flavour) => flavour.flavour_id === flavour_id
+    );
+
+    if (filteredFlavour) {
+      return filteredFlavour[0];
+    }
+  };
+
+  const renderBrandDropdown = () => {
+    return chow?.map((item) => {
+      return (
+        <Select.Item
+          label={`${item.brand}`}
+          value={`${item.brand}`}
+          key={item.brand_id}
+        />
+      );
+    });
+  };
+
+  const renderFlavourDropdown = (chowInputIndex: number) => {
+    const chow = selectedBrand(chowInputIndex);
+
+    return chow?.flavours.map((flavour) => (
+      <Select.Item
+        label={flavour.flavour_name}
+        value={flavour.flavour_name}
+        key={flavour.flavour_id}
+      />
+    ));
+  };
+
+  const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
+    const flavour = selectedFlavour(chowInputIndex, flavour_id);
+
+    return flavour?.varieties.map((variety) => (
+      <Select.Item
+        label={`${variety.size} ${variety.unit}`}
+        value={variety.chow_id}
+        key={variety.chow_id}
+      />
+    ));
+  };
+
+  useEffect(() => {
+    populateChowList();
+  }, []);
 
   const handleChange = (
     name: string,
@@ -158,54 +236,100 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
-      {orderPayload.orders.map((order, index: number) => (
-        <>
-          <View style={{ width: "90%" }}>
-            {/* Checkmarks like Driver Paid, etc */}
-            <Text
-              style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
+      {orderPayload.orders.map((order, index: number) => {
+        const currentOrder = orderPayload.orders[index];
+        return (
+          <>
+            <View style={{ width: "90%" }}>
+              {/* Checkmarks like Driver Paid, etc */}
+              <Text
+                style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
+              >
+                {orderPayload.client_name}
+              </Text>
+              <TouchableWithoutFeedback onPress={renderBrandDropdown}>
+                <Select
+                  minWidth="200"
+                  selectedValue={currentOrder.chow_details.brand}
+                  accessibilityLabel="Choose Brand"
+                  placeholder="Choose Brand *"
+                  _selectedItem={{
+                    bg: "teal.600",
+                    endIcon: <CheckIcon size={5} />,
+                  }}
+                  mt="1"
+                  onValueChange={(itemValue) =>
+                    // handleChowSelected(itemValue, index, "brand")
+                    handleChange("chow_details.brand", itemValue, index)
+                  }
+                  key={currentOrder.chow_id}
+                >
+                  {chow && renderBrandDropdown()}
+                </Select>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => renderFlavourDropdown(index)}
+              >
+                <Select
+                  minWidth="200"
+                  selectedValue={
+                    currentOrder.chow_details.flavours.flavour_name
+                  }
+                  accessibilityLabel="Choose Flavour"
+                  placeholder="Choose Flavour *"
+                  _selectedItem={{
+                    bg: "teal.600",
+                    endIcon: <CheckIcon size={5} />,
+                  }}
+                  mt="1"
+                  onValueChange={(itemValue) =>
+                    handleChange("chow_details.flavour", itemValue, index)
+                  }
+                  key={currentOrder.chow_id}
+                >
+                  {chow && renderFlavourDropdown(index)}
+                </Select>
+              </TouchableWithoutFeedback>
+
+              <Header>Delivery Date</Header>
+              {/*  ignore this error till we implement the date-selector */}
+              {/* @ts-ignore */}
+              <CustomInput handleChange={handleChange}>
+                {formattedDeliveryDate}
+              </CustomInput>
+
+              <Header>Chow Details</Header>
+              {renderDetailInputs(chowFields(index), handleChange, index)}
+
+              {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
+              <Header>Costs</Header>
+              {renderDetailInputs(costsFields(index), handleChange, index)}
+            </View>
+            <Button
+              colorScheme="danger"
+              style={{
+                marginTop: 20,
+                width: 150,
+                alignSelf: "center",
+              }}
+              onPress={() => handleUpdate(index)}
             >
-              {orderPayload.client_name}
-            </Text>
-
-            <Header>Delivery Date</Header>
-            {/*  ignore this error till we implement the date-selector */}
-            {/* @ts-ignore */}
-            <CustomInput handleChange={handleChange}>
-              {formattedDeliveryDate}
-            </CustomInput>
-
-            <Header>Chow Details</Header>
-            {renderDetailInputs(chowFields(index), handleChange, index)}
-
-            {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
-            <Header>Costs</Header>
-            {renderDetailInputs(costsFields(index), handleChange, index)}
-          </View>
-          <Button
-            colorScheme="danger"
-            style={{
-              marginTop: 20,
-              width: 150,
-              alignSelf: "center",
-            }}
-            onPress={() => handleUpdate(index)}
-          >
-            Update Order
-          </Button>
-          <Button
-            colorScheme="danger"
-            style={{
-              marginTop: 20,
-              width: 150,
-              alignSelf: "center",
-            }}
-            onPress={() => handleDelete(index)}
-          >
-            Delete Order
-          </Button>
-        </>
-      ))}
+              Update Order
+            </Button>
+            <Button
+              colorScheme="danger"
+              style={{
+                marginTop: 20,
+                width: 150,
+                alignSelf: "center",
+              }}
+              onPress={() => handleDelete(index)}
+            >
+              Delete Order
+            </Button>
+          </>
+        );
+      })}
     </ScrollView>
   );
 };
