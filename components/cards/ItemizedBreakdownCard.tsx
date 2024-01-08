@@ -14,7 +14,6 @@ import {
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
-
 interface ItemizedBreakdownCardProps {
   mode: "suppliers" | "customers";
 }
@@ -36,7 +35,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [isError, setIsError] = useState(false);
 
   const isWarehouseOrders = mode === "suppliers";
-
 
   // TODO: Put the heavy logic into our backend once this approach is verified
 
@@ -394,33 +392,35 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         ) : (
           <View style={totalWrapper}>
             <View style={priceWrapper}>
-              <Text style={subTotalCost}>Subtotal:</Text>
+              <Text style={subTotalCost}>
+                {totalDeliveryCost ? "Subtotal" : "Total"}:
+              </Text>
               <Text style={subTotalCost}>
                 {subTotal
                   ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
                   : null}
               </Text>
             </View>
-            <View style={priceWrapper}>
-              <Text style={subTotalCost}>Delivery costs:</Text>
-              <Text style={subTotalCost}>
-                {totalDeliveryCost
-                  ? Dinero({ amount: totalDeliveryCost || 0 }).toFormat(
-                      "$0,0.00"
-                    )
-                  : null}
-              </Text>
-            </View>
-            <View style={priceWrapper}>
-              <Text style={subTotalCost}>Total:</Text>
-              <Text style={subTotalCost}>
-                {totalDeliveryCost
-                  ? Dinero({
-                      amount: totalDeliveryCost + subTotal || 0,
-                    }).toFormat("$0,0.00")
-                  : null}
-              </Text>
-            </View>
+            {totalDeliveryCost ? (
+              <View style={priceWrapper}>
+                <Text style={subTotalCost}>Delivery costs:</Text>
+                <Text style={subTotalCost}>
+                  {Dinero({ amount: totalDeliveryCost || 0 }).toFormat(
+                    "$0,0.00"
+                  )}
+                </Text>
+              </View>
+            ) : null}
+            {totalDeliveryCost ? (
+              <View style={priceWrapper}>
+                <Text style={subTotalCost}>Total:</Text>
+                <Text style={subTotalCost}>
+                  {Dinero({
+                    amount: totalDeliveryCost + subTotal || 0,
+                  }).toFormat("$0,0.00")}
+                </Text>
+              </View>
+            ) : null}
           </View>
         )}
       </View>
