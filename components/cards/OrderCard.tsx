@@ -45,7 +45,7 @@ const OrderCard = ({
       orders,
       client_name,
       delivery_date: data.delivery_date,
-      customer_id: data.customer_id,
+      customer_id: customerId,
     });
   };
 

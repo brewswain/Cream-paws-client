@@ -92,6 +92,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
 
   for (const order of orders) {
     const customerName = await findCustomer(order.customer_id);
+
     const {
       delivery_date,
       delivery_cost,
@@ -108,6 +109,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
         delivery_date,
         delivery_cost, // Place delivery_cost at the root level
         name: customerName.name,
+        customer_id,
         orders: [],
       };
     }
