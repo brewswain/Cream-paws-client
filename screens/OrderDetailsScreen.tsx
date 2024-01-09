@@ -11,9 +11,13 @@ import {
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
-import { ChowDetails, OrderWithChowDetails } from "../models/order";
+import {
+  ChowDetails,
+  CombinedOrder,
+  OrderWithChowDetails,
+} from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
-import { Chow } from "../models/chow";
+import { Chow, FilteredChowFlavour } from "../models/chow";
 import { findChow } from "../api/routes/stock";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
@@ -27,7 +31,6 @@ interface OrderDetailsProps {
       client_name: string;
       delivery_date: string;
       customer_id: string;
-      id: string;
       orders: CustomerOrderDetails[];
     };
   };
@@ -36,7 +39,7 @@ interface OrderDetailsProps {
 const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const [orderPayload, setOrderPayload] = useState({
     ...route.params,
-    id: route.params._id || "unknown id",
+    // id: route.params._id || "unknown id",
   });
   const navigate = useNavigation();
   const [chosenBrand, setChosenBrand] = useState([]);
@@ -46,6 +49,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     setChow(response);
   };
   // TODO: sanitize our inputs
+  console.log(route.params);
 
   const selectedBrand = (chowInputIndex: number) => {
     const filteredChow = chow
@@ -91,7 +95,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     return chow?.flavours.map((flavour) => (
       <Select.Item
         label={flavour.flavour_name}
-        value={flavour.flavour_name}
+        value={flavour.flavour_id}
         key={flavour.flavour_id}
       />
     ));
@@ -146,6 +150,36 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           return order;
         }),
       }));
+    } else if (name.includes("flavour_name")) {
+      const foundBrand = chow.find((brand) => {
+        const foundFlavour = brand.flavours.find(
+          (flavour) => flavour.flavour_id === value
+        );
+        return foundFlavour !== undefined;
+      });
+
+      const foundFlavour = foundBrand.flavours.find(
+        (flavour) => flavour.flavour_id === value
+      );
+
+      // maybenit's looking for CustomerOrderDetails
+      if (foundFlavour) {
+        setOrderPayload((prevState) => ({
+          ...prevState,
+          orders: prevState.orders.map((order, index) => {
+            if (index === selectedIndex) {
+              return {
+                ...order,
+                chow_details: {
+                  ...order.chow_details,
+                  flavours: foundFlavour,
+                },
+              };
+            }
+            return order;
+          }),
+        }));
+      }
     }
     // else if (name.includes("chow_details")) {
     //   const [nestedKey, propertyName] = name.split(".");
@@ -269,14 +303,16 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   useEffect(() => {
     populateChowList();
   }, []);
+  useEffect(() => {
+    console.log({ orderPayload });
+  }, [orderPayload]);
 
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
         const currentOrder = orderPayload.orders[index];
 
-        // console.log({ details: currentOrder.chow_details });
-
+        // console.log(orderPayload.orders[0].chow_details.flavours);
         return (
           <>
             <View style={{ width: "90%" }}>
@@ -312,9 +348,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               >
                 <Select
                   minWidth="200"
-                  selectedValue={
-                    currentOrder.chow_details.flavours.flavour_name
-                  }
+                  selectedValue={currentOrder.chow_details.flavours.flavour_id}
                   accessibilityLabel="Choose Flavour"
                   placeholder="Choose Flavour *"
                   _selectedItem={{

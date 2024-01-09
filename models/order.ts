@@ -23,7 +23,7 @@ type firstTimeOrder = Omit<Order, "id">;
 export interface ChowDetails {
   brand: string;
   target_group: string;
-  flavours: FilteredChowFlavour;
+  flavours: FilteredChowFlavour | ChowFlavour;
   size: number;
   unit: string;
   wholesale_price: number;
@@ -45,7 +45,8 @@ interface OrderDetails extends OrderWithChowDetails {
 export interface CombinedOrder {
   delivery_date: string;
   delivery_cost: number;
-  name: string;
+  name?: string;
+  client_name?: string;
   customer_id: string;
   orders: {
     chow_id: string;
@@ -59,6 +60,7 @@ export interface CombinedOrder {
     chow_details: {
       brand: string;
       target_group: string;
+      brand_id?: string;
       flavours: FilteredChowFlavour;
       size: number;
       unit: string;
