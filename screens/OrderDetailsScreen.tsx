@@ -111,14 +111,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     });
   };
 
-  useEffect(() => {
-    populateChowList();
-  }, []);
-
-  useEffect(() => {
-    console.log({ orderPayload: orderPayload.orders[0].chow_details });
-  }, [orderPayload]);
-
   const handleChange = async (
     name: string,
     value: string | number,
@@ -274,6 +266,10 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     },
   ];
 
+  useEffect(() => {
+    populateChowList();
+  }, []);
+
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
@@ -311,7 +307,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 </Select>
               </TouchableWithoutFeedback>
 
-              {/* <TouchableWithoutFeedback
+              <TouchableWithoutFeedback
                 onPress={() => renderFlavourDropdown(index)}
               >
                 <Select
@@ -337,9 +333,9 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 >
                   {renderFlavourDropdown(index)}
                 </Select>
-              </TouchableWithoutFeedback> */}
+              </TouchableWithoutFeedback>
 
-              {/* <TouchableWithoutFeedback
+              <TouchableWithoutFeedback
                 onPress={() =>
                   currentOrder.chow_details.flavours.flavour_id &&
                   renderVarieties(
@@ -368,7 +364,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                       currentOrder.chow_details.flavours.flavour_id
                     )}
                 </Select>
-              </TouchableWithoutFeedback> */}
+              </TouchableWithoutFeedback>
 
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}
