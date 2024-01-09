@@ -14,6 +14,7 @@ import { RootTabScreenProps } from "../types";
 import { ChowDetails, OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Chow } from "../models/chow";
+import { findChow } from "../api/routes/stock";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -75,7 +76,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       return (
         <Select.Item
           label={`${item.brand}`}
-          value={item}
+          value={item.brand_id}
+          // value={item}
           // value={`${item}`}
           key={item.brand_id}
         />
@@ -113,9 +115,13 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     populateChowList();
   }, []);
 
-  const handleChange = (
+  useEffect(() => {
+    console.log({ orderPayload: orderPayload.orders[0].chow_details });
+  }, [orderPayload]);
+
+  const handleChange = async (
     name: string,
-    value: string | number | ChowDetails,
+    value: string | number,
     selectedIndex: number
   ) => {
     if (name.includes("chow_id")) {
@@ -132,16 +138,17 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         }),
       }));
     } else if (name.includes("brand")) {
-      const newChosenBrand = [...chosenBrand];
-      newChosenBrand[selectedIndex] = value.brand;
-      setChosenBrand(newChosenBrand);
+      const response = await findChow(value as string);
+      // const newChosenBrand = [...chosenBrand];
+      // newChosenBrand[selectedIndex] = value.brand;
+      // setChosenBrand(newChosenBrand);
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
           if (index === selectedIndex) {
             return {
               ...order,
-              chow_details: value as ChowDetails,
+              chow_details: response as ChowDetails,
             };
           }
           return order;
@@ -272,6 +279,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       {orderPayload.orders.map((order, index: number) => {
         const currentOrder = orderPayload.orders[index];
 
+        // console.log({ details: currentOrder.chow_details });
+
         return (
           <>
             <View style={{ width: "90%" }}>
@@ -284,7 +293,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <TouchableWithoutFeedback onPress={renderBrandDropdown}>
                 <Select
                   minWidth="200"
-                  selectedValue={chosenBrand[index]}
+                  selectedValue={currentOrder.chow_details.brand_id}
                   accessibilityLabel="Choose Brand"
                   placeholder="Choose Brand *"
                   _selectedItem={{
@@ -302,7 +311,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 </Select>
               </TouchableWithoutFeedback>
 
-              <TouchableWithoutFeedback
+              {/* <TouchableWithoutFeedback
                 onPress={() => renderFlavourDropdown(index)}
               >
                 <Select
@@ -328,7 +337,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 >
                   {renderFlavourDropdown(index)}
                 </Select>
-              </TouchableWithoutFeedback>
+              </TouchableWithoutFeedback> */}
 
               {/* <TouchableWithoutFeedback
                 onPress={() =>

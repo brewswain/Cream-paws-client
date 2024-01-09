@@ -21,19 +21,17 @@ interface Order {
 type firstTimeOrder = Omit<Order, "id">;
 
 export interface ChowDetails {
-  chow_details: {
-    brand: string;
-    target_group: string;
-    flavours: FilteredChowFlavour;
-    size: number;
-    unit: string;
-    wholesale_price: number;
-    retail_price: number;
-    is_paid_for: boolean;
-    version: number;
-    warehouse_paid: boolean;
-    id: string;
-  };
+  brand: string;
+  target_group: string;
+  flavours: FilteredChowFlavour;
+  size: number;
+  unit: string;
+  wholesale_price: number;
+  retail_price: number;
+  is_paid_for: boolean;
+  version: number;
+  warehouse_paid: boolean;
+  id: string;
 }
 export interface OrderWithChowDetails extends Order {
   chow_details: ChowDetails;
