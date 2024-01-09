@@ -17,6 +17,7 @@ import { Chow } from "../models/chow";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
+  chow_id: string;
 }
 interface OrderDetailsProps {
   navigation: RootTabScreenProps<"OrderDetails">;
@@ -39,7 +40,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const navigate = useNavigation();
   const [chosenBrand, setChosenBrand] = useState();
   const [chow, setChow] = useState<Chow[]>();
-
   const populateChowList = async () => {
     const response = await getAllChow();
     setChow(response);
@@ -97,13 +97,15 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
     const flavour = selectedFlavour(chowInputIndex, flavour_id);
 
-    return flavour?.varieties.map((variety) => (
-      <Select.Item
-        label={`${variety.size} ${variety.unit}`}
-        value={variety.chow_id}
-        key={variety.chow_id}
-      />
-    ));
+    return flavour?.varieties.map((variety) => {
+      return (
+        <Select.Item
+          label={`${variety.size} ${variety.unit}`}
+          value={variety.chow_id || "not found"}
+          key={variety.chow_id || "not found"}
+        />
+      );
+    });
   };
 
   useEffect(() => {
@@ -115,7 +117,20 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     value: string | number,
     selectedIndex: number
   ) => {
-    if (name.includes("chow_details")) {
+    if (name.includes("chow_id")) {
+      setOrderPayload((prevState) => ({
+        ...prevState,
+        orders: prevState.orders.map((order, index) => {
+          if (index === selectedIndex) {
+            return {
+              ...order,
+              chow_id: value as string,
+            };
+          }
+          return order;
+        }),
+      }));
+    } else if (name.includes("chow_details")) {
       const [nestedKey, propertyName] = name.split(".");
 
       setOrderPayload((prevState) => ({
@@ -215,7 +230,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     {
       title: "Flavour",
       content: orderPayload.orders[index].chow_details.flavours.flavour_name,
-      name: "chow_details.flavour",
+      name: "chow_details.flavours.flavour_name",
     },
     {
       title: "Size",
@@ -238,6 +253,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
         const currentOrder = orderPayload.orders[index];
+
         return (
           <>
             <View style={{ width: "90%" }}>
@@ -262,7 +278,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                     // handleChowSelected(itemValue, index, "brand")
                     handleChange("chow_details.brand", itemValue, index)
                   }
-                  key={currentOrder.chow_id}
+                  key={`${currentOrder.chow_id} - brand`}
                 >
                   {chow && renderBrandDropdown()}
                 </Select>
@@ -283,11 +299,47 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   }}
                   mt="1"
                   onValueChange={(itemValue) =>
-                    handleChange("chow_details.flavour", itemValue, index)
+                    handleChange(
+                      "chow_details.flavours.flavour_name",
+                      itemValue,
+                      index
+                    )
                   }
-                  key={currentOrder.chow_id}
+                  key={`${currentOrder.chow_id} - flavour`}
                 >
                   {chow && renderFlavourDropdown(index)}
+                </Select>
+              </TouchableWithoutFeedback>
+
+              <TouchableWithoutFeedback
+                onPress={() =>
+                  currentOrder.chow_details.flavours.flavour_id &&
+                  renderVarieties(
+                    index,
+                    currentOrder.chow_details.flavours.flavour_id
+                  )
+                }
+              >
+                <Select
+                  minWidth="200"
+                  selectedValue={`${currentOrder.chow_details.flavours.varieties.chow_id}`}
+                  accessibilityLabel="Choose Size"
+                  placeholder="Choose Size *"
+                  _selectedItem={{
+                    bg: "teal.600",
+                    endIcon: <CheckIcon size={5} />,
+                  }}
+                  mt="1"
+                  onValueChange={(itemValue) =>
+                    handleChange("chow_id", itemValue, index)
+                  }
+                  key={`${currentOrder.chow_id} - variety`}
+                >
+                  {currentOrder.chow_details.flavours.flavour_id &&
+                    renderVarieties(
+                      index,
+                      currentOrder.chow_details.flavours.flavour_id
+                    )}
                 </Select>
               </TouchableWithoutFeedback>
 
@@ -299,11 +351,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               </CustomInput>
 
               <Header>Chow Details</Header>
-              {renderDetailInputs(chowFields(index), handleChange, index)}
+              {/* {renderDetailInputs(chowFields(index), handleChange, index)} */}
 
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
               <Header>Costs</Header>
-              {renderDetailInputs(costsFields(index), handleChange, index)}
+              {/* {renderDetailInputs(costsFields(index), handleChange, index)} */}
             </View>
             <Button
               colorScheme="danger"
