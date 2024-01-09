@@ -32,6 +32,7 @@ export interface ChowDetails {
   version: number;
   warehouse_paid: boolean;
   id: string;
+  brand_id?: string;
 }
 export interface OrderWithChowDetails extends Order {
   chow_details: ChowDetails;
