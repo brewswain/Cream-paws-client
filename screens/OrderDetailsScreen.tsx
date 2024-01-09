@@ -11,7 +11,7 @@ import {
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
-import { OrderWithChowDetails } from "../models/order";
+import { ChowDetails, OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Chow } from "../models/chow";
 
@@ -38,7 +38,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     id: route.params._id || "unknown id",
   });
   const navigate = useNavigation();
-  const [chosenBrand, setChosenBrand] = useState();
+  const [chosenBrand, setChosenBrand] = useState([]);
   const [chow, setChow] = useState<Chow[]>();
   const populateChowList = async () => {
     const response = await getAllChow();
@@ -75,7 +75,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       return (
         <Select.Item
           label={`${item.brand}`}
-          value={`${item.brand}`}
+          value={item}
+          // value={`${item}`}
           key={item.brand_id}
         />
       );
@@ -114,7 +115,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const handleChange = (
     name: string,
-    value: string | number,
+    value: string | number | ChowDetails,
     selectedIndex: number
   ) => {
     if (name.includes("chow_id")) {
@@ -130,25 +131,42 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           return order;
         }),
       }));
-    } else if (name.includes("chow_details")) {
-      const [nestedKey, propertyName] = name.split(".");
-
+    } else if (name.includes("brand")) {
+      const newChosenBrand = [...chosenBrand];
+      newChosenBrand[selectedIndex] = value.brand;
+      setChosenBrand(newChosenBrand);
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
           if (index === selectedIndex) {
             return {
               ...order,
-              chow_details: {
-                ...order.chow_details,
-                [propertyName]: value,
-              },
+              chow_details: value as ChowDetails,
             };
           }
           return order;
         }),
       }));
-    } else {
+    }
+    // else if (name.includes("chow_details")) {
+    //   const [nestedKey, propertyName] = name.split(".");
+    //   setOrderPayload((prevState) => ({
+    //     ...prevState,
+    //     orders: prevState.orders.map((order, index) => {
+    //       if (index === selectedIndex) {
+    //         return {
+    //           ...order,
+    //           chow_details: {
+    //             ...order.chow_details,
+    //             [propertyName]: value,
+    //           },
+    //         };
+    //       }
+    //       return order;
+    //     }),
+    //   }));
+    // }
+    else {
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -266,7 +284,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <TouchableWithoutFeedback onPress={renderBrandDropdown}>
                 <Select
                   minWidth="200"
-                  selectedValue={currentOrder.chow_details.brand}
+                  selectedValue={chosenBrand[index]}
                   accessibilityLabel="Choose Brand"
                   placeholder="Choose Brand *"
                   _selectedItem={{
@@ -283,6 +301,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   {chow && renderBrandDropdown()}
                 </Select>
               </TouchableWithoutFeedback>
+
               <TouchableWithoutFeedback
                 onPress={() => renderFlavourDropdown(index)}
               >
@@ -307,11 +326,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   }
                   key={`${currentOrder.chow_id} - flavour`}
                 >
-                  {chow && renderFlavourDropdown(index)}
+                  {renderFlavourDropdown(index)}
                 </Select>
               </TouchableWithoutFeedback>
 
-              <TouchableWithoutFeedback
+              {/* <TouchableWithoutFeedback
                 onPress={() =>
                   currentOrder.chow_details.flavours.flavour_id &&
                   renderVarieties(
@@ -322,7 +341,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               >
                 <Select
                   minWidth="200"
-                  selectedValue={`${currentOrder.chow_details.flavours.varieties.chow_id}`}
                   accessibilityLabel="Choose Size"
                   placeholder="Choose Size *"
                   _selectedItem={{
@@ -341,7 +359,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                       currentOrder.chow_details.flavours.flavour_id
                     )}
                 </Select>
-              </TouchableWithoutFeedback>
+              </TouchableWithoutFeedback> */}
 
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}

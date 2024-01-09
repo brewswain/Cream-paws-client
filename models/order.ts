@@ -20,7 +20,7 @@ interface Order {
 
 type firstTimeOrder = Omit<Order, "id">;
 
-export interface OrderWithChowDetails extends Order {
+export interface ChowDetails {
   chow_details: {
     brand: string;
     target_group: string;
@@ -34,6 +34,9 @@ export interface OrderWithChowDetails extends Order {
     warehouse_paid: boolean;
     id: string;
   };
+}
+export interface OrderWithChowDetails extends Order {
+  chow_details: ChowDetails;
 }
 
 interface OrderDetails extends OrderWithChowDetails {
