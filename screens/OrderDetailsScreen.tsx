@@ -7,6 +7,7 @@ import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
+  renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import { ChowDetails, OrderWithChowDetails } from "../models/order";
@@ -122,7 +123,44 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     value: string | number,
     selectedIndex: number
   ) => {
-    if (name.includes("chow_id")) {
+    if (name.includes("brand")) {
+      const response = await findChow(value as string);
+
+      setOrderPayload((prevState) => ({
+        ...prevState,
+        orders: prevState.orders.map((order, index) => {
+          if (index === selectedIndex) {
+            return {
+              ...order,
+              chow_details: response as ChowDetails,
+            };
+          }
+          return order;
+        }),
+      }));
+    } else if (name.includes("flavour_name")) {
+      const foundFlavour = await findChowFlavour(value as string);
+      if (foundFlavour) {
+        setOrderPayload((prevState) => ({
+          ...prevState,
+          orders: prevState.orders.map((order, index) => {
+            if (index === selectedIndex) {
+              return {
+                ...order,
+                chow_details: {
+                  ...order.chow_details,
+                  flavours: {
+                    ...foundFlavour,
+                    varieties: foundFlavour.varieties[0],
+                  },
+                },
+              };
+            }
+            return order;
+          }),
+        }));
+      }
+    } else if (name.includes("chow_id")) {
       const foundVariety = await findChowVariety(value as string);
 
       setOrderPayload((prevState) => ({
@@ -143,41 +181,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           return order;
         }),
       }));
-    } else if (name.includes("brand")) {
-      const response = await findChow(value as string);
-
-      setOrderPayload((prevState) => ({
-        ...prevState,
-        orders: prevState.orders.map((order, index) => {
-          if (index === selectedIndex) {
-            return {
-              ...order,
-              chow_details: response as ChowDetails,
-            };
-          }
-          return order;
-        }),
-      }));
-    } else if (name.includes("flavour_name")) {
-      const foundFlavour = await findChowFlavour(value as string);
-
-      if (foundFlavour) {
-        setOrderPayload((prevState) => ({
-          ...prevState,
-          orders: prevState.orders.map((order, index) => {
-            if (index === selectedIndex) {
-              return {
-                ...order,
-                chow_details: {
-                  ...order.chow_details,
-                  flavours: foundFlavour,
-                },
-              };
-            }
-            return order;
-          }),
-        }));
-      }
     }
     // else if (name.includes("chow_details")) {
     //   const [nestedKey, propertyName] = name.split(".");
@@ -245,52 +248,52 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
   const costsFields = (index: number) => [
-    {
-      title: "Wholesale Price",
-      content:
-        orderPayload.orders[index].chow_details.flavours.varieties
-          .wholesale_price,
-      name: "chow_details.wholesale_price",
-    },
-    {
-      title: "Retail Price",
-      content:
-        orderPayload.orders[index].chow_details.flavours.varieties.retail_price,
-      name: "chow_details.retail_price",
-    },
+    // {
+    //   title: "Wholesale Price",
+    //   content:
+    //     orderPayload.orders[index].chow_details.flavours.varieties
+    //       .wholesale_price,
+    //   name: "chow_details.wholesale_price",
+    // },
+    // {
+    //   title: "Retail Price",
+    //   content:
+    //     orderPayload.orders[index].chow_details.flavours.varieties.retail_price,
+    //   name: "chow_details.retail_price",
+    // },
     {
       title: "Delivery Fee",
       content: "Add delivery fee dropdown here",
       name: "REPLACE_WHEN_WE_WORK_OUT_DATASHAPE",
     },
-    {
-      title: "Total Cost",
-      content: "Calculate all costs in our API",
-      name: "REPLACE_WHEN_WE_WORK_OUT_DATASHAPE",
-    },
+    // {
+    //   title: "Total Cost",
+    //   content: "Calculate all costs in our API",
+    //   name: "REPLACE_WHEN_WE_WORK_OUT_DATASHAPE",
+    // },
   ];
 
   const chowFields = (index: number) => [
-    {
-      title: "Brand",
-      content: orderPayload.orders[index].chow_details.brand,
-      name: "chow_details.brand",
-    },
-    {
-      title: "Flavour",
-      content: orderPayload.orders[index].chow_details.flavours.flavour_name,
-      name: "chow_details.flavours.flavour_name",
-    },
-    {
-      title: "Size",
-      content: orderPayload.orders[index].chow_details.flavours.varieties.size,
-      name: "chow_details.size",
-    },
-    {
-      title: "Unit",
-      content: orderPayload.orders[index].chow_details.flavours.varieties.unit,
-      name: "chow_details.unit",
-    },
+    // {
+    //   title: "Brand",
+    //   content: orderPayload.orders[index].chow_details.brand,
+    //   name: "chow_details.brand",
+    // },
+    // {
+    //   title: "Flavour",
+    //   content: orderPayload.orders[index].chow_details.flavours.flavour_name,
+    //   name: "chow_details.flavours.flavour_name",
+    // },
+    // {
+    //   title: "Size",
+    //   content: orderPayload.orders[index].chow_details.flavours.varieties.size,
+    //   name: "chow_details.size",
+    // },
+    // {
+    //   title: "Unit",
+    //   content: orderPayload.orders[index].chow_details.flavours.varieties.unit,
+    //   name: "chow_details.unit",
+    // },
     {
       title: "Quantity",
       content: orderPayload.orders[index].quantity,
@@ -419,11 +422,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               </CustomInput>
 
               <Header>Chow Details</Header>
-              {/* {renderDetailInputs(chowFields(index), handleChange, index)} */}
+              {renderDetailInputs(chowFields(index), handleChange, index)}
 
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
               <Header>Costs</Header>
-              {/* {renderDetailInputs(costsFields(index), handleChange, index)} */}
+              {renderDetailInputs(costsFields(index), handleChange, index)}
             </View>
             <Button
               colorScheme="danger"

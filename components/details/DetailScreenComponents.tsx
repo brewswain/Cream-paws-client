@@ -35,6 +35,8 @@ export const CustomInput = (props: {
   return (
     <TextInput
       style={styles.input}
+      keyboardType={props.name === "quantity" ? "numeric" : "default"}
+      selectTextOnFocus={true}
       onChangeText={(text: string) =>
         props.selectedIndex
           ? props.handleChange(props.name, text, props.selectedIndex)
