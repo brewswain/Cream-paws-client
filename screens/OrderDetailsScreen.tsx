@@ -12,7 +12,11 @@ import { RootTabScreenProps } from "../types";
 import { ChowDetails, OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Chow } from "../models/chow";
-import { findChow } from "../api/routes/stock";
+import {
+  findChow,
+  findChowFlavour,
+  findChowVariety,
+} from "../api/routes/stock";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -119,13 +123,21 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     selectedIndex: number
   ) => {
     if (name.includes("chow_id")) {
+      const foundVariety = await findChowVariety(value as string);
+
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
           if (index === selectedIndex) {
             return {
               ...order,
-              chow_id: value as string,
+              chow_details: {
+                ...order.chow_details,
+                flavours: {
+                  ...order.chow_details.flavours,
+                  varieties: foundVariety,
+                },
+              },
             };
           }
           return order;
@@ -133,9 +145,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       }));
     } else if (name.includes("brand")) {
       const response = await findChow(value as string);
-      // const newChosenBrand = [...chosenBrand];
-      // newChosenBrand[selectedIndex] = value.brand;
-      // setChosenBrand(newChosenBrand);
+
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -149,18 +159,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         }),
       }));
     } else if (name.includes("flavour_name")) {
-      const foundBrand = chow.find((brand) => {
-        const foundFlavour = brand.flavours.find(
-          (flavour) => flavour.flavour_id === value
-        );
-        return foundFlavour !== undefined;
-      });
+      const foundFlavour = await findChowFlavour(value as string);
 
-      const foundFlavour = foundBrand.flavours.find(
-        (flavour) => flavour.flavour_id === value
-      );
-
-      // maybenit's looking for CustomerOrderDetails
       if (foundFlavour) {
         setOrderPayload((prevState) => ({
           ...prevState,
@@ -198,6 +198,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     //   }));
     // }
     else {
+      console.log("firing");
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -395,7 +396,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   }}
                   mt="1"
                   onValueChange={(itemValue) =>
-                    handleChange("chow_id", itemValue, index)
+                    handleChange(
+                      "chow_details.flavours.varieties.chow_id",
+                      itemValue,
+                      index
+                    )
                   }
                   key={`${currentOrder.chow_id} - variety`}
                 >
