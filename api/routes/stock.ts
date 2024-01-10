@@ -90,3 +90,22 @@ export const findChow = async (id: string) => {
     console.error(error);
   }
 };
+
+export const findChowFlavour = async (id: string) => {
+  try {
+    const response = await axiosInstance.get(`/stock/flavour/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+export const findChowVariety = async (id: string) => {
+  try {
+    const response = await axiosInstance.get(`/stock/variety/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
