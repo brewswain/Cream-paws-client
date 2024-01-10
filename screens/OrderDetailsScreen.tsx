@@ -1,23 +1,17 @@
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import { Button, CheckIcon, ScrollView, Select } from "native-base";
-import { deleteOrder, getAllChow, updateOrder } from "../api";
+import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
-  SubFields,
-  renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
-import {
-  ChowDetails,
-  CombinedOrder,
-  OrderWithChowDetails,
-} from "../models/order";
+import { ChowDetails, OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
-import { Chow, FilteredChowFlavour } from "../models/chow";
+import { Chow } from "../models/chow";
 import { findChow } from "../api/routes/stock";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
@@ -49,7 +43,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     setChow(response);
   };
   // TODO: sanitize our inputs
-  console.log(route.params);
 
   const selectedBrand = (chowInputIndex: number) => {
     const filteredChow = chow
@@ -115,6 +108,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     });
   };
 
+  //TODO: This needs a **MASSIVE** Refactor. If i'm going this far with excessive specificity
+  // in mind, then i should just split these into separate change handlers, as the bloat is
+  // crazy rn
+
+  // That being said i'll treat this as a monolith for now, as bad as it feels.
   const handleChange = async (
     name: string,
     value: string | number,
@@ -303,16 +301,25 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   useEffect(() => {
     populateChowList();
   }, []);
-  useEffect(() => {
-    console.log({ orderPayload });
-  }, [orderPayload]);
 
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
         const currentOrder = orderPayload.orders[index];
 
-        // console.log(orderPayload.orders[0].chow_details.flavours);
+        // Check if `currentOrder.chow_details.flavours` is an array
+        const availableChowId = Array.isArray(
+          currentOrder.chow_details.flavours
+        )
+          ? // If it's an array, access the first element's `varieties` property
+            currentOrder.chow_details.flavours[0].varieties[0].chow_id
+          : // If it's not an array, check if `currentOrder.chow_details.flavours.varieties` is an array
+          Array.isArray(currentOrder.chow_details.flavours.varieties)
+          ? // If `varieties` is an array, access the first element's `chow_id` property
+            currentOrder.chow_details.flavours.varieties[0].chow_id
+          : // If neither `flavours` nor `varieties` is an array, directly access the `chow_id` property
+            currentOrder.chow_details.flavours.varieties.chow_id;
+
         return (
           <>
             <View style={{ width: "90%" }}>
@@ -371,7 +378,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
               <TouchableWithoutFeedback
                 onPress={() =>
-                  currentOrder.chow_details.flavours.flavour_id &&
                   renderVarieties(
                     index,
                     currentOrder.chow_details.flavours.flavour_id
@@ -380,6 +386,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               >
                 <Select
                   minWidth="200"
+                  selectedValue={availableChowId}
                   accessibilityLabel="Choose Size"
                   placeholder="Choose Size *"
                   _selectedItem={{
@@ -392,7 +399,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   }
                   key={`${currentOrder.chow_id} - variety`}
                 >
-                  {currentOrder.chow_details.flavours.flavour_id &&
+                  {!!currentOrder.chow_details.flavours.flavour_id &&
                     renderVarieties(
                       index,
                       currentOrder.chow_details.flavours.flavour_id
