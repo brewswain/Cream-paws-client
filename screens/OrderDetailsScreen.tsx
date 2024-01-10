@@ -198,7 +198,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     //   }));
     // }
     else {
-      console.log("firing");
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
