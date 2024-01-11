@@ -52,6 +52,7 @@ export interface CombinedOrder {
   orders: {
     chow_id: string;
     quantity: number;
+    delivery_cost?: number;
     payment_date: string;
     payment_made: boolean;
     is_delivery: boolean;

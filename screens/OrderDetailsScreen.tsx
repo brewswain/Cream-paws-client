@@ -305,7 +305,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     populateChowList();
   }, []);
 
-  console.log({ orderPayload });
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
@@ -424,8 +423,45 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               </CustomInput>
 
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
-              <Header>Costs</Header>
-              {renderDetailInputs(costsFields(index), handleChange, index)}
+              {currentOrder.delivery_cost ? (
+                <View>
+                  <Header>Costs</Header>
+                  <TouchableWithoutFeedback
+                    onPress={() =>
+                      renderVarieties(
+                        index,
+                        currentOrder.chow_details.flavours.flavour_id
+                      )
+                    }
+                  >
+                    <Select
+                      minWidth="200"
+                      selectedValue={currentOrder.delivery_cost}
+                      accessibilityLabel="Choose Size"
+                      placeholder="Choose Size *"
+                      _selectedItem={{
+                        bg: "teal.600",
+                        endIcon: <CheckIcon size={5} />,
+                      }}
+                      mt="1"
+                      onValueChange={(itemValue) =>
+                        handleChange(
+                          "chow_details.flavours.varieties.chow_id",
+                          itemValue,
+                          index
+                        )
+                      }
+                      key={`${currentOrder.chow_id} - variety`}
+                    >
+                      {!!currentOrder.chow_details.flavours.flavour_id &&
+                        renderVarieties(
+                          index,
+                          currentOrder.chow_details.flavours.flavour_id
+                        )}
+                    </Select>
+                  </TouchableWithoutFeedback>
+                </View>
+              ) : null}
             </View>
             <Button
               colorScheme="danger"

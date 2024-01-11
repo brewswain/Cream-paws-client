@@ -107,7 +107,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
     if (!combinedOrders[orderKey]) {
       combinedOrders[orderKey] = {
         delivery_date,
-        delivery_cost, // Place delivery_cost at the root level
+        // delivery_cost, // Place delivery_cost at the root level
         name: customerName.name,
         customer_id,
         orders: [],
@@ -123,13 +123,15 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
     } else {
       // Add a new order if chow_id is not present
+
+      console.log({ restOrderDetails });
       combinedOrders[orderKey].orders.push({
         chow_id,
         quantity,
+        delivery_cost,
         ...restOrderDetails,
       });
     }
   }
-
   return Object.values(combinedOrders);
 };

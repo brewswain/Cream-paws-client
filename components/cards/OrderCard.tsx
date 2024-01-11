@@ -27,7 +27,7 @@ const OrderCard = ({
   customerId,
 }: OrderCardProps) => {
   const navigation = useNavigation();
-  const { orders } = data;
+  const { orders, delivery_cost } = data;
 
   const {
     container,
@@ -44,6 +44,7 @@ const OrderCard = ({
     navigation.navigate("OrderDetails", {
       orders,
       client_name,
+      delivery_cost,
       delivery_date: data.delivery_date,
       customer_id: customerId,
     });
