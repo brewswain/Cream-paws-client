@@ -29,6 +29,7 @@ export interface ChowDetails {
   wholesale_price: number;
   retail_price: number;
   is_paid_for: boolean;
+  delivery_cost?: number;
   version: number;
   warehouse_paid: boolean;
   id: string;
