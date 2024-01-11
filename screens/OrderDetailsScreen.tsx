@@ -113,6 +113,18 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     });
   };
 
+  const renderDeliveryCost = () => {
+    const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
+
+    return TEST_DELIVERY_COSTS.map((price, index) => (
+      <Select.Item
+        key={`${price}+${index}`}
+        value={price}
+        label={price.toString()}
+      />
+    ));
+  };
+
   //TODO: This needs a **MASSIVE** Refactor. If i'm going this far with excessive specificity
   // in mind, then i should just split these into separate change handlers, as the bloat is
   // crazy rn
@@ -425,39 +437,25 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
               {currentOrder.delivery_cost ? (
                 <View>
-                  <Header>Costs</Header>
                   <TouchableWithoutFeedback
-                    onPress={() =>
-                      renderVarieties(
-                        index,
-                        currentOrder.chow_details.flavours.flavour_id
-                      )
-                    }
+                    onPress={() => renderDeliveryCost()}
                   >
                     <Select
                       minWidth="200"
                       selectedValue={currentOrder.delivery_cost}
-                      accessibilityLabel="Choose Size"
-                      placeholder="Choose Size *"
+                      accessibilityLabel="Delivery Cost"
+                      placeholder="Delivery Cost"
                       _selectedItem={{
                         bg: "teal.600",
                         endIcon: <CheckIcon size={5} />,
                       }}
                       mt="1"
                       onValueChange={(itemValue) =>
-                        handleChange(
-                          "chow_details.flavours.varieties.chow_id",
-                          itemValue,
-                          index
-                        )
+                        handleChange("delivery_cost", itemValue, index)
                       }
-                      key={`${currentOrder.chow_id} - variety`}
+                      key={`${currentOrder.order_id} - delivery_cost - ${index}`}
                     >
-                      {!!currentOrder.chow_details.flavours.flavour_id &&
-                        renderVarieties(
-                          index,
-                          currentOrder.chow_details.flavours.flavour_id
-                        )}
+                      {renderDeliveryCost()}
                     </Select>
                   </TouchableWithoutFeedback>
                 </View>
