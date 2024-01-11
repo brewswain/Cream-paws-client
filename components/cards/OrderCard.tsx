@@ -94,9 +94,9 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            {orders.map((order) => {
+            {orders.map((order, index) => {
               return (
-                <View key={order.id}>
+                <View key={`${order.id} - ${index}`}>
                   <Text style={orderDetails}>
                     {`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}
                   </Text>
