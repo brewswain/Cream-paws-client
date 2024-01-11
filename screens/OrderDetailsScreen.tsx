@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button, CheckIcon, ScrollView, Select } from "native-base";
+import { Button, CheckIcon, Divider, ScrollView, Select } from "native-base";
 import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
@@ -305,6 +305,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     populateChowList();
   }, []);
 
+  console.log({ orderPayload });
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
@@ -330,7 +331,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <Text
                 style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
               >
-                {orderPayload.client_name}
+                {index === 0 ? orderPayload.client_name : <Divider />}
               </Text>
               <TouchableWithoutFeedback onPress={renderBrandDropdown}>
                 <Select
@@ -413,6 +414,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                     )}
                 </Select>
               </TouchableWithoutFeedback>
+              {renderDetailInputs(chowFields(index), handleChange, index)}
 
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}
@@ -420,9 +422,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <CustomInput handleChange={handleChange}>
                 {formattedDeliveryDate}
               </CustomInput>
-
-              <Header>Chow Details</Header>
-              {renderDetailInputs(chowFields(index), handleChange, index)}
 
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
               <Header>Costs</Header>
