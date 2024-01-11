@@ -108,7 +108,7 @@ const OrdersScreen = () => {
               return (
                 <View key={order.customer_id + index.toString()}>
                   <OrderCard
-                    key={`${order.orders[0].order_id} - ${index}`}
+                    key={`${order.orders[0].order_id} ${order.orders.length} - ${index}`}
                     isDeleted={isDeleted}
                     setIsDeleted={setIsDeleted}
                     populateData={populateData}
