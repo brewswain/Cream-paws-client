@@ -50,9 +50,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     ...route.params,
     // id: route.params._id || "unknown id",
   });
-  const [chosenBrand, setChosenBrand] = useState([]);
   const [chow, setChow] = useState<Chow[]>();
-  const [selectedDate, setSelectedDate] = useState<Date>();
 
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
@@ -94,8 +92,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         <Select.Item
           label={`${item.brand}`}
           value={item.brand_id}
-          // value={item}
-          // value={`${item}`}
           key={item.brand_id}
         />
       );
@@ -143,7 +139,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const toggleDatePickerVisibility = () => {
     setDatePickerIsVisible(!datePickerIsVisible);
   };
-  console.log({ orderPayload });
 
   const handleDateConfirm = (date: Date) => {
     setOrderPayload((prevState) => ({
@@ -163,7 +158,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     value: string | number,
     selectedIndex: number
   ) => {
-    console.log({ name });
     if (name.includes("brand")) {
       const response = await findChow(value as string);
 
@@ -223,7 +217,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         }),
       }));
     } else {
-      console.log("editing", name, value);
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -286,6 +279,13 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       {orderPayload.orders.map((order, index: number) => {
         const currentOrder = orderPayload.orders[index];
+        const isPayloadMissingDetails =
+          !currentOrder.chow_details.brand ||
+          !currentOrder.chow_details.flavours ||
+          !currentOrder.chow_details.flavours.varieties ||
+          !currentOrder.quantity ||
+          currentOrder.quantity < 1 ||
+          !orderPayload.delivery_date;
 
         // Check if `currentOrder.chow_details.flavours` is an array
         const availableChowId = Array.isArray(
@@ -302,7 +302,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
         return (
           <>
-            <View style={{ width: "90%" }}>
+            <View style={styles.container}>
               {/* Checkmarks like Driver Paid, etc */}
               <Text
                 style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
@@ -399,10 +399,34 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   styles.customInput,
                   { maxWidth: "15%", textAlign: "center" },
                 ]}
+                keyboardType="numeric"
                 selectTextOnFocus
               >
                 {orderPayload.orders[index].quantity}
               </TextInput>
+
+              <View style={{ marginVertical: 6 }}>
+                <Header>Delivery Cost</Header>
+                <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
+                  <Select
+                    minWidth="200"
+                    selectedValue={currentOrder.delivery_cost}
+                    accessibilityLabel="Delivery Cost"
+                    placeholder="Delivery Cost"
+                    _selectedItem={{
+                      bg: "teal.600",
+                      endIcon: <CheckIcon size={5} />,
+                    }}
+                    mt="1"
+                    onValueChange={(itemValue) =>
+                      handleChange("delivery_cost", itemValue, index)
+                    }
+                    key={`${currentOrder.order_id} - delivery_cost - ${index}`}
+                  >
+                    {renderDeliveryCost()}
+                  </Select>
+                </TouchableWithoutFeedback>
+              </View>
 
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}
@@ -419,60 +443,45 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   Choose Delivery Date <Text>*</Text>
                 </Text> */}
               </Pressable>
+
               <DateTimePickerModal
                 isVisible={datePickerIsVisible}
                 onConfirm={handleDateConfirm}
                 onCancel={toggleDatePickerVisibility}
               />
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
-              {currentOrder.delivery_cost ? (
-                <View>
-                  <TouchableWithoutFeedback
-                    onPress={() => renderDeliveryCost()}
-                  >
-                    <Select
-                      minWidth="200"
-                      selectedValue={currentOrder.delivery_cost}
-                      accessibilityLabel="Delivery Cost"
-                      placeholder="Delivery Cost"
-                      _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size={5} />,
-                      }}
-                      mt="1"
-                      onValueChange={(itemValue) =>
-                        handleChange("delivery_cost", itemValue, index)
-                      }
-                      key={`${currentOrder.order_id} - delivery_cost - ${index}`}
-                    >
-                      {renderDeliveryCost()}
-                    </Select>
-                  </TouchableWithoutFeedback>
-                </View>
-              ) : null}
             </View>
-            <Button
-              colorScheme="danger"
+            <View
               style={{
-                marginTop: 20,
-                width: 150,
-                alignSelf: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 10,
               }}
-              onPress={() => handleUpdate(index)}
             >
-              Update Order
-            </Button>
-            <Button
-              colorScheme="danger"
-              style={{
-                marginTop: 20,
-                width: 150,
-                alignSelf: "center",
-              }}
-              onPress={() => handleDelete(index)}
-            >
-              Delete Order
-            </Button>
+              <Button
+                disabled={isPayloadMissingDetails}
+                colorScheme={isPayloadMissingDetails ? "trueGray" : "teal"}
+                style={{
+                  marginTop: 20,
+                  width: 150,
+                  alignSelf: "center",
+                }}
+                onPress={() => handleUpdate(index)}
+              >
+                Update Order
+              </Button>
+              <Button
+                colorScheme="danger"
+                style={{
+                  marginTop: 20,
+                  width: 150,
+                  alignSelf: "center",
+                }}
+                onPress={() => handleDelete(index)}
+              >
+                Delete Order
+              </Button>
+            </View>
           </>
         );
       })}
@@ -481,6 +490,10 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: "90%",
+    alignSelf: "center",
+  },
   input: {
     borderWidth: 1,
     borderColor: "black",

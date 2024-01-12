@@ -14,12 +14,16 @@ interface FilteredOrderDetailsProps {
   orders: OrderWithChowDetails[];
   selectedOrders: SelectedOrder[];
   setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
+  color?: string;
+  paddingLeft?: number;
 }
 
 const FilteredOrderDetails = ({
   orders,
   selectedOrders,
   setSelectedOrders,
+  color,
+  paddingLeft,
 }: FilteredOrderDetailsProps) => {
   const { orderContainer, divider } = styles;
   interface SelectedOrder {
@@ -41,9 +45,16 @@ const FilteredOrderDetails = ({
     setSelectedOrders(data);
   };
 
+  const formatDate = (date: string) => {
+    const formattedDate = new Date(date).toDateString();
+
+    return formattedDate;
+  };
+
   return (
     <View>
       {orders?.map((order: OrderWithChowDetails, orderIndex: number) => {
+        const formattedDeliveryDate = formatDate(order.delivery_date);
         return (
           <View
             key={`${orderIndex} Chow ID:${order.id}`}
@@ -51,7 +62,12 @@ const FilteredOrderDetails = ({
           >
             <View>
               <CheckBox
-                title=""
+                title="Check to pay"
+                containerStyle={{
+                  backgroundColor: "transparent",
+                  paddingLeft: 0,
+                  marginLeft: 0,
+                }}
                 checked={
                   selectedOrders[orderIndex]
                     ? selectedOrders[orderIndex].selected
@@ -62,52 +78,96 @@ const FilteredOrderDetails = ({
             </View>
             {/* Payment Made Block */}
             <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
               header="Summary"
-              details={`${order.chow_details.brand}-${order.chow_details.flavours.varieties.size} ${order.chow_details.flavours.varieties.unit} x ${order.quantity}`}
+              details={`${order.chow_details.brand}-${
+                order.chow_details.flavours.varieties.size
+              } ${order.chow_details.flavours.varieties.unit} (${Dinero({
+                amount: Math.round(
+                  order.chow_details.flavours.varieties.retail_price * 100
+                ),
+              }).toFormat("$0,0.00")})  x ${order.quantity}`}
             />
-            {/* <DetailsText
+            {/* <DetailsText color={color}
+            paddingLeft={paddingLeft}
                      header="Customer Paid for Chow"
                      details={order.payment_made ? "Yes" : "No"}
                   /> */}
+
+            {/* Is Delivery Block */}
+            {/* <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
+              header="Delivery"
+              details={order.is_delivery ? "Yes" : "No"}
+            /> */}
+            {order.delivery_cost ? (
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Delivery Cost"
+                details={Dinero({
+                  amount: Math.round(order.delivery_cost * 100),
+                }).toFormat("$0,0.00")}
+              />
+            ) : null}
+
             {order.payment_made ? (
-              <DetailsText header="Payment Date" details={order.payment_date} />
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Payment Date"
+                details={order.payment_date}
+              />
             ) : (
               <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
                 header="Outstanding Cost"
                 details={Dinero({
                   amount: Math.round(
                     order.chow_details.flavours.varieties.retail_price *
                       order.quantity *
-                      100
+                      100 +
+                      (order.delivery_cost ? order.delivery_cost * 100 : 0)
                   ),
                 }).toFormat("$0,0.00")}
               />
             )}
-            {/* Is Delivery Block */}
-            <DetailsText
-              header="Delivery"
-              details={order.is_delivery ? "Yes" : "No"}
-            />
             {order.is_delivery ? (
               <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
                 header="Delivery Date"
-                details={order.delivery_date}
+                details={formattedDeliveryDate}
               />
             ) : null}
             {/* Quantity Block */}
-            <DetailsText header="Quantity" details={order.quantity} />
+            <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
+              header="Quantity"
+              details={order.quantity}
+            />
             {/* Driver/Warehouse Block */}
             <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
               header="Warehouse Paid"
               details={order.warehouse_paid ? "Yes" : "No"}
             />
             <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
               header="Driver Paid"
               details={order.driver_paid ? "Yes" : "No"}
             />
             <CollapsibleChowDetails
               chowDetails={order.chow_details}
               index={orderIndex}
+              color="black"
+              paddingLeft={0}
             />
           </View>
         );
@@ -125,7 +185,6 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     borderBottomColor: "hsl(186, 52%, 61%)",
     borderBottomWidth: 1,
-
     position: "relative",
   },
   divider: {

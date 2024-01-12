@@ -48,6 +48,8 @@ const CollapsibleOrder = ({
           orders={outstandingOrders}
           selectedOrders={selectedOrders}
           setSelectedOrders={setSelectedOrders}
+          color="black"
+          paddingLeft={0}
         />
       </Collapsible>
     </View>
@@ -59,12 +61,10 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "white",
     padding: 4,
     borderRadius: 4,
     width: "70%",
-    marginBottom: 10,
-    marginLeft: 20,
+    marginTop: 10,
   },
   dropdownText: {
     // TODO: font family+ aliasing please for the love of god

@@ -124,7 +124,6 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
     } else {
       // Add a new order if chow_id is not present
 
-      console.log({ restOrderDetails });
       combinedOrders[orderKey].orders.push({
         chow_id,
         quantity,

@@ -126,10 +126,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     const response = await combineOrders(orders);
     setFormattedOrders(response);
   };
-  const mappedDeliveryCostArray = formattedOrders.map(
+
+  const ordersNestedArray = formattedOrders.flatMap((order) => order.orders);
+  const mappedDeliveryCostArray = ordersNestedArray.map(
     (order) => order.delivery_cost
   );
 
+  console.log({ mappedDeliveryCostArray });
   const totalDeliveryCost = Math.round(
     mappedDeliveryCostArray.reduce(
       (accumulator, currentValue) => accumulator + currentValue,

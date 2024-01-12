@@ -19,6 +19,7 @@ import { Button } from "native-base";
 import { deleteCustomersOrder } from "../api/routes/orders";
 import { findCustomer } from "../api";
 import { Customer } from "../models/customer";
+import { useNavigation } from "@react-navigation/native";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -33,7 +34,7 @@ export interface SelectedOrder {
 const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   //   False by default to ensure Outstanding orders are displayed
   const [outstandingCollapsible, setOutstandingCollapsible] =
-    useState<boolean>(false);
+    useState<boolean>(true);
   const [completedCollapsible, setCompletedCollapsible] =
     useState<boolean>(true);
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
@@ -60,8 +61,9 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const {
     container,
     header,
+    card,
     subHeader,
-    deEmphasis,
+    content,
     outstandingCosts,
     buttonText,
     buttonContainer,
@@ -108,6 +110,16 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const ordersChosenForClearing = selectedIndicesArray.map(
     (selectedIndex) => orders[selectedIndex]
   );
+
+  //TODO: implement navigation from collapsibleOrder to order edit screen
+  // const handleNavigate = (orderIndex: number) =>
+  //   useNavigation().navigate("OrderDetails", {
+  //     orders,
+  //     client_name: name,
+  //     orders: orders[orderIndex].delivery_cost,
+  //     delivery_date: orders[orderIndex].delivery_date,
+  //     customer_id: id,
+  //   });
 
   const handleClearingSelectedOrders = async () => {
     setButtonStateSelectedOrders("loading"); // Set loading state
@@ -163,9 +175,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     return (
       <>
         <Text style={subHeader}>Contact Number</Text>
-        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
-          {contactNumber}
-        </Text>
+        <Text style={content}>{contactNumber}</Text>
       </>
     );
   };
@@ -173,13 +183,9 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     return (
       <>
         <Text style={subHeader}>Location</Text>
-        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
-          {location}
-        </Text>
+        <Text style={content}>{location}</Text>
         <Text style={subHeader}>City</Text>
-        <Text style={{ color: "white", paddingLeft: 20, fontSize: 16 }}>
-          {city}
-        </Text>
+        <Text style={content}>{city}</Text>
       </>
     );
   };
@@ -189,8 +195,20 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
       {pets?.map((pet: { name: string; breed: string }, index: number) => (
         <View key={`${index} Pet Container`}>
-          <DetailsText header={"Name"} details={pet.name} />
-          <DetailsText header={"Breed"} details={pet.breed} />
+          <DetailsText
+            header={"Name"}
+            details={pet.name}
+            color="black"
+            paddingLeft={0}
+          />
+          {pet.breed ? (
+            <DetailsText
+              header={"Breed"}
+              details={pet.breed}
+              color="black"
+              paddingLeft={0}
+            />
+          ) : null}
         </View>
       ))}
     </View>
@@ -218,140 +236,166 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
               Completed Orders
             </CollapsibleOrder> */}
 
-        <View style={buttonContainer}>
-          <Button
-            onPress={async () => {
-              if (
-                buttonStateSelectedOrders === "idle" &&
-                selectedIndicesArray.length >= 1
-              ) {
-                setButtonStateSelectedOrders("loading");
-                try {
-                  await handleClearingSelectedOrders();
-                  setButtonStateSelectedOrders("success");
-                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
-                } catch (error) {
-                  setButtonStateSelectedOrders("error");
-                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
+          <View style={buttonContainer}>
+            <Button
+              onPress={async () => {
+                if (
+                  buttonStateSelectedOrders === "idle" &&
+                  selectedIndicesArray.length >= 1
+                ) {
+                  setButtonStateSelectedOrders("loading");
+                  try {
+                    await handleClearingSelectedOrders();
+                    setButtonStateSelectedOrders("success");
+                    setTimeout(
+                      () => setButtonStateSelectedOrders("idle"),
+                      1000
+                    );
+                  } catch (error) {
+                    setButtonStateSelectedOrders("error");
+                    setTimeout(
+                      () => setButtonStateSelectedOrders("idle"),
+                      1000
+                    );
+                  }
                 }
+              }}
+              isDisabled={selectedIndicesArray.length < 1}
+              colorScheme={
+                selectedIndicesArray.length < 1 ? "trueGray" : "teal"
               }
-            }}
-            isDisabled={selectedIndicesArray.length < 1}
-            style={button}
-          >
-            {buttonStateSelectedOrders === "loading" ? (
-              <ActivityIndicator color="white" />
-            ) : buttonStateSelectedOrders === "success" ? (
-              <>
-                <Text style={buttonText}>Paid!</Text>
-              </>
-            ) : buttonStateSelectedOrders === "error" ? (
-              <>
-                <Text style={buttonText}>Error!</Text>
-              </>
-            ) : (
-              "Set selected orders to 'Paid'"
-            )}
-          </Button>
-        </View>
-        <View style={buttonContainer}>
-          <Button
-            onPress={async () => {
-              if (buttonStateClearAllOrders === "idle") {
-                setButtonStateClearAllOrders("loading");
-                try {
-                  await handleClearingAllOrders();
-                  setButtonStateClearAllOrders("success");
-                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
-                } catch (error) {
-                  setButtonStateClearAllOrders("error");
-                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
+              style={button}
+            >
+              {buttonStateSelectedOrders === "loading" ? (
+                <ActivityIndicator color="white" />
+              ) : buttonStateSelectedOrders === "success" ? (
+                <>
+                  <Text style={buttonText}>Paid!</Text>
+                </>
+              ) : buttonStateSelectedOrders === "error" ? (
+                <>
+                  <Text style={buttonText}>Error!</Text>
+                </>
+              ) : (
+                "Set selected orders to 'Paid'"
+              )}
+            </Button>
+          </View>
+          <View style={buttonContainer}>
+            <Button
+              onPress={async () => {
+                if (buttonStateClearAllOrders === "idle") {
+                  setButtonStateClearAllOrders("loading");
+                  try {
+                    await handleClearingAllOrders();
+                    setButtonStateClearAllOrders("success");
+                    setTimeout(
+                      () => setButtonStateClearAllOrders("idle"),
+                      1000
+                    );
+                  } catch (error) {
+                    setButtonStateClearAllOrders("error");
+                    setTimeout(
+                      () => setButtonStateClearAllOrders("idle"),
+                      1000
+                    );
+                  }
                 }
-              }
-            }}
-            style={button}
-          >
-            {buttonStateClearAllOrders === "loading" ? (
-              <ActivityIndicator color="white" />
-            ) : buttonStateClearAllOrders === "success" ? (
-              <>
-                <Text style={buttonText}>Paid!</Text>
-              </>
-            ) : buttonStateClearAllOrders === "error" ? (
-              <>
-                <Text style={buttonText}>Error!</Text>
-              </>
-            ) : (
-              "Pay all outstanding orders"
-            )}
-          </Button>
+              }}
+              style={button}
+            >
+              {buttonStateClearAllOrders === "loading" ? (
+                <ActivityIndicator color="white" />
+              ) : buttonStateClearAllOrders === "success" ? (
+                <>
+                  <Text style={buttonText}>Paid!</Text>
+                </>
+              ) : buttonStateClearAllOrders === "error" ? (
+                <>
+                  <Text style={buttonText}>Error!</Text>
+                </>
+              ) : (
+                "Pay all outstanding orders"
+              )}
+            </Button>
+          </View>
         </View>
       </View>
     );
   };
 
   return (
-    <ScrollView style={[container, { height: height, width: width }]}>
+    <ScrollView
+      style={[container, { height: height, width: width }]}
+      contentContainerStyle={{ alignItems: "center" }}
+    >
       <Text style={header}>{capitalizedName(name)}</Text>
       {outstandingOrders.length > 0 ? (
-        <Text style={outstandingCosts}>
-          Total Outstanding Cost:{" "}
-          {subTotal
-            ? Dinero({
-                amount: subTotal || 0,
-                precision: 2,
-              }).toFormat("$0,0.00")
-            : null}
-        </Text>
-      ) : (
-        <Text style={[outstandingCosts, { color: "green" }]}>
-          No outstanding Orders!
-        </Text>
-      )}
+        <View style={card}>
+          <Text style={outstandingCosts}>
+            Total Outstanding Cost:{" "}
+            {subTotal
+              ? Dinero({
+                  amount: subTotal || 0,
+                  precision: 2,
+                }).toFormat("$0,0.00")
+              : null}
+          </Text>
+        </View>
+      ) : null}
       <View>
         {locationExist && renderLocation()}
         {contactNumberExist && renderContactNumber()}
         {petsExist && renderPets()}
         {ordersExist && renderOrders()}
       </View>
-      <Text style={deEmphasis}>Customer ID: {id}</Text>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "hsl(225,6%,13%)",
+    backgroundColor: "#f1f2f3",
   },
   header: {
     fontSize: 24,
     fontWeight: "600",
     textAlign: "center",
     margin: 8,
-    color: "rgb(148, 163, 184)",
   },
-  collapsibleHeader: {
-    paddingLeft: 20,
+  card: {
+    borderRadius: 6,
+    borderColor: "#e3e3e3",
+    borderWidth: 1,
+    width: "80%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 4,
+    padding: 8,
+    backgroundColor: "#f9f9f9",
   },
+  collapsibleHeader: {},
   subHeader: {
     fontSize: 20,
-    color: "hsl(186, 52%, 61%)",
-    // color: "hsl(186,63%,30%)",
-    fontWeight: "600",
+    color: "#588ca8",
     marginTop: 4,
     marginBottom: 4,
-    marginLeft: 20,
+  },
+  content: {
+    marginVertical: 4,
+    fontSize: 14,
   },
   outstandingCosts: {
-    fontSize: 16,
-    color: "red",
-    marginBottom: 4,
-    paddingLeft: 20,
-  },
-  deEmphasis: {
-    color: "hsla(222,31%,66%, 0.7)",
-    marginTop: 12,
-    marginBottom: 12,
+    fontSize: 17,
+    color: "#be123c",
   },
   bold: {
     fontWeight: "600",
@@ -362,12 +406,12 @@ const styles = StyleSheet.create({
 
   // Button Block
   buttonContainer: {
-    display: "flex",
+    flexDirection: "row",
     alignItems: "center",
     marginTop: 20,
   },
   button: {
-    width: "60%",
+    width: 170,
   },
 
   payAllOrderButton: {

@@ -11,11 +11,15 @@ import { Divider } from "native-base";
 interface CollapsibleChowDetailsProps {
   chowDetails: Chow;
   index: number;
+  color?: string;
+  paddingLeft: number;
 }
 
 const CollapsibleChowDetails = ({
   chowDetails,
   index,
+  color,
+  paddingLeft,
 }: CollapsibleChowDetailsProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const { brand } = chowDetails;
@@ -30,7 +34,10 @@ const CollapsibleChowDetails = ({
           setIsCollapsed(!isCollapsed);
         }}
       >
-        <Text key={`${index} Collapsible`} style={dropdownText}>
+        <Text
+          key={`${index} Collapsible`}
+          style={[dropdownText, { color, paddingLeft }]}
+        >
           {isCollapsed ? "View Chow Details: " : "Close Chow Details: "}
         </Text>
         <Icon
@@ -42,15 +49,29 @@ const CollapsibleChowDetails = ({
 
       <Collapsible collapsed={isCollapsed}>
         <View>
-          <DetailsText header={"Brand"} details={brand} />
+          <DetailsText
+            header={"Brand"}
+            details={brand}
+            paddingLeft={paddingLeft}
+            color={color}
+          />
           <DetailsText
             header={"Flavour"}
+            paddingLeft={paddingLeft}
+            color={color}
             details={chowDetails.flavours.flavour_name}
           />
-          <DetailsText header={"Size"} details={`${size} ${unit}`} />
+          <DetailsText
+            header={"Size"}
+            details={`${size} ${unit}`}
+            paddingLeft={paddingLeft}
+            color={color}
+          />
 
           <DetailsText
             header={"Cost"}
+            paddingLeft={paddingLeft}
+            color={color}
             details={Dinero({
               amount: Math.round(retail_price * 100),
             }).toFormat("$0,0.00")}
