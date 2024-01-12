@@ -132,7 +132,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     (order) => order.delivery_cost
   );
 
-  console.log({ mappedDeliveryCostArray });
   const totalDeliveryCost = Math.round(
     mappedDeliveryCostArray.reduce(
       (accumulator, currentValue) => accumulator + currentValue,
@@ -469,6 +468,7 @@ const styles = StyleSheet.create({
   tableQuantity: {
     color: "white",
     fontSize: 18,
+    paddingLeft: 24,
   },
   deEmphasis: {
     fontSize: 12,
