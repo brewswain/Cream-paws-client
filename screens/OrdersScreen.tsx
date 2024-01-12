@@ -125,7 +125,7 @@ const OrdersScreen = () => {
         <CreateOrderModal
           isOpen={showModal}
           setShowModal={setShowModal}
-          populateCustomersList={populateCustomersList}
+          populateCustomersList={populateData}
           chow={chow}
           customers={customers}
         />
