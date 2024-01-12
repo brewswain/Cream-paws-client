@@ -19,6 +19,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
 import { Chow } from "../../models/chow";
+import { devNull } from "os";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -74,6 +75,33 @@ const CreateOrderModal = ({
 
   const closeModal = () => {
     setShowModal(false);
+    resetState();
+  };
+
+  const resetState = () => {
+    setOrderInputs({
+      customer_id: "",
+      delivery_date: "",
+      payment_made: false,
+      delivery_cost: 0,
+      payment_date: "",
+      is_delivery: false,
+      driver_paid: false,
+      warehouse_paid: false,
+    });
+
+    setChowInputs([
+      {
+        chow_id: "",
+        brand: "",
+        flavour_name: "",
+        quantity: 1,
+      },
+    ]);
+
+    setSelectedChow("");
+    setSelectedCustomer("");
+    setSelectedDate(undefined);
   };
 
   const {
@@ -316,9 +344,9 @@ const CreateOrderModal = ({
         };
 
         await createOrder(newOrderPayload);
+        populateCustomersList();
       })
     ).then(() => {
-      populateCustomersList();
       closeModal();
     });
   };
