@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { Button, FormControl, Modal } from "native-base";
-import Icon from "react-native-vector-icons/AntDesign";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createCustomer } from "../../api";
 
