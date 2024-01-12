@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import { Button, CheckIcon, Divider, ScrollView, Select } from "native-base";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
@@ -40,9 +48,14 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     ...route.params,
     // id: route.params._id || "unknown id",
   });
-  const navigate = useNavigation();
   const [chosenBrand, setChosenBrand] = useState([]);
   const [chow, setChow] = useState<Chow[]>();
+  const [selectedDate, setSelectedDate] = useState<Date>();
+
+  const [datePickerIsVisible, setDatePickerIsVisible] =
+    useState<boolean>(false);
+
+  const navigate = useNavigation();
   const populateChowList = async () => {
     const response = await getAllChow();
     setChow(response);
@@ -125,6 +138,19 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     ));
   };
 
+  const toggleDatePickerVisibility = () => {
+    setDatePickerIsVisible(!datePickerIsVisible);
+  };
+  console.log({ orderPayload });
+
+  const handleDateConfirm = (date: Date) => {
+    setOrderPayload((prevState) => ({
+      ...prevState,
+      delivery_date: date.toString(),
+    }));
+    toggleDatePickerVisibility();
+  };
+
   //TODO: This needs a **MASSIVE** Refactor. If i'm going this far with excessive specificity
   // in mind, then i should just split these into separate change handlers, as the bloat is
   // crazy rn
@@ -193,26 +219,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           return order;
         }),
       }));
-    }
-    // else if (name.includes("chow_details")) {
-    //   const [nestedKey, propertyName] = name.split(".");
-    //   setOrderPayload((prevState) => ({
-    //     ...prevState,
-    //     orders: prevState.orders.map((order, index) => {
-    //       if (index === selectedIndex) {
-    //         return {
-    //           ...order,
-    //           chow_details: {
-    //             ...order.chow_details,
-    //             [propertyName]: value,
-    //           },
-    //         };
-    //       }
-    //       return order;
-    //     }),
-    //   }));
-    // }
-    else {
+    } else {
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -236,7 +243,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     delete selectedOrder.orders;
 
     await updateOrder(selectedOrder);
-    navigate.navigate("Orders");
+    navigate.goBack();
   };
 
   const handleDelete = async (index: number) => {
@@ -248,7 +255,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     ];
 
     await clearCustomerOrders(deleteCustomerOrderPayload);
-    navigate.navigate("Orders");
+    navigate.goBack();
   };
 
   const formatDate = (date: string) => {
@@ -259,53 +266,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
-  const costsFields = (index: number) => [
-    // {
-    //   title: "Wholesale Price",
-    //   content:
-    //     orderPayload.orders[index].chow_details.flavours.varieties
-    //       .wholesale_price,
-    //   name: "chow_details.wholesale_price",
-    // },
-    // {
-    //   title: "Retail Price",
-    //   content:
-    //     orderPayload.orders[index].chow_details.flavours.varieties.retail_price,
-    //   name: "chow_details.retail_price",
-    // },
-    {
-      title: "Delivery Fee",
-      content: "Add delivery fee dropdown here",
-      name: "REPLACE_WHEN_WE_WORK_OUT_DATASHAPE",
-    },
-    // {
-    //   title: "Total Cost",
-    //   content: "Calculate all costs in our API",
-    //   name: "REPLACE_WHEN_WE_WORK_OUT_DATASHAPE",
-    // },
-  ];
-
   const chowFields = (index: number) => [
-    // {
-    //   title: "Brand",
-    //   content: orderPayload.orders[index].chow_details.brand,
-    //   name: "chow_details.brand",
-    // },
-    // {
-    //   title: "Flavour",
-    //   content: orderPayload.orders[index].chow_details.flavours.flavour_name,
-    //   name: "chow_details.flavours.flavour_name",
-    // },
-    // {
-    //   title: "Size",
-    //   content: orderPayload.orders[index].chow_details.flavours.varieties.size,
-    //   name: "chow_details.size",
-    // },
-    // {
-    //   title: "Unit",
-    //   content: orderPayload.orders[index].chow_details.flavours.varieties.unit,
-    //   name: "chow_details.unit",
-    // },
     {
       title: "Quantity",
       content: orderPayload.orders[index].quantity,
@@ -430,10 +391,23 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}
               {/* @ts-ignore */}
-              <CustomInput handleChange={handleChange}>
-                {formattedDeliveryDate}
-              </CustomInput>
 
+              <Pressable onPress={() => toggleDatePickerVisibility()}>
+                <CustomInput
+                  name="delivery_date"
+                  customStyle={{ color: "black" }}
+                >
+                  {formattedDeliveryDate}
+                </CustomInput>
+                {/* <Text>
+                  Choose Delivery Date <Text>*</Text>
+                </Text> */}
+              </Pressable>
+              <DateTimePickerModal
+                isVisible={datePickerIsVisible}
+                onConfirm={handleDateConfirm}
+                onCancel={toggleDatePickerVisibility}
+              />
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
               {currentOrder.delivery_cost ? (
                 <View>
