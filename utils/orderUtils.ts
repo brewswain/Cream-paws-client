@@ -88,10 +88,10 @@ export const getUnpaidWarehouseOrders = async () => {
 };
 
 export const combineOrders = async (orders: OrderWithChowDetails[]) => {
-  const combinedOrders = {};
+  const combinedOrders: Record<string, any[]> = {};
 
   for (const order of orders) {
-    const customerName = await findCustomer(order.customer_id);
+    const customer = await findCustomer(order.customer_id);
 
     const {
       delivery_date,
@@ -102,13 +102,12 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       ...restOrderDetails
     } = order;
 
-    const orderKey = `${delivery_date}`;
+    const orderKey = `${customer.name}-${delivery_date}`;
 
     if (!combinedOrders[orderKey]) {
       combinedOrders[orderKey] = {
+        name: customer.name,
         delivery_date,
-        // delivery_cost, // Place delivery_cost at the root level
-        name: customerName.name,
         customer_id,
         orders: [],
       };
@@ -123,14 +122,15 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
     } else {
       // Add a new order if chow_id is not present
-
       combinedOrders[orderKey].orders.push({
         chow_id,
         quantity,
+        delivery_date,
         delivery_cost,
         ...restOrderDetails,
       });
     }
   }
+
   return Object.values(combinedOrders);
 };
