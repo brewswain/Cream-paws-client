@@ -32,6 +32,7 @@ import {
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
   chow_id: string;
+  delivery_date: string;
 }
 interface OrderDetailsProps {
   navigation: RootTabScreenProps<"OrderDetails">;
@@ -140,10 +141,18 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     setDatePickerIsVisible(!datePickerIsVisible);
   };
 
-  const handleDateConfirm = (date: Date) => {
+  const handleDateConfirm = (date: Date, selectedIndex: number) => {
     setOrderPayload((prevState) => ({
       ...prevState,
-      delivery_date: date.toString(),
+      orders: prevState.orders.map((order, index) => {
+        if (index === selectedIndex) {
+          return {
+            ...order,
+            delivery_date: date.toString(),
+          };
+        }
+        return order;
+      }),
     }));
     toggleDatePickerVisibility();
   };
@@ -261,8 +270,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     return formattedDate;
   };
 
-  const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
-
   const chowFields = (index: number) => [
     {
       title: "Quantity",
@@ -286,6 +293,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           !currentOrder.quantity ||
           currentOrder.quantity < 1 ||
           !orderPayload.delivery_date;
+
+        const formattedDeliveryDate = formatDate(currentOrder.delivery_date);
 
         // Check if `currentOrder.chow_details.flavours` is an array
         const availableChowId = Array.isArray(
@@ -446,7 +455,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
               <DateTimePickerModal
                 isVisible={datePickerIsVisible}
-                onConfirm={handleDateConfirm}
+                onConfirm={(date) => handleDateConfirm(date, index)}
                 onCancel={toggleDatePickerVisibility}
               />
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
