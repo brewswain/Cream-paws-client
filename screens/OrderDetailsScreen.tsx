@@ -3,6 +3,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -15,6 +16,7 @@ import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
+  SubHeader,
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
@@ -161,6 +163,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     value: string | number,
     selectedIndex: number
   ) => {
+    console.log({ name });
     if (name.includes("brand")) {
       const response = await findChow(value as string);
 
@@ -220,6 +223,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         }),
       }));
     } else {
+      console.log("editing", name, value);
       setOrderPayload((prevState) => ({
         ...prevState,
         orders: prevState.orders.map((order, index) => {
@@ -386,7 +390,19 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                     )}
                 </Select>
               </TouchableWithoutFeedback>
-              {renderDetailInputs(chowFields(index), handleChange, index)}
+              {/* {renderDetailInputs(chowFields(index), handleChange, index)} */}
+
+              <Header>Quantity</Header>
+              <TextInput
+                onChangeText={(value) => handleChange("quantity", value, index)}
+                style={[
+                  styles.customInput,
+                  { maxWidth: "15%", textAlign: "center" },
+                ]}
+                selectTextOnFocus
+              >
+                {orderPayload.orders[index].quantity}
+              </TextInput>
 
               <Header>Delivery Date</Header>
               {/*  ignore this error till we implement the date-selector */}
@@ -395,7 +411,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <Pressable onPress={() => toggleDatePickerVisibility()}>
                 <CustomInput
                   name="delivery_date"
-                  customStyle={{ color: "black" }}
+                  customStyle={styles.customInput}
                 >
                   {formattedDeliveryDate}
                 </CustomInput>
@@ -472,6 +488,15 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     marginHorizontal: 8,
     marginTop: 4,
+  },
+  customInput: {
+    color: "black",
+    borderWidth: 0,
+    width: "40%",
+    borderBottomWidth: 1,
+    borderRadius: 0,
+    marginHorizontal: 0,
+    marginBottom: 10,
   },
 });
 
