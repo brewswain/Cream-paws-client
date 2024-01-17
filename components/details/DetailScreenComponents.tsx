@@ -1,4 +1,5 @@
 import {
+  KeyboardType,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +18,7 @@ export interface SubFields {
   title: string;
   content: string | number;
   name: string;
+  type?: KeyboardType;
 }
 [];
 
@@ -34,13 +36,14 @@ export const CustomInput = (props: {
   handleChange?: (name: string, value: string | number, index?: number) => void;
   selectedIndex?: number;
   customStyle?: TextStyle;
+  type?: KeyboardType;
 }) => {
   return (
     <>
       {props.handleChange ? (
         <TextInput
           style={[styles.input, props.customStyle]}
-          keyboardType={props.name === "quantity" ? "numeric" : "default"}
+          keyboardType={props.type ? props.type : "default"}
           selectTextOnFocus
           onChangeText={(text: string) =>
             props.selectedIndex
@@ -77,6 +80,7 @@ export const renderDetailInputs = (
         handleChange={handleChange}
         name={field.name}
         selectedIndex={selectedIndex}
+        type={field.type}
       >
         {field.content}
       </CustomInput>

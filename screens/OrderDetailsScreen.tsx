@@ -16,6 +16,7 @@ import { getAllChow, updateOrder } from "../api";
 import {
   CustomInput,
   Header,
+  SubFields,
   SubHeader,
   renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
@@ -225,6 +226,28 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           return order;
         }),
       }));
+    } else if (name.includes("retail_price")) {
+      setOrderPayload((prevState) => ({
+        ...prevState,
+        orders: prevState.orders.map((order, index) => {
+          if (index === selectedIndex) {
+            return {
+              ...order,
+              chow_details: {
+                ...order.chow_details,
+                flavours: {
+                  ...order.chow_details.flavours,
+                  varieties: {
+                    ...order.chow_details.flavours.varieties,
+                    retail_price: parseInt(value),
+                  },
+                },
+              },
+            };
+          }
+          return order;
+        }),
+      }));
     } else {
       setOrderPayload((prevState) => ({
         ...prevState,
@@ -308,6 +331,15 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             currentOrder.chow_details.flavours.varieties[0].chow_id
           : // If neither `flavours` nor `varieties` is an array, directly access the `chow_id` property
             currentOrder.chow_details.flavours.varieties.chow_id;
+
+        const costsFields: SubFields[] = [
+          {
+            title: "Retail Price",
+            content: currentOrder.chow_details.flavours.varieties.retail_price,
+            name: "currentOrder.chow_details.flavours.varieties.retail_price",
+            type: "numeric",
+          },
+        ];
 
         return (
           <>
@@ -460,6 +492,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               />
               {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
             </View>
+            <Header>Costs</Header>
+            {renderDetailInputs(costsFields, handleChange)}
             <View
               style={{
                 flexDirection: "row",
