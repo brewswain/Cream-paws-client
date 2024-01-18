@@ -83,7 +83,6 @@ export const getUnpaidWarehouseOrders = async () => {
   const filteredOutstandingOrders =
     orderResponse.filter((order) => order.warehouse_paid === false) ??
     [].filter((order) => order !== undefined);
-
   return filteredOutstandingOrders;
 };
 
@@ -133,4 +132,23 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
   }
 
   return Object.values(combinedOrders);
+};
+
+export const concatFinanceQuantities = async (
+  orders: OrderWithChowDetails[]
+) => {
+  const updatedOrders = {};
+  for (const order of orders) {
+    const existingOrder = updatedOrders[order.chow_id];
+
+    if (existingOrder) {
+      // Update quantity for the existing order
+      existingOrder.quantity += order.quantity;
+    } else {
+      // Add a new order if chow_id is not present
+      updatedOrders[order.chow_id] = { ...order };
+    }
+  }
+
+  return Object.values(updatedOrders);
 };

@@ -10,13 +10,14 @@ import { CheckBox } from "@rneui/themed";
 import {
   clearCustomerOrders,
   clearWarehouseOrders,
+  collateFinanceQuantities,
   combineOrders,
+  concatFinanceQuantities,
   getUnpaidCustomerOrders,
   getUnpaidWarehouseOrders,
+  updateOrdersQuantity,
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
-import { SelectedOrder } from "../../screens/CustomerDetailsScreen";
-import { group } from "console";
 
 interface ItemizedBreakdownCardProps {
   mode: "suppliers" | "customers";
@@ -52,7 +53,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const getCustomerOrders = async () => {
     try {
       const filteredOutstandingOrders = await getUnpaidCustomerOrders();
-      formatOrders();
       setOutstandingOrders(filteredOutstandingOrders);
       setIsLoading(false);
       setIsSuccess(true);
@@ -136,12 +136,14 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   );
 
   const formatOrders = async () => {
-    const response = await combineOrders(orders);
+    const response = await concatFinanceQuantities(orders);
+    // const response = await combineOrders(orders);
+
     setFormattedOrders(response);
   };
 
   const ordersNestedArray = formattedOrders.flatMap((order) => order.orders);
-  const mappedDeliveryCostArray = ordersNestedArray.map(
+  const mappedDeliveryCostArray = formattedOrders.map(
     (order) => order.delivery_cost
   );
 
@@ -246,6 +248,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     }, [mode])
   );
 
+  useEffect(() => {
+    formatOrders();
+  }, [outstandingOrders, setOutstandingOrders]);
+  // useEffect(() => {
+  //   populateData();
+  // }, [mode]);
+
   return (
     <View style={container}>
       {orders.length > 0 ? (
@@ -292,8 +301,8 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             <ActivityIndicator size="large" color="white" />
           ) : (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
-              {outstandingOrders.length > 0 ? (
-                outstandingOrders.map((order, index) => {
+              {formattedOrders.length > 0 ? (
+                formattedOrders.map((order, index) => {
                   const chosenPrice = isWarehouseOrders
                     ? order.chow_details.flavours.varieties.wholesale_price
                     : order.chow_details.flavours.varieties.retail_price;
