@@ -68,8 +68,10 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
   const populateData = () => {
     if (mode === "customers") {
+      setIsLoading(true);
       getCustomerOrders();
     } else {
+      setIsLoading(true);
       getWarehouseOwedCost();
     }
   };
@@ -251,72 +253,74 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       </View>
       {isSuccess ? (
         <View style={tableContainer}>
-          {isLoading && <ActivityIndicator size="large" color="blue" />}
+          {isLoading ? (
+            <ActivityIndicator size="large" color="white" />
+          ) : (
+            <Checkbox.Group onChange={setGroupValues} value={groupValues}>
+              {outstandingOrders.length > 0 ? (
+                outstandingOrders.map((order) => {
+                  const chosenPrice = isWarehouseOrders
+                    ? order.chow_details.flavours.varieties.wholesale_price
+                    : order.chow_details.flavours.varieties.retail_price;
+                  const vatExclusivePrice: string = Dinero({
+                    amount: Math.round(chosenPrice * order.quantity * 100),
+                  }).toFormat("$0,0.00");
 
-          <Checkbox.Group onChange={setGroupValues} value={groupValues}>
-            {outstandingOrders.length > 0 ? (
-              outstandingOrders.map((order) => {
-                const chosenPrice = isWarehouseOrders
-                  ? order.chow_details.flavours.varieties.wholesale_price
-                  : order.chow_details.flavours.varieties.retail_price;
-                const vatExclusivePrice: string = Dinero({
-                  amount: Math.round(chosenPrice * order.quantity * 100),
-                }).toFormat("$0,0.00");
+                  const description = (() => {
+                    const fullDescription = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
+                    const index = fullDescription.indexOf("(");
+                    const shortenedDescription =
+                      index !== -1
+                        ? fullDescription.substring(0, index).trim() +
+                          ` ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`
+                        : fullDescription;
 
-                const description = (() => {
-                  const fullDescription = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
-                  const index = fullDescription.indexOf("(");
-                  const shortenedDescription =
-                    index !== -1
-                      ? fullDescription.substring(0, index).trim() +
-                        ` ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`
-                      : fullDescription;
+                    return shortenedDescription;
+                  })();
 
-                  return shortenedDescription;
-                })();
-
-                return (
-                  <View key={order.order_id} style={orderContainer}>
-                    <View style={orderCard}>
-                      <Checkbox
-                        value={`${order._id}`}
-                        accessibilityLabel="Checkbox for identifying individual orders to pay"
-                      >
-                        <View style={textContainer}>
-                          <Text style={tableChowDescription}>
-                            {description} :
-                          </Text>
-                          <Text style={tableQuantity}>
-                            {order.quantity}
-                            <Text style={deEmphasis}>x </Text>
-                            <Text>
-                              {isWarehouseOrders
-                                ? order.chow_details.flavours.varieties
-                                    .wholesale_price
-                                : order.chow_details.flavours.varieties
-                                    .retail_price}
+                  return (
+                    <View key={order.order_id} style={orderContainer}>
+                      <View style={orderCard}>
+                        <Checkbox
+                          value={`${order._id}`}
+                          accessibilityLabel="Checkbox for identifying individual orders to pay"
+                        >
+                          <View style={textContainer}>
+                            <Text style={tableChowDescription}>
+                              {description} :
                             </Text>
-                          </Text>
-                        </View>
-                        <Text style={tablePrice}>{vatExclusivePrice}</Text>
-                      </Checkbox>
+                            <Text style={tableQuantity}>
+                              {order.quantity}
+                              <Text style={deEmphasis}>x </Text>
+                              <Text>
+                                {isWarehouseOrders
+                                  ? order.chow_details.flavours.varieties
+                                      .wholesale_price
+                                  : order.chow_details.flavours.varieties
+                                      .retail_price}
+                              </Text>
+                            </Text>
+                          </View>
+                          <Text style={tablePrice}>{vatExclusivePrice}</Text>
+                        </Checkbox>
+                      </View>
                     </View>
+                  );
+                })
+              ) : (
+                <View style={orderContainer}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={tableQuantity}>No unpaid orders!</Text>
                   </View>
-                );
-              })
-            ) : (
-              <View style={orderContainer}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={tableQuantity}>No unpaid orders!</Text>
                 </View>
-              </View>
-            )}
-          </Checkbox.Group>
+              )}
+            </Checkbox.Group>
+          )}
         </View>
       ) : isError ? (
         <View style={statusContainer}>

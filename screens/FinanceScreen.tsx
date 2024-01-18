@@ -15,6 +15,10 @@ const FinanceScreen = () => {
     { label: "Unpaid Warehouse Orders", value: true },
   ];
 
+  const handleClick = (value: boolean) => {
+    setShowSupplierOwed(value);
+  };
+
   return (
     <ScrollView style={container}>
       <View style={{ alignItems: "center", paddingVertical: 10 }}>
@@ -26,7 +30,7 @@ const FinanceScreen = () => {
             selectedColor="white"
             buttonColor="#7a44cf"
             borderColor="#7a44cf"
-            onPress={(value: boolean) => setShowSupplierOwed(value)}
+            onPress={(value: boolean) => handleClick(value)}
           />
         </View>
       </View>

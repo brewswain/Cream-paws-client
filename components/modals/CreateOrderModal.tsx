@@ -19,7 +19,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
 import { Chow } from "../../models/chow";
-import { devNull } from "os";
+import { findChowVariety } from "../../api/routes/stock";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -50,6 +50,7 @@ const CreateOrderModal = ({
       brand: "",
       flavour_name: "",
       quantity: 1,
+      retail_price: null,
     },
   ]);
   const [orderInputs, setOrderInputs] = useState<any>({
@@ -96,6 +97,7 @@ const CreateOrderModal = ({
         brand: "",
         flavour_name: "",
         quantity: 1,
+        retail_price: null,
       },
     ]);
 
@@ -139,12 +141,6 @@ const CreateOrderModal = ({
     if (filteredFlavour) {
       return filteredFlavour[0];
     }
-  };
-
-  const handleDateConfirm = (date: Date) => {
-    setSelectedDate(date);
-    handleDateChange(date);
-    toggleDatePickerVisibility();
   };
 
   const addField = () => {
@@ -271,6 +267,11 @@ const CreateOrderModal = ({
     data["delivery_date"] = date;
     setOrderInputs(data);
   };
+  const handleDateConfirm = (date: Date) => {
+    setSelectedDate(date);
+    handleDateChange(date);
+    toggleDatePickerVisibility();
+  };
 
   const handleQuantityChange = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
@@ -287,7 +288,7 @@ const CreateOrderModal = ({
     setChowInputs(data);
   };
 
-  const handleChowSelected = (
+  const handleChowSelected = async (
     itemValue: string,
     index: number,
     name: string
@@ -296,6 +297,22 @@ const CreateOrderModal = ({
     const data = [...chowInputs];
     data[index][name] = itemValue;
 
+    if (name === "chow_id") {
+      const response = await findChowVariety(itemValue);
+      data[index].retail_price = response.retail_price;
+      setChowInputs(data);
+    }
+
+    setChowInputs(data);
+  };
+
+  const handlePriceChange = async (
+    event: NativeSyntheticEvent<TextInputChangeEventData>,
+    index: number,
+    name: string
+  ) => {
+    const data = [...chowInputs];
+    data[index][name] = parseInt(event.nativeEvent.text);
     setChowInputs(data);
   };
 
@@ -324,7 +341,8 @@ const CreateOrderModal = ({
 
     Promise.all(
       chowArray.map(async (chowDetails: ChowDetails) => {
-        const { chow_id, quantity, flavour_id, brand } = chowDetails;
+        const { chow_id, quantity, flavour_id, brand, retail_price } =
+          chowDetails;
         const { customer_id, delivery_date, payment_date, delivery_cost } =
           orderPayload;
 
@@ -334,6 +352,7 @@ const CreateOrderModal = ({
           payment_date,
           quantity,
           delivery_cost,
+          retail_price,
           flavour_id,
           payment_made: orderInputs.payment_made,
           is_delivery: orderInputs.is_delivery,
@@ -346,9 +365,10 @@ const CreateOrderModal = ({
         await createOrder(newOrderPayload);
         populateCustomersList();
       })
-    ).then(() => {
-      closeModal();
-    });
+    );
+    // .then(() => {
+    //   closeModal();
+    // });
   };
 
   return (
@@ -493,6 +513,7 @@ const CreateOrderModal = ({
                   </TouchableWithoutFeedback>
                 )}
 
+                <FormControl.Label>Quantity</FormControl.Label>
                 <TextInput
                   style={input}
                   placeholder="Quantity *"
@@ -504,6 +525,22 @@ const CreateOrderModal = ({
                   // value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
+                {chowInputs[index].retail_price ? (
+                  <>
+                    <FormControl.Label>Retail Price</FormControl.Label>
+                    <TextInput
+                      style={input}
+                      placeholder="Retail Price"
+                      keyboardType="numeric"
+                      onChange={(event) =>
+                        handlePriceChange(event, index, "retail_price")
+                      }
+                      defaultValue={chowInputs[index].retail_price.toString()}
+                      // value={field.quantity.toString()}
+                      key={`index: ${index} retail_price `}
+                    />
+                  </>
+                ) : null}
                 <View style={buttonContainer}>
                   <Button
                     style={button}
