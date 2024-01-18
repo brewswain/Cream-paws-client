@@ -1,10 +1,12 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, Checkbox } from "native-base";
+import { CheckBox } from "@rneui/themed";
+
 import {
   clearCustomerOrders,
   clearWarehouseOrders,
@@ -13,6 +15,8 @@ import {
   getUnpaidWarehouseOrders,
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
+import { SelectedOrder } from "../../screens/CustomerDetailsScreen";
+import { group } from "console";
 
 interface ItemizedBreakdownCardProps {
   mode: "suppliers" | "customers";
@@ -23,7 +27,14 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
     useState("idle");
-  const [groupValues, setGroupValues] = useState([]);
+  const [groupValues, setGroupValues] = useState([
+    {
+      index: 0,
+      selected: false,
+      order_id: "",
+    },
+  ]);
+
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [outstandingOrders, setOutstandingOrders] = useState<
     OrderWithChowDetails[]
@@ -148,9 +159,30 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
-  const selectedOrdersArray = groupValues.flatMap((orderId) =>
-    orders.filter((order) => order.order_id === orderId)
-  );
+  const selectedOrdersArray = groupValues
+    .flatMap((selectedOrder) => {
+      if (selectedOrder.selected === true) {
+        return orders.filter(
+          (order) => order.order_id === selectedOrder.order_id
+        );
+      }
+      return []; // Return an empty array for non-selected orders
+    })
+    .filter(Boolean); // Filter out undefined values
+
+  const handleCheckBoxChange = (orderIndex: number, order_id: string) => {
+    const data = [...groupValues];
+    if (!data[orderIndex]) {
+      setGroupValues([
+        ...groupValues,
+        { orderIndex, order_id, selected: true },
+      ]);
+    } else {
+      data[orderIndex].selected = !data[orderIndex].selected;
+      data[orderIndex].order_id = order_id;
+      setGroupValues(data);
+    }
+  };
 
   const handleClearingSelectedOrders = async () => {
     setButtonStateSelectedOrders("loading"); // Set loading state
@@ -161,6 +193,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         : await clearCustomerOrders(selectedOrdersArray);
       // On success, set success state
       setButtonStateSelectedOrders("success");
+      const data = [...groupValues];
+      data.map((order) => (order.selected = false));
+      setGroupValues(data);
       setIsFetching(true);
 
       populateData(); // Revert to idle state after a delay
@@ -258,7 +293,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           ) : (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
               {outstandingOrders.length > 0 ? (
-                outstandingOrders.map((order) => {
+                outstandingOrders.map((order, index) => {
                   const chosenPrice = isWarehouseOrders
                     ? order.chow_details.flavours.varieties.wholesale_price
                     : order.chow_details.flavours.varieties.retail_price;
@@ -281,28 +316,43 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   return (
                     <View key={order.order_id} style={orderContainer}>
                       <View style={orderCard}>
-                        <Checkbox
+                        {/* <Checkbox
                           value={`${order._id}`}
                           accessibilityLabel="Checkbox for identifying individual orders to pay"
-                        >
-                          <View style={textContainer}>
-                            <Text style={tableChowDescription}>
-                              {description} :
+                        > */}
+                        <CheckBox
+                          containerStyle={{
+                            backgroundColor: "transparent",
+                            paddingLeft: 0,
+                            marginLeft: 0,
+                          }}
+                          checked={
+                            groupValues[index]
+                              ? groupValues[index].selected
+                              : false
+                          }
+                          onPress={() =>
+                            handleCheckBoxChange(index, order.order_id!)
+                          }
+                        />
+                        <View style={textContainer}>
+                          <Text style={tableChowDescription}>
+                            {description} :
+                          </Text>
+                          <Text style={tableQuantity}>
+                            {order.quantity}
+                            <Text style={deEmphasis}>x </Text>
+                            <Text>
+                              {isWarehouseOrders
+                                ? order.chow_details.flavours.varieties
+                                    .wholesale_price
+                                : order.chow_details.flavours.varieties
+                                    .retail_price}
                             </Text>
-                            <Text style={tableQuantity}>
-                              {order.quantity}
-                              <Text style={deEmphasis}>x </Text>
-                              <Text>
-                                {isWarehouseOrders
-                                  ? order.chow_details.flavours.varieties
-                                      .wholesale_price
-                                  : order.chow_details.flavours.varieties
-                                      .retail_price}
-                              </Text>
-                            </Text>
-                          </View>
-                          <Text style={tablePrice}>{vatExclusivePrice}</Text>
-                        </Checkbox>
+                          </Text>
+                        </View>
+                        <Text style={tablePrice}>{vatExclusivePrice}</Text>
+                        {/* </Checkbox> */}
                       </View>
                     </View>
                   );
@@ -331,7 +381,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           <Text style={status}>Loading data...</Text>
         </View>
       )}
-
       {orders.length > 0 ? (
         <View style={buttonContainer}>
           <Button
@@ -342,7 +391,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               ) {
                 setButtonStateSelectedOrders("loading");
                 try {
+                  //handle method
                   await handleClearingSelectedOrders();
+
                   setButtonStateSelectedOrders("success");
                   setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
                 } catch (error) {
