@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
@@ -10,17 +10,14 @@ import { CheckBox } from "@rneui/themed";
 import {
   clearCustomerOrders,
   clearWarehouseOrders,
-  collateFinanceQuantities,
-  combineOrders,
   concatFinanceQuantities,
   getUnpaidCustomerOrders,
   getUnpaidWarehouseOrders,
-  updateOrdersQuantity,
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
 interface ItemizedBreakdownCardProps {
-  mode: "suppliers" | "customers";
+  mode: "suppliers" | "customers" | "courier";
 }
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
@@ -46,7 +43,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const isCustomerOrders = mode === "customers";
   const isWarehouseOrders = mode === "suppliers";
+  const isCourierFees = mode === "courier";
 
   // TODO: Put the heavy logic into our backend once this approach is verified
 
@@ -251,9 +250,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   useEffect(() => {
     formatOrders();
   }, [outstandingOrders, setOutstandingOrders]);
-  // useEffect(() => {
-  //   populateData();
-  // }, [mode]);
 
   return (
     <View style={container}>
@@ -325,10 +321,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   return (
                     <View key={order.order_id} style={orderContainer}>
                       <View style={orderCard}>
-                        {/* <Checkbox
-                          value={`${order._id}`}
-                          accessibilityLabel="Checkbox for identifying individual orders to pay"
-                        > */}
                         <CheckBox
                           containerStyle={{
                             backgroundColor: "transparent",
@@ -431,7 +423,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         </View>
       ) : null}
 
-      {/* Problem detected here */}
       <View style={totalsContainer}>
         {isWarehouseOrders ? (
           <View style={totalWrapper}>
@@ -463,7 +454,8 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               </Text>
             </View>
           </View>
-        ) : (
+        ) : null}
+        {isCustomerOrders ? (
           <View style={totalWrapper}>
             <View style={priceWrapper}>
               <Text style={subTotalCost}>
@@ -496,7 +488,8 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               </View>
             ) : null}
           </View>
-        )}
+        ) : null}
+        {isCourierFees ? <></> : null}
       </View>
     </View>
   );
