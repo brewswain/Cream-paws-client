@@ -5,9 +5,12 @@ import SwitchSelector from "react-native-switch-selector";
 import { getAllCustomers, getAllOrders } from "../api";
 import { ItemizedBreakdownCard } from "../components";
 import { getTodaysOrders } from "../utils";
+import { Button } from "native-base";
 
 const FinanceScreen = () => {
   const [showSupplierOwed, setShowSupplierOwed] = useState(false);
+  const [mode, setMode] = useState<"customers" | "courier" | "suppliers">("customers")
+
   const { container, header } = styles;
 
   const options = [
@@ -15,32 +18,22 @@ const FinanceScreen = () => {
     { label: "Unpaid Warehouse Orders", value: true },
   ];
 
-  const handleClick = (value: boolean) => {
-    setShowSupplierOwed(value);
-  };
-
   return (
     <ScrollView style={container}>
       <View style={{ alignItems: "center", paddingVertical: 10 }}>
         <View style={styles.selectorContainer}>
-          <SwitchSelector
-            options={options}
-            initial={0}
-            textColor="#7a44cf" //'#7a44cf'
-            selectedColor="white"
-            buttonColor="#7a44cf"
-            borderColor="#7a44cf"
-            onPress={(value: boolean) => handleClick(value)}
-          />
+          <Button onPress={() => setMode("customers")}>Customers</Button>
+          <Button onPress={() => setMode("courier")}>Courier</Button>
+          <Button onPress={() => setMode("suppliers")}>Warehouse Orders</Button>
         </View>
       </View>
 
       <Text style={header}>
-        {showSupplierOwed ? "Total Owed Supplier" : "Total Owed Cream Paws"}
+        {mode === "suppliers" ? "Total Owed Supplier" : mode === "customers" ? "Total Owed Cream Paws" : "Total owed Courier"}
       </Text>
 
       <ItemizedBreakdownCard
-        mode={showSupplierOwed ? "suppliers" : "customers"}
+        mode={mode}
       />
 
       {/* New Card Block */}
@@ -54,7 +47,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   selectorContainer: {
-    width: "70%",
+    flexDirection: "row",
+    gap: 10
   },
   header: {
     color: "white",
