@@ -232,10 +232,7 @@ const CreateOrderModal = ({
     payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
     delivery_date: orderInputs.delivery_date,
     is_delivery: orderInputs.is_delivery,
-    ...(orderInputs.is_delivery && {
-      delivery_cost: orderInputs.delivery_cost,
-    }),
-
+    delivery_cost: orderInputs.delivery_cost,
     driver_paid: orderInputs.driver_paid,
     warehouse_paid: orderInputs.warehouse_paid,
     // add chow object
@@ -327,6 +324,8 @@ const CreateOrderModal = ({
   const handleDeliverySelected = (itemValue: string) => {
     const data = { ...orderInputs };
     data.delivery_cost = parseInt(itemValue);
+
+    console.log({ data, delivery_cost: data.delivery_cost });
     setOrderInputs(data);
   };
 
@@ -345,6 +344,8 @@ const CreateOrderModal = ({
           chowDetails;
         const { customer_id, delivery_date, payment_date, delivery_cost } =
           orderPayload;
+
+        console.log({ delivery_cost });
 
         const newOrderPayload = {
           delivery_date,
@@ -365,10 +366,9 @@ const CreateOrderModal = ({
         await createOrder(newOrderPayload);
         populateCustomersList();
       })
-    );
-    // .then(() => {
-    //   closeModal();
-    // });
+    ).then(() => {
+      closeModal();
+    });
   };
 
   return (
@@ -397,7 +397,11 @@ const CreateOrderModal = ({
           <FormControl.Label>Order Information</FormControl.Label>
           <Pressable onPress={() => toggleDatePickerVisibility()}>
             <Text style={deliveryText}>
-              Choose Delivery Date <Text>*</Text>
+              {selectedDate ? (
+                <Text>{new Date(selectedDate).toDateString()}</Text>
+              ) : (
+                "Choose Delivery Date *"
+              )}
             </Text>
           </Pressable>
           <DateTimePickerModal
@@ -408,30 +412,29 @@ const CreateOrderModal = ({
 
           {/* TODO: fix all the jank. in this case, we need to make our types better */}
 
-          <CheckBox
+          {/* <CheckBox
             title="Is this a delivery?"
             checked={orderInputIsDelivery}
             onPress={() => handleCheckBoxChange("is_delivery")}
-          />
+          /> */}
+          <FormControl.Label>Delivery Cost</FormControl.Label>
 
-          {orderInputs.is_delivery && (
-            <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
-              <Select
-                minWidth="200"
-                selectedValue={orderInputs.delivery_cost}
-                accessibilityLabel="Delivery Cost"
-                placeholder="Delivery Cost *"
-                _selectedItem={{
-                  bg: "teal.600",
-                  endIcon: <CheckIcon size={5} />,
-                }}
-                mt="1"
-                onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
-              >
-                {chow && renderDeliveryCost()}
-              </Select>
-            </TouchableWithoutFeedback>
-          )}
+          <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
+            <Select
+              minWidth="200"
+              selectedValue={orderInputs.delivery_cost}
+              accessibilityLabel="Delivery Cost"
+              placeholder="Delivery Cost *"
+              _selectedItem={{
+                bg: "teal.600",
+                endIcon: <CheckIcon size={5} />,
+              }}
+              mt="1"
+              onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
+            >
+              {chow && renderDeliveryCost()}
+            </Select>
+          </TouchableWithoutFeedback>
 
           <CheckBox
             title="Has Client Paid for order?"

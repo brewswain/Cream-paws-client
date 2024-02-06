@@ -76,8 +76,12 @@ const OrderCard = ({
     ) * 100
   );
 
-  const totalWithDeliveryCost = data.delivery_cost
-    ? subTotal + data.delivery_cost * 100
+  const deliveryCostArray = data.orders
+    .map((order) => order.delivery_cost)
+    .sort((a, b) => b - a);
+
+  const totalWithDeliveryCost = deliveryCostArray[0]
+    ? subTotal + deliveryCostArray[0] * 100
     : subTotal;
 
   const formattedDeliveryDate = new Date(data.delivery_date).toDateString();
