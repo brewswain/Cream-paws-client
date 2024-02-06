@@ -197,7 +197,7 @@ const CreateOrderModal = ({
   };
 
   const renderDeliveryCost = () => {
-    const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
+    const TEST_DELIVERY_COSTS = [0, 20, 45, 60, 100];
 
     return TEST_DELIVERY_COSTS.map((price, index) => (
       <Select.Item
