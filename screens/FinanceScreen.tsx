@@ -5,9 +5,13 @@ import SwitchSelector from "react-native-switch-selector";
 import { getAllCustomers, getAllOrders } from "../api";
 import { ItemizedBreakdownCard } from "../components";
 import { getTodaysOrders } from "../utils";
+import { Button } from "native-base";
 
 const FinanceScreen = () => {
   const [showSupplierOwed, setShowSupplierOwed] = useState(false);
+  const [mode, setMode] = useState<"customers" | "courier" | "warehouse">(
+    "customers"
+  );
   const { container, header } = styles;
 
   const options = [
@@ -23,25 +27,21 @@ const FinanceScreen = () => {
     <ScrollView style={container}>
       <View style={{ alignItems: "center", paddingVertical: 10 }}>
         <View style={styles.selectorContainer}>
-          <SwitchSelector
-            options={options}
-            initial={0}
-            textColor="#7a44cf" //'#7a44cf'
-            selectedColor="white"
-            buttonColor="#7a44cf"
-            borderColor="#7a44cf"
-            onPress={(value: boolean) => handleClick(value)}
-          />
+          <Button onPress={() => setMode("customers")}>Customer</Button>
+          <Button onPress={() => setMode("courier")}>Courier Fees</Button>
+          <Button onPress={() => setMode("warehouse")}>Warehouse</Button>
         </View>
       </View>
 
       <Text style={header}>
-        {showSupplierOwed ? "Total Owed Supplier" : "Total Owed Cream Paws"}
+        {mode === "warehouse"
+          ? "Total owed Supplier"
+          : mode === "customers"
+          ? "Total owed Cream Paws"
+          : "Total owed courier"}
       </Text>
 
-      <ItemizedBreakdownCard
-        mode={showSupplierOwed ? "suppliers" : "customers"}
-      />
+      <ItemizedBreakdownCard mode={mode} />
 
       {/* New Card Block */}
     </ScrollView>
@@ -54,7 +54,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   selectorContainer: {
-    width: "70%",
+    flexDirection: "row",
+    gap: 10,
   },
   header: {
     color: "white",
