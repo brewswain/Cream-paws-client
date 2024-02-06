@@ -17,7 +17,7 @@ import {
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 
 interface ItemizedBreakdownCardProps {
-  mode: "suppliers" | "customers" | "courier";
+  mode: "warehouse" | "customers" | "courier";
 }
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
@@ -44,7 +44,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [isError, setIsError] = useState(false);
 
   const isCustomerOrders = mode === "customers";
-  const isWarehouseOrders = mode === "suppliers";
+  const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
 
   // TODO: Put the heavy logic into our backend once this approach is verified
@@ -77,12 +77,12 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   };
 
   const populateData = () => {
-    if (mode === "customers") {
-      setIsLoading(true);
-      getCustomerOrders();
-    } else {
+    if (isWarehouseOrders) {
       setIsLoading(true);
       getWarehouseOwedCost();
+    } else {
+      setIsLoading(true);
+      getCustomerOrders();
     }
   };
 
@@ -253,7 +253,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
   return (
     <View style={container}>
-      {orders.length > 0 ? (
+      {orders.length > 0 && !isCourierFees ? (
         <View style={buttonContainer}>
           <Button
             onPress={async () => {
@@ -287,14 +287,17 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           </Button>
         </View>
       ) : null}
-
       <View style={headerWrapper}>
-        <Text style={header}>Itemized Breakdown</Text>
+        <Text style={header}>
+          {!isCourierFees ? "Itemized Breakdown" : "Commission Breakdown"}
+        </Text>
       </View>
       {isSuccess ? (
         <View style={tableContainer}>
           {isLoading ? (
             <ActivityIndicator size="large" color="white" />
+          ) : isCourierFees ? (
+            <></>
           ) : (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
               {formattedOrders.length > 0 ? (
@@ -382,7 +385,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           <Text style={status}>Loading data...</Text>
         </View>
       )}
-      {orders.length > 0 ? (
+      {orders.length > 0 && !isCourierFees ? (
         <View style={buttonContainer}>
           <Button
             onPress={async () => {
@@ -422,7 +425,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           </Button>
         </View>
       ) : null}
-
       <View style={totalsContainer}>
         {isWarehouseOrders ? (
           <View style={totalWrapper}>
