@@ -10,6 +10,7 @@ import { CheckBox } from "@rneui/themed";
 import {
   clearCustomerOrders,
   clearWarehouseOrders,
+  combineOrders,
   concatFinanceQuantities,
   getUnpaidCustomerOrders,
   getUnpaidWarehouseOrders,
@@ -38,6 +39,8 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     OrderWithChowDetails[]
   >([]);
   const [formattedOrders, setFormattedOrders] = useState<CombinedOrder[]>([]);
+  const [courierOrders, setCourierOrders] = useState<CombinedOrder[]>([]);
+
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -79,11 +82,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const populateData = () => {
     if (isWarehouseOrders) {
       setIsLoading(true);
+
       getWarehouseOwedCost();
     } else {
       setIsLoading(true);
       getCustomerOrders();
     }
+    getDeliveryCosts();
   };
 
   const {
@@ -107,6 +112,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     status,
     vatCost,
     totalCost,
+    deliveryCost,
     orderCard,
     textContainer,
     buttonText,
@@ -140,6 +146,43 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
     setFormattedOrders(response);
   };
+
+  const getDeliveryCosts = async () => {
+    const response = await combineOrders(orders);
+    setCourierOrders(response);
+  };
+
+  const mappedCourierProfits = courierOrders.map((order) =>
+    order.orders
+      .map(
+        (o) =>
+          (o.chow_details.flavours.varieties.retail_price -
+            o.chow_details.flavours.varieties.wholesale_price) *
+          0.5 *
+          o.quantity
+      )
+      .reduce((accumulator, currentValue) => accumulator + currentValue)
+  );
+
+  const mappedCourierDeliveryCosts = courierOrders.map((order) => {
+    const safeDeliveryCost = order.delivery_cost ? order.delivery_cost : 0;
+
+    return safeDeliveryCost;
+  });
+
+  const totalCourierProfits = Math.round(
+    mappedCourierProfits.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
+
+  const totalCourierDeliveryFees = Math.round(
+    mappedCourierDeliveryCosts.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    ) * 100
+  );
 
   const ordersNestedArray = formattedOrders.flatMap((order) => order.orders);
   const mappedDeliveryCostArray = formattedOrders.map(
@@ -297,7 +340,62 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           {isLoading ? (
             <ActivityIndicator size="large" color="white" />
           ) : isCourierFees ? (
-            <></>
+            <>
+              {courierOrders.length > 0
+                ? courierOrders.map((order, index) => {
+                    const safeDeliveryCost = order.delivery_cost
+                      ? order.delivery_cost
+                      : 0;
+
+                    const calculatedFees = order.orders
+                      .map(
+                        (o) =>
+                          (o.chow_details.flavours.varieties.retail_price -
+                            o.chow_details.flavours.varieties.wholesale_price) *
+                          0.5 *
+                          o.quantity
+                      )
+                      .reduce(
+                        (accumulator, currentValue) =>
+                          accumulator + currentValue
+                      );
+
+                    return (
+                      <View key={order.order_id} style={orderContainer}>
+                        <View style={orderCard}>
+                          <View style={textContainer}>
+                            <Text style={tableChowDescription}>
+                              {`Delivery to: ${order.name} - ${new Date(
+                                order.delivery_date
+                              ).toDateString()}`}{" "}
+                              :
+                            </Text>
+                            <Text
+                              style={[
+                                tableQuantity,
+                                {
+                                  paddingLeft: 0,
+
+                                  flexDirection: "row",
+                                  justifyContent: "flex-end",
+                                },
+                              ]}
+                            >
+                              <Text>
+                                {Dinero({
+                                  amount: Math.round(
+                                    (calculatedFees + safeDeliveryCost) * 100
+                                  ),
+                                }).toFormat("$0,0.00")}
+                              </Text>
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })
+                : null}
+            </>
           ) : (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
               {formattedOrders.length > 0 ? (
@@ -491,7 +589,40 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             ) : null}
           </View>
         ) : null}
-        {isCourierFees ? <></> : null}
+        {isCourierFees ? (
+          <View style={totalWrapper}>
+            {totalCourierProfits ? (
+              <View style={priceWrapper}>
+                <Text style={deliveryCost}>Calculated Profits total:</Text>
+                <Text style={deliveryCost}>
+                  {Dinero({
+                    amount: totalCourierProfits || 0,
+                  }).toFormat("$0,0.00")}
+                </Text>
+              </View>
+            ) : null}
+            {totalCourierDeliveryFees ? (
+              <View style={priceWrapper}>
+                <Text style={deliveryCost}>Total Delivery Fees:</Text>
+                <Text style={deliveryCost}>
+                  {Dinero({
+                    amount: totalCourierDeliveryFees || 0,
+                  }).toFormat("$0,0.00")}
+                </Text>
+              </View>
+            ) : null}
+            {totalCourierDeliveryFees || totalCourierProfits ? (
+              <View style={priceWrapper}>
+                <Text style={deliveryCost}>Total:</Text>
+                <Text style={deliveryCost}>
+                  {Dinero({
+                    amount: totalCourierDeliveryFees + totalCourierProfits,
+                  }).toFormat("$0,0.00")}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -586,7 +717,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   priceWrapper: {
-    width: "80%",
+    width: "100%",
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -603,6 +734,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     fontSize: 24,
   },
+  // Keeping this separate for now just in case we want to use different styles--remove if we centralize them
   subTotalCost: {
     color: "white",
     fontSize: 20,
@@ -612,6 +744,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   totalCost: {
+    color: "white",
+    fontSize: 20,
+  },
+  deliveryCost: {
     color: "white",
     fontSize: 20,
   },
