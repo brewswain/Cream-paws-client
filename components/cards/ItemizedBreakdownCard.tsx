@@ -16,7 +16,6 @@ import {
   getUnpaidWarehouseOrders,
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
-import { G } from "react-native-svg";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -80,16 +79,18 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     }
   };
 
-  const populateData = () => {
+  const populateData = async () => {
     if (isWarehouseOrders) {
       setIsLoading(true);
 
       getWarehouseOwedCost();
-    } else {
+    } else if (isCustomerOrders) {
       setIsLoading(true);
       getCustomerOrders();
+    } else if (isCourierFees) {
+      setIsLoading(true);
+      getDeliveryCosts();
     }
-    getDeliveryCosts();
   };
 
   const {
@@ -149,8 +150,19 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   };
 
   const getDeliveryCosts = async () => {
-    const response = await combineOrders(orders);
-    setCourierOrders(response);
+    // TODO: change this entire flow--unpaidCustomerOrders and unpaidWarehouseOrders shouldn't share the same state
+    const customerOrders = await getUnpaidCustomerOrders();
+
+    try {
+      const response = await combineOrders(customerOrders);
+      setCourierOrders(response);
+      setIsLoading(false);
+      setIsSuccess(true);
+    } catch (error) {
+      setIsLoading(false);
+      setIsError(true);
+      console.error("Error fetching data:", error);
+    }
   };
 
   const mappedCourierProfits = courierOrders.map((order) =>
@@ -519,15 +531,14 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                             <Text style={tableQuantity}>
                               {order.quantity}
                               <Text style={deEmphasis}>x </Text>
-                              <Text>{parsedProfit}</Text>
+                              <Text>{chosenPrice}</Text>
                             </Text>
                           </View>
                         </View>
                         <Text style={tablePrice}>
                           {Dinero({
                             amount:
-                              Math.round(calculatedProfit * 100) *
-                              order.quantity,
+                              Math.round(chosenPrice * 100) * order.quantity,
                           }).toFormat("$0,0.00")}
                         </Text>
                         {/* </Checkbox> */}
