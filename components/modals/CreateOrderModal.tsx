@@ -325,7 +325,6 @@ const CreateOrderModal = ({
     const data = { ...orderInputs };
     data.delivery_cost = parseInt(itemValue);
 
-    console.log({ data, delivery_cost: data.delivery_cost });
     setOrderInputs(data);
   };
 
@@ -344,8 +343,6 @@ const CreateOrderModal = ({
           chowDetails;
         const { customer_id, delivery_date, payment_date, delivery_cost } =
           orderPayload;
-
-        console.log({ delivery_cost });
 
         const newOrderPayload = {
           delivery_date,
