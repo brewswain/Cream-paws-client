@@ -19,10 +19,6 @@ const FinanceScreen = () => {
     { label: "Unpaid Warehouse Orders", value: true },
   ];
 
-  const handleClick = (value: boolean) => {
-    setShowSupplierOwed(value);
-  };
-
   return (
     <ScrollView style={container}>
       <View style={{ alignItems: "center", paddingVertical: 10 }}>

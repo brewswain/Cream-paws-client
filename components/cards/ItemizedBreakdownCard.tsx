@@ -16,6 +16,7 @@ import {
   getUnpaidWarehouseOrders,
 } from "../../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
+import { G } from "react-native-svg";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -332,7 +333,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       ) : null}
       <View style={headerWrapper}>
         <Text style={header}>
-          {!isCourierFees ? "Itemized Breakdown" : "Commission Breakdown"}
+          {!isCourierFees ? "Itemized Breakdown" : "Calculated Courier Fees"}
         </Text>
       </View>
       {isSuccess ? (
@@ -361,7 +362,10 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                       );
 
                     return (
-                      <View key={order.order_id} style={orderContainer}>
+                      <View
+                        key={`${order.client_name}-${order.delivery_date} `}
+                        style={orderContainer}
+                      >
                         <View style={orderCard}>
                           <View style={textContainer}>
                             <Text style={tableChowDescription}>
@@ -396,7 +400,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   })
                 : null}
             </>
-          ) : (
+          ) : isWarehouseOrders ? (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
               {formattedOrders.length > 0 ? (
                 formattedOrders.map((order, index) => {
@@ -472,6 +476,78 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                 </View>
               )}
             </Checkbox.Group>
+          ) : (
+            <>
+              {formattedOrders.length > 0 ? (
+                formattedOrders.map((order, index) => {
+                  const chosenPrice = isWarehouseOrders
+                    ? order.chow_details.flavours.varieties.wholesale_price
+                    : order.chow_details.flavours.varieties.retail_price;
+
+                  const profit =
+                    (order.chow_details.flavours.varieties.retail_price -
+                      order.chow_details.flavours.varieties.wholesale_price) /
+                    2;
+                  const calculatedProfit = order.delivery_cost
+                    ? profit + order.delivery_cost
+                    : profit;
+
+                  const parsedProfit = Dinero({
+                    amount: Math.round(profit * 100),
+                  }).toFormat("$0,0.00");
+
+                  const description = (() => {
+                    const fullDescription = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
+                    const index = fullDescription.indexOf("(");
+                    const shortenedDescription =
+                      index !== -1
+                        ? fullDescription.substring(0, index).trim() +
+                          ` ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`
+                        : fullDescription;
+
+                    return shortenedDescription;
+                  })();
+
+                  return (
+                    <View key={order.order_id} style={orderContainer}>
+                      <View style={orderCard}>
+                        <View style={textContainer}>
+                          <Text style={tableChowDescription}>
+                            {description} :
+                          </Text>
+                          <View style={textContainer}>
+                            <Text style={tableQuantity}>
+                              {order.quantity}
+                              <Text style={deEmphasis}>x </Text>
+                              <Text>{parsedProfit}</Text>
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={tablePrice}>
+                          {Dinero({
+                            amount:
+                              Math.round(calculatedProfit * 100) *
+                              order.quantity,
+                          }).toFormat("$0,0.00")}
+                        </Text>
+                        {/* </Checkbox> */}
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={orderContainer}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={tableQuantity}>No unpaid orders!</Text>
+                  </View>
+                </View>
+              )}
+            </>
           )}
         </View>
       ) : isError ? (
@@ -593,7 +669,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           <View style={totalWrapper}>
             {totalCourierProfits ? (
               <View style={priceWrapper}>
-                <Text style={deliveryCost}>Calculated Profits total:</Text>
+                <Text style={deliveryCost}>Total Commission:</Text>
                 <Text style={deliveryCost}>
                   {Dinero({
                     amount: totalCourierProfits || 0,
