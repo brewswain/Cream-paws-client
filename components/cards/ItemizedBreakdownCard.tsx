@@ -8,6 +8,7 @@ import { Button, Checkbox } from "native-base";
 import { CheckBox } from "@rneui/themed";
 
 import {
+  clearCourierFees,
   clearCustomerOrders,
   clearWarehouseOrders,
   combineOrders,
@@ -241,11 +242,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     }
   };
 
-  const handleClearingSelectedOrders = async () => {
+  const handleClearingSelectedPayments = async () => {
     setButtonStateSelectedOrders("loading"); // Set loading state
 
     try {
-      isWarehouseOrders
+      isCourierFees ? await clearCourierFees(selectedOrdersArray) : isWarehouseOrders
         ? await clearWarehouseOrders(selectedOrdersArray)
         : await clearCustomerOrders(selectedOrdersArray);
       // On success, set success state
@@ -270,13 +271,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     }
   };
 
-  const handleClearingAllOrders = async () => {
+  const handleClearingAllPayments = async () => {
     setButtonStateClearAllOrders("loading"); // Set loading state
 
     try {
-      isWarehouseOrders
-        ? await clearWarehouseOrders(orders)
-        : await clearCustomerOrders(orders);
+     isCourierFees ? await clearCourierFees(orders) :  isWarehouseOrders
+     ? await clearWarehouseOrders(orders)
+     : await clearCustomerOrders(orders);
       // On success, set success state
       setButtonStateClearAllOrders("success");
       setIsFetching(true);
@@ -309,14 +310,14 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
   return (
     <View style={container}>
-      {orders.length > 0 && !isCourierFees ? (
+      {orders.length > 0 ? (
         <View style={buttonContainer}>
           <Button
             onPress={async () => {
               if (buttonStateClearAllOrders === "idle") {
                 setButtonStateClearAllOrders("loading");
                 try {
-                  await handleClearingAllOrders();
+                  await handleClearingAllPayments();
                   setButtonStateClearAllOrders("success");
                   setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
                 } catch (error) {
@@ -337,9 +338,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               <>
                 <Text style={buttonText}>Error!</Text>
               </>
-            ) : (
-              "Pay all outstanding orders"
-            )}
+            ) :  !isCourierFees ? "Pay all outstanding orders" : "Pay all courier fees"
+              
+            }
           </Button>
         </View>
       ) : null}
@@ -353,9 +354,10 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           {isLoading ? (
             <ActivityIndicator size="large" color="white" />
           ) : isCourierFees ? (
-            <>
-              {courierOrders.length > 0
+            <Checkbox.Group onChange={setGroupValues} value={groupValues}>
+              {courierOrders.length > 0 
                 ? courierOrders.map((order, index) => {
+                  console.log({order})
                     const safeDeliveryCost = order.delivery_cost
                       ? order.delivery_cost
                       : 0;
@@ -373,45 +375,58 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                           accumulator + currentValue
                       );
 
-                    return (
-                      <View
-                        key={`${order.client_name}-${order.delivery_date} `}
-                        style={orderContainer}
-                      >
-                        <View style={orderCard}>
-                          <View style={textContainer}>
-                            <Text style={tableChowDescription}>
-                              {`Delivery to: ${order.name} - ${new Date(
-                                order.delivery_date
-                              ).toDateString()}`}{" "}
-                              :
-                            </Text>
-                            <Text
-                              style={[
-                                tableQuantity,
-                                {
-                                  paddingLeft: 0,
+                    return !order.driver_paid ? <View
+                    key={`${order.client_name}-${order.delivery_date} `}
+                    style={orderContainer}
+                  >
+                    <View style={orderCard}>
+                    <CheckBox
+                      containerStyle={{
+                        backgroundColor: "transparent",
+                        paddingLeft: 0,
+                        marginLeft: 0,
+                      }}
+                      checked={
+                        groupValues[index]
+                          ? groupValues[index].selected
+                          : false
+                      }
+                      onPress={() =>
+                        handleCheckBoxChange(index, order.name)
+                      }
+                    />
+                      <View style={textContainer}>
+                        <Text style={tableChowDescription}>
+                          {`Delivery to: ${order.name} - ${new Date(
+                            order.delivery_date
+                          ).toDateString()}`}
+                          :
+                        </Text>
+                        <Text
+                          style={[
+                            tableQuantity,
+                            {
+                              paddingLeft: 0,
 
-                                  flexDirection: "row",
-                                  justifyContent: "flex-end",
-                                },
-                              ]}
-                            >
-                              <Text>
-                                {Dinero({
-                                  amount: Math.round(
-                                    (calculatedFees + safeDeliveryCost) * 100
-                                  ),
-                                }).toFormat("$0,0.00")}
-                              </Text>
-                            </Text>
-                          </View>
-                        </View>
+                              flexDirection: "row",
+                              justifyContent: "flex-end",
+                            },
+                          ]}
+                        >
+                          <Text>
+                            {Dinero({
+                              amount: Math.round(
+                                (calculatedFees + safeDeliveryCost) * 100
+                              ),
+                            }).toFormat("$0,0.00")}
+                          </Text>
+                        </Text>
                       </View>
-                    );
+                    </View>
+                  </View> : null
                   })
                 : null}
-            </>
+            </Checkbox.Group>
           ) : isWarehouseOrders ? (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
               {formattedOrders.length > 0 ? (
@@ -523,6 +538,21 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   return (
                     <View key={order.order_id} style={orderContainer}>
                       <View style={orderCard}>
+                      <CheckBox
+                          containerStyle={{
+                            backgroundColor: "transparent",
+                            paddingLeft: 0,
+                            marginLeft: 0,
+                          }}
+                          checked={
+                            groupValues[index]
+                              ? groupValues[index].selected
+                              : false
+                          }
+                          onPress={() =>
+                            handleCheckBoxChange(index, order.order_id!)
+                          }
+                        />
                         <View style={textContainer}>
                           <Text style={tableChowDescription}>
                             {description} :
@@ -570,7 +600,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           <Text style={status}>Loading data...</Text>
         </View>
       )}
-      {orders.length > 0 && !isCourierFees ? (
+      {orders.length > 0 ? (
         <View style={buttonContainer}>
           <Button
             onPress={async () => {
@@ -581,7 +611,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                 setButtonStateSelectedOrders("loading");
                 try {
                   //handle method
-                  await handleClearingSelectedOrders();
+                  await handleClearingSelectedPayments();
 
                   setButtonStateSelectedOrders("success");
                   setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
@@ -604,9 +634,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               <>
                 <Text style={buttonText}>Error!</Text>
               </>
-            ) : (
-              "Set orders to 'Paid'"
-            )}
+            ) :  !isCourierFees ? "Pay selected orders" : "Pay selected deliveries"}
           </Button>
         </View>
       ) : null}
