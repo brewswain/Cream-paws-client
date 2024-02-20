@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteChow } from "../../api";
 import { Chow } from "../../models/chow";
 import SettingsModal from "../modals/SettingsModal";
