@@ -24,21 +24,20 @@ export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
 };
 
 export const clearCustomerOrders = async (
-  orders:
-    // | OrderWithChowDetails[]
-    // | {
-    //     order_id: string;
-    //     customer_id: string;
-    //   }[]
-     OrderWithChowDetails[]
+  orders: // | OrderWithChowDetails[]
+  // | {
+  //     order_id: string;
+  //     customer_id: string;
+  //   }[]
+  OrderWithChowDetails[]
 ) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
         const updatedOrder = {
           ...order,
-          payment_made: true
-        }
+          payment_made: true,
+        };
         // await deleteCustomersOrder(order.order_id!, order.customer_id);
         await updateOrder(updatedOrder);
       })
@@ -50,22 +49,22 @@ export const clearCustomerOrders = async (
   }
 };
 
-export const clearCourierFees = async(orders: OrderWithChowDetails[]) => {
-  console.log("clearCourierFees called: ", orders)
+export const clearCourierFees = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
         const updatedOrder = {
           ...order,
           driver_paid: true,
-        }
-        await updateOrder(updatedOrder) 
+        };
+
+        await updateOrder(updatedOrder);
       })
-    )
+    );
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-}
+};
 
 export const getTodaysOrders = async () => {
   const customerResponse: Customer[] = await getAllCustomers();
@@ -101,12 +100,23 @@ export const getUnpaidCustomerOrders = async () => {
   return filteredOutstandingOrders;
 };
 
+export const getUnpaidCourierFees = async () => {
+  const response: OrderWithChowDetails[] = await getAllOrders();
+
+  const filteredUnpaidCourierFees =
+    response.filter((order) => order.driver_paid === false) ??
+    [].filter((order) => order !== undefined);
+
+  return filteredUnpaidCourierFees;
+};
+
 export const getUnpaidWarehouseOrders = async () => {
   const orderResponse: OrderWithChowDetails[] = await getAllOrders();
 
   const filteredOutstandingOrders =
     orderResponse.filter((order) => order.warehouse_paid === false) ??
     [].filter((order) => order !== undefined);
+
   return filteredOutstandingOrders;
 };
 

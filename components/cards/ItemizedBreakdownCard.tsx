@@ -13,6 +13,7 @@ import {
   clearWarehouseOrders,
   combineOrders,
   concatFinanceQuantities,
+  getUnpaidCourierFees,
   getUnpaidCustomerOrders,
   getUnpaidWarehouseOrders,
 } from "../../utils/orderUtils";
@@ -22,12 +23,18 @@ interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
 }
 
+interface GroupValue {
+  index: number;
+  selected: boolean;
+  order_id: string | string[];
+}
+
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
     useState("idle");
-  const [groupValues, setGroupValues] = useState([
+  const [groupValues, setGroupValues] = useState<GroupValue[]>([
     {
       index: 0,
       selected: false,
@@ -152,10 +159,10 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
   const getDeliveryCosts = async () => {
     // TODO: change this entire flow--unpaidCustomerOrders and unpaidWarehouseOrders shouldn't share the same state
-    const customerOrders = await getUnpaidCustomerOrders();
+    const courierFees = await getUnpaidCourierFees();
 
     try {
-      const response = await combineOrders(customerOrders);
+      const response = await combineOrders(courierFees);
       setCourierOrders(response);
       setIsLoading(false);
       setIsSuccess(true);
@@ -220,15 +227,26 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const selectedOrdersArray = groupValues
     .flatMap((selectedOrder) => {
       if (selectedOrder.selected === true) {
-        return orders.filter(
-          (order) => order.order_id === selectedOrder.order_id
-        );
+        if (!isCourierFees) {
+          return orders.filter(
+            (order) => order.order_id === selectedOrder.order_id
+          );
+        }
+
+        if (Array.isArray(selectedOrder.order_id)) {
+          return selectedOrder.order_id.flatMap((id) =>
+            orders.filter((order) => order.order_id === id)
+          );
+        }
       }
       return []; // Return an empty array for non-selected orders
     })
     .filter(Boolean); // Filter out undefined values
 
-  const handleCheckBoxChange = (orderIndex: number, order_id: string) => {
+  const handleCheckBoxChange = (
+    orderIndex: number,
+    order_id: string | string[]
+  ) => {
     const data = [...groupValues];
     if (!data[orderIndex]) {
       setGroupValues([
@@ -246,7 +264,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     setButtonStateSelectedOrders("loading"); // Set loading state
 
     try {
-      isCourierFees ? await clearCourierFees(selectedOrdersArray) : isWarehouseOrders
+      isCourierFees
+        ? await clearCourierFees(selectedOrdersArray)
+        : isWarehouseOrders
         ? await clearWarehouseOrders(selectedOrdersArray)
         : await clearCustomerOrders(selectedOrdersArray);
       // On success, set success state
@@ -275,9 +295,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     setButtonStateClearAllOrders("loading"); // Set loading state
 
     try {
-     isCourierFees ? await clearCourierFees(orders) :  isWarehouseOrders
-     ? await clearWarehouseOrders(orders)
-     : await clearCustomerOrders(orders);
+      isCourierFees
+        ? await clearCourierFees(orders)
+        : isWarehouseOrders
+        ? await clearWarehouseOrders(orders)
+        : await clearCustomerOrders(orders);
       // On success, set success state
       setButtonStateClearAllOrders("success");
       setIsFetching(true);
@@ -338,9 +360,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               <>
                 <Text style={buttonText}>Error!</Text>
               </>
-            ) :  !isCourierFees ? "Pay all outstanding orders" : "Pay all courier fees"
-              
-            }
+            ) : !isCourierFees ? (
+              "Pay all outstanding orders"
+            ) : (
+              "Pay all courier fees"
+            )}
           </Button>
         </View>
       ) : null}
@@ -355,12 +379,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             <ActivityIndicator size="large" color="white" />
           ) : isCourierFees ? (
             <Checkbox.Group onChange={setGroupValues} value={groupValues}>
-              {courierOrders.length > 0 
+              {courierOrders.length > 0
                 ? courierOrders.map((order, index) => {
-                  console.log({order})
                     const safeDeliveryCost = order.delivery_cost
                       ? order.delivery_cost
                       : 0;
+
+                    const orderIdArray = order.orders.map((o) => o.order_id);
 
                     const calculatedFees = order.orders
                       .map(
@@ -375,55 +400,57 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                           accumulator + currentValue
                       );
 
-                    return !order.driver_paid ? <View
-                    key={`${order.client_name}-${order.delivery_date} `}
-                    style={orderContainer}
-                  >
-                    <View style={orderCard}>
-                    <CheckBox
-                      containerStyle={{
-                        backgroundColor: "transparent",
-                        paddingLeft: 0,
-                        marginLeft: 0,
-                      }}
-                      checked={
-                        groupValues[index]
-                          ? groupValues[index].selected
-                          : false
-                      }
-                      onPress={() =>
-                        handleCheckBoxChange(index, order.name)
-                      }
-                    />
-                      <View style={textContainer}>
-                        <Text style={tableChowDescription}>
-                          {`Delivery to: ${order.name} - ${new Date(
-                            order.delivery_date
-                          ).toDateString()}`}
-                          :
-                        </Text>
-                        <Text
-                          style={[
-                            tableQuantity,
-                            {
+                    return !order.driver_paid ? (
+                      <View
+                        key={`${order.client_name}-${order.delivery_date} `}
+                        style={orderContainer}
+                      >
+                        <View style={orderCard}>
+                          <CheckBox
+                            containerStyle={{
+                              backgroundColor: "transparent",
                               paddingLeft: 0,
+                              marginLeft: 0,
+                            }}
+                            checked={
+                              groupValues[index]
+                                ? groupValues[index].selected
+                                : false
+                            }
+                            onPress={() =>
+                              handleCheckBoxChange(index, orderIdArray)
+                            }
+                          />
+                          <View style={textContainer}>
+                            <Text style={tableChowDescription}>
+                              {`Delivery to: ${order.name} - ${new Date(
+                                order.delivery_date
+                              ).toDateString()}`}
+                              :
+                            </Text>
+                            <Text
+                              style={[
+                                tableQuantity,
+                                {
+                                  paddingLeft: 0,
 
-                              flexDirection: "row",
-                              justifyContent: "flex-end",
-                            },
-                          ]}
-                        >
-                          <Text>
-                            {Dinero({
-                              amount: Math.round(
-                                (calculatedFees + safeDeliveryCost) * 100
-                              ),
-                            }).toFormat("$0,0.00")}
-                          </Text>
-                        </Text>
+                                  flexDirection: "row",
+                                  justifyContent: "flex-end",
+                                },
+                              ]}
+                            >
+                              <Text>
+                                {Dinero({
+                                  amount: Math.round(
+                                    (calculatedFees + safeDeliveryCost) * 100
+                                  ),
+                                }).toFormat("$0,0.00")}
+                              </Text>
+                            </Text>
+                          </View>
+                        </View>
                       </View>
-                    </View>
-                  </View> : null
+                    ) : null;
                   })
                 : null}
             </Checkbox.Group>
@@ -538,7 +565,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                   return (
                     <View key={order.order_id} style={orderContainer}>
                       <View style={orderCard}>
-                      <CheckBox
+                        <CheckBox
                           containerStyle={{
                             backgroundColor: "transparent",
                             paddingLeft: 0,
@@ -634,7 +661,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               <>
                 <Text style={buttonText}>Error!</Text>
               </>
-            ) :  !isCourierFees ? "Pay selected orders" : "Pay selected deliveries"}
+            ) : !isCourierFees ? (
+              "Pay selected orders"
+            ) : (
+              "Pay selected deliveries"
+            )}
           </Button>
         </View>
       ) : null}
