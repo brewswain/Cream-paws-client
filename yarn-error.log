@@ -1,5 +1,5 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-font@~11.4.0
+  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add react-native-modal-datetime-picker @react-native-community/datetimepicker@7.2.0
 
 PATH: 
   C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\node_modules\.bin;C:\Users\Blee\Important\Code\node_modules\.bin;C:\Users\Blee\Important\node_modules\.bin;C:\Users\Blee\node_modules\.bin;C:\Users\node_modules\.bin;C:\node_modules\.bin;C:\Users\Blee\AppData\Roaming\npm\node_modules\npm\node_modules\@npmcli\run-script\lib\node-gyp-bin;C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
@@ -63,7 +63,7 @@ npm manifest:
       "expo": "~49.0.0",
       "expo-asset": "~8.9.1",
       "expo-constants": "~14.2.1",
-      "expo-font": "~11.1.1",
+      "expo-font": "~11.4.0",
       "expo-linking": "~4.0.1",
       "expo-splash-screen": "~0.18.2",
       "expo-status-bar": "~1.4.4",
@@ -5654,13 +5654,6 @@ Lockfile:
     integrity sha512-xy61KaTaDgXhT/dllwYDHm3ch026EyO8j4eC6wSVr/yE12MMMxAC09yGwy4f7kkOs6ztGVQF5j7ldRzNLN4l0Q==
     dependencies:
       uuid "^3.4.0"
-  
-  expo-font@~11.1.1:
-    version "11.1.1"
-    resolved "https://registry.yarnpkg.com/expo-font/-/expo-font-11.1.1.tgz#268eed407e94f6e88083c01b68c357d010748d23"
-    integrity sha512-X+aICqYY69hiiDDtcNrjq8KutHrH2TrHuMqk0Rfq0P7hF6hMd+YefwLBNkvIrqrgmTAuqiLjMUwj2rHLqmgluw==
-    dependencies:
-      fontfaceobserver "^2.1.0"
   
   expo-font@~11.4.0:
     version "11.4.0"
