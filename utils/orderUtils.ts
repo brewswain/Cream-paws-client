@@ -22,18 +22,25 @@ export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
     console.error(error);
   }
 };
+
 export const clearCustomerOrders = async (
   orders:
-    | OrderWithChowDetails[]
-    | {
-        order_id: string;
-        customer_id: string;
-      }[]
+    // | OrderWithChowDetails[]
+    // | {
+    //     order_id: string;
+    //     customer_id: string;
+    //   }[]
+     OrderWithChowDetails[]
 ) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        await deleteCustomersOrder(order.order_id!, order.customer_id);
+        const updatedOrder = {
+          ...order,
+          payment_made: true
+        }
+        // await deleteCustomersOrder(order.order_id!, order.customer_id);
+        await updateOrder(updatedOrder);
       })
     );
 
@@ -42,6 +49,23 @@ export const clearCustomerOrders = async (
     console.error(error);
   }
 };
+
+export const clearCourierFees = async(orders: OrderWithChowDetails[]) => {
+  console.log("clearCourierFees called: ", orders)
+  try {
+    await Promise.all(
+      orders.map(async (order) => {
+        const updatedOrder = {
+          ...order,
+          driver_paid: true,
+        }
+        await updateOrder(updatedOrder) 
+      })
+    )
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 export const getTodaysOrders = async () => {
   const customerResponse: Customer[] = await getAllCustomers();
@@ -95,6 +119,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
     const {
       delivery_date,
       delivery_cost,
+      driver_paid,
       quantity,
       chow_id,
       customer_id,
@@ -108,6 +133,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
         name: customer.name,
         delivery_date,
         delivery_cost,
+        driver_paid,
         customer_id,
         orders: [],
       };
@@ -127,6 +153,7 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
         quantity,
         delivery_date,
         delivery_cost,
+        driver_paid,
         ...restOrderDetails,
       });
     }
