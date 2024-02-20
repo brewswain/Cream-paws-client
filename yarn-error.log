@@ -1,8 +1,8 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add wrap-ansi
+  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-font@~11.4.0
 
 PATH: 
-  C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+  C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\node_modules\.bin;C:\Users\Blee\Important\Code\node_modules\.bin;C:\Users\Blee\Important\node_modules\.bin;C:\Users\Blee\node_modules\.bin;C:\Users\node_modules\.bin;C:\node_modules\.bin;C:\Users\Blee\AppData\Roaming\npm\node_modules\npm\node_modules\@npmcli\run-script\lib\node-gyp-bin;C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
 
 Yarn version: 
   1.22.10
@@ -14,22 +14,12 @@ Platform:
   win32 x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/wrap_ansi: Not found
-      at params.callback [as _callback] (C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:66988:18)
-      at self.callback (C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:140662:22)
-      at Request.emit (node:events:514:28)
-      at Request.<anonymous> (C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141634:10)
-      at Request.emit (node:events:514:28)
-      at IncomingMessage.<anonymous> (C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141556:12)
-      at Object.onceWrapper (node:events:628:28)
-      at IncomingMessage.emit (node:events:526:35)
-      at endReadableNT (node:internal/streams/readable:1408:12)
-      at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+  Error: EPERM: operation not permitted, unlink 'C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin\expo'
 
 npm manifest: 
   {
     "name": "karin-dog-app",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "scripts": {
       "start": "expo start",
       "start:development_build": "expo start --dev-client",
@@ -93,11 +83,10 @@ npm manifest:
       "react-native-reanimated": "~2.14.4",
       "react-native-safe-area-context": "4.5.0",
       "react-native-screens": "~3.20.0",
-      "react-native-svg": "13.4.0",
+      "react-native-svg": "13.9.0",
       "react-native-switch-selector": "^2.3.0",
       "react-native-vector-icons": "^9.2.0",
-      "string-width": "^4.2.3",
-      "wrap_ansi": "^9.0.0",
+      "string-width": "^7.1.0",
       "typescript": "^4.3.5",
       "uuid": "^9.0.0"
     },
@@ -5382,6 +5371,11 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.659.tgz#e93af8119b6610cb4d2614a47508a74543b96ce5"
     integrity sha512-sRJ3nV3HowrYpBtPF9bASQV7OW49IgZC01Xiq43WfSE3RTCkK0/JidoCmR73Hyc1mN+l/H4Yqx0eNiomvExFZg==
   
+  emoji-regex@^10.3.0:
+    version "10.3.0"
+    resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-10.3.0.tgz#76998b9268409eb3dae3de989254d456e70cfe23"
+    integrity sha512-QpLs9D9v9kArv4lfDEgg1X/gN5XLnf/A6l9cs8SPZLRZR3ZkY9+kwIQTxm+fsSej5UMYGE8fdoaZVIBlqG0XTw==
+  
   emoji-regex@^8.0.0:
     version "8.0.0"
     resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
@@ -6161,6 +6155,11 @@ Lockfile:
     version "2.0.5"
     resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-2.0.5.tgz#4f94412a82db32f36e3b0b9741f8a97feb031f7e"
     integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
+  
+  get-east-asian-width@^1.0.0:
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/get-east-asian-width/-/get-east-asian-width-1.2.0.tgz#5e6ebd9baee6fb8b7b6bd505221065f0cd91f64e"
+    integrity sha512-2nk+7SIVb14QrgXFHcm84tD4bKQz0RxPuMT8Ag5KPOq7J5fEmAg0UbXdTOSHqNuHSU28k55qnceesxXRZGzKWA==
   
   get-intrinsic@^1.1.3, get-intrinsic@^1.2.2, get-intrinsic@^1.2.3, get-intrinsic@^1.2.4:
     version "1.2.4"
@@ -9397,10 +9396,10 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/react-native-size-matters/-/react-native-size-matters-0.4.2.tgz#4348bdd6fc47383f60326d58ad69870c998a5f9a"
     integrity sha512-DKE3f/sdcozd24oASgkP1iGg+YU3HoajRa5k3a4wkRzpiqREq8SGX12Y5zBgAt/8IivLQoTMYkyQu1/Giuy+zQ==
   
-  react-native-svg@13.4.0:
-    version "13.4.0"
-    resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.4.0.tgz#82399ba0956c454144618aa581e2d748dd3f010a"
-    integrity sha512-B3TwK+H0+JuRhYPzF21AgqMt4fjhCwDZ9QUtwNstT5XcslJBXC0FoTkdZo8IEb1Sv4suSqhZwlAY6lwOv3tHag==
+  react-native-svg@13.9.0:
+    version "13.9.0"
+    resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.9.0.tgz#8df8a690dd00362601f074dec5d3a86dd0f99c7f"
+    integrity sha512-Ey18POH0dA0ob/QiwCBVrxIiwflhYuw0P0hBlOHeY4J5cdbs8ngdKHeWC/Kt9+ryP6fNoEQ1PUgPYw2Bs/rp5Q==
     dependencies:
       css-select "^5.1.0"
       css-tree "^1.1.3"
@@ -10238,7 +10237,6 @@ Lockfile:
     integrity sha512-D5OKWKvDhyVWWn2x5Y9b+37NUllks34q1dCDhk/vYcso9fmhs+Tl3KR/gE4v5UNj2UA35cnX4KdVVGkG1deKqw==
   
   "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
-    name string-width-cjs
     version "4.2.3"
     resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
     integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -10255,6 +10253,15 @@ Lockfile:
       eastasianwidth "^0.2.0"
       emoji-regex "^9.2.2"
       strip-ansi "^7.0.1"
+  
+  string-width@^7.1.0:
+    version "7.1.0"
+    resolved "https://registry.yarnpkg.com/string-width/-/string-width-7.1.0.tgz#d994252935224729ea3719c49f7206dc9c46550a"
+    integrity sha512-SEIJCWiX7Kg4c129n48aDRwLbFb2LJmXXFrWBG4NGaRtMQ3myKPKbwrD1BKqQn74oCoNMBVrfDEr5M9YxCsrkw==
+    dependencies:
+      emoji-regex "^10.3.0"
+      get-east-asian-width "^1.0.0"
+      strip-ansi "^7.1.0"
   
   string_decoder@^1.1.1:
     version "1.3.0"
@@ -10284,7 +10291,7 @@ Lockfile:
     dependencies:
       ansi-regex "^4.1.0"
   
-  strip-ansi@^7.0.1:
+  strip-ansi@^7.0.1, strip-ansi@^7.1.0:
     version "7.1.0"
     resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-7.1.0.tgz#d5b6568ca689d8561370b0707685d22434faff45"
     integrity sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==
@@ -11070,7 +11077,6 @@ Lockfile:
     integrity sha512-CjpbqNtBGNAeyNS/9W6q3kSkKE52+FjIj7AkFlLr11s/VWGUu6a2CdYSdGxocIhIVjaW/zchesBQUKPVU69Cqg==
   
   "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
-    name wrap-ansi-cjs
     version "7.0.0"
     resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
     integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
