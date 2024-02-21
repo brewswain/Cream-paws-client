@@ -14,12 +14,10 @@ import { RootTabScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
 import { OrderWithChowDetails } from "../models/order";
-import { clearCustomerOrders, clearOrders } from "../utils/orderUtils";
+import { clearCustomerOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
-import { deleteCustomersOrder } from "../api/routes/orders";
 import { findCustomer } from "../api";
 import { Customer } from "../models/customer";
-import { useNavigation } from "@react-navigation/native";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -80,9 +78,11 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const outstandingOrders = orders.filter(
     (order: OrderWithChowDetails) => order.payment_made === false
   );
-  const completedOrders = orders.filter(
-    (order: OrderWithChowDetails) => order.payment_made === true
-  );
+  const completedOrders = orders
+    .filter((order: OrderWithChowDetails) => order.payment_made === true)
+    .sort((a: OrderWithChowDetails, b: OrderWithChowDetails) =>
+      b.delivery_date.localeCompare(a.delivery_date)
+    );
 
   const mappedCostArray = orders
     .filter((order: OrderWithChowDetails) => order.payment_made === false)
@@ -228,13 +228,16 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         >
           Outstanding Orders
         </CollapsibleOrder>
-        {/* <CollapsibleOrder
-              outstandingCollapsible={completedCollapsible}
-              setOutstandingCollapsible={setCompletedCollapsible}
-              outstandingOrders={completedOrders}
-            >
-              Completed Orders
-            </CollapsibleOrder> */}
+        <CollapsibleOrder
+          outstandingCollapsible={completedCollapsible}
+          setOutstandingCollapsible={setCompletedCollapsible}
+          outstandingOrders={completedOrders}
+          selectedOrders={selectedOrders}
+          setSelectedOrders={setSelectedOrders}
+          isCompleted
+        >
+          Completed Orders
+        </CollapsibleOrder>
 
         <View
           style={{
