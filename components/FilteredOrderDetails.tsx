@@ -16,12 +16,14 @@ interface FilteredOrderDetailsProps {
   setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
   color?: string;
   paddingLeft?: number;
+  isCompleted?: boolean;
 }
 
 const FilteredOrderDetails = ({
   orders,
   selectedOrders,
   setSelectedOrders,
+  isCompleted,
   color,
   paddingLeft,
 }: FilteredOrderDetailsProps) => {
@@ -55,27 +57,35 @@ const FilteredOrderDetails = ({
     <View>
       {orders?.map((order: OrderWithChowDetails, orderIndex: number) => {
         const formattedDeliveryDate = formatDate(order.delivery_date);
+        const totalCost = order.delivery_cost
+          ? order.chow_details.flavours.varieties.retail_price *
+              order.quantity +
+            order.delivery_cost
+          : order.chow_details.flavours.varieties.retail_price * order.quantity;
+
         return (
           <View
             key={`${orderIndex} Chow ID:${order.id}`}
             style={orderContainer}
           >
-            <View>
-              <CheckBox
-                title="Check to pay"
-                containerStyle={{
-                  backgroundColor: "transparent",
-                  paddingLeft: 0,
-                  marginLeft: 0,
-                }}
-                checked={
-                  selectedOrders[orderIndex]
-                    ? selectedOrders[orderIndex].selected
-                    : false
-                }
-                onPress={() => handleCheckBoxChange(orderIndex)}
-              />
-            </View>
+            {!isCompleted ? (
+              <View>
+                <CheckBox
+                  title="Check to pay"
+                  containerStyle={{
+                    backgroundColor: "transparent",
+                    paddingLeft: 0,
+                    marginLeft: 0,
+                  }}
+                  checked={
+                    selectedOrders[orderIndex]
+                      ? selectedOrders[orderIndex].selected
+                      : false
+                  }
+                  onPress={() => handleCheckBoxChange(orderIndex)}
+                />
+              </View>
+            ) : null}
             {/* Payment Made Block */}
             <DetailsText
               color={color}
@@ -102,6 +112,14 @@ const FilteredOrderDetails = ({
               header="Delivery"
               details={order.is_delivery ? "Yes" : "No"}
             /> */}
+
+            <DetailsText
+              color={color}
+              paddingLeft={paddingLeft}
+              header="Delivery Date"
+              details={new Date(order.delivery_date).toDateString()}
+            />
+
             {order.delivery_cost ? (
               <DetailsText
                 color={color}
@@ -113,7 +131,18 @@ const FilteredOrderDetails = ({
               />
             ) : null}
 
-            {order.payment_made ? (
+            {order.delivery_cost ? (
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Total"
+                details={Dinero({
+                  amount: Math.round(totalCost * 100),
+                }).toFormat("$0,0.00")}
+              />
+            ) : null}
+
+            {/* {order.payment_made ? (
               <DetailsText
                 color={color}
                 paddingLeft={paddingLeft}
@@ -134,7 +163,7 @@ const FilteredOrderDetails = ({
                   ),
                 }).toFormat("$0,0.00")}
               />
-            )}
+            )} */}
             {order.is_delivery ? (
               <DetailsText
                 color={color}
@@ -144,12 +173,12 @@ const FilteredOrderDetails = ({
               />
             ) : null}
             {/* Quantity Block */}
-            <DetailsText
+            {/* <DetailsText
               color={color}
               paddingLeft={paddingLeft}
               header="Quantity"
               details={order.quantity}
-            />
+            /> */}
             {/* Driver/Warehouse Block */}
             <DetailsText
               color={color}

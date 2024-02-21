@@ -14,6 +14,7 @@ interface CollapsibleOrderProps {
   children: React.ReactNode;
   selectedOrders: SelectedOrder[];
   setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
+  isCompleted?: boolean;
 }
 
 const CollapsibleOrder = ({
@@ -21,6 +22,7 @@ const CollapsibleOrder = ({
   setOutstandingCollapsible,
   outstandingOrders,
   children,
+  isCompleted,
   selectedOrders,
   setSelectedOrders,
 }: CollapsibleOrderProps) => {
@@ -50,6 +52,7 @@ const CollapsibleOrder = ({
           setSelectedOrders={setSelectedOrders}
           color="black"
           paddingLeft={0}
+          isCompleted={isCompleted}
         />
       </Collapsible>
     </View>

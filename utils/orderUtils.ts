@@ -66,7 +66,7 @@ export const clearCourierFees = async (orders: OrderWithChowDetails[]) => {
   }
 };
 
-export const getTodaysOrders = async () => {
+export const getTodaysOrders = async (getCompletedOrders: boolean) => {
   const customerResponse: Customer[] = await getAllCustomers();
 
   const filteredOutstandingOrders = customerResponse
@@ -77,7 +77,9 @@ export const getTodaysOrders = async () => {
             "YYYY-MM-DD"
           );
           const today = moment().format("YYYY-MM-DD");
-          return order.payment_made === false && parsedPaymentDate === today;
+          return getCompletedOrders
+            ? order.payment_made === true && parsedPaymentDate === today
+            : order.payment_made === false && parsedPaymentDate === today;
         }) ?? []
     )
     .filter((order) => order !== undefined);

@@ -16,6 +16,7 @@ import { findCustomer, getAllOrders } from "../../api";
 import { getTodaysOrders } from "../../utils";
 import { OrderWithChowDetails } from "../../models/order";
 import { Customer } from "../../models/customer";
+import moment from "moment";
 
 interface ChowInfo {
   quantity: number;
@@ -31,13 +32,25 @@ interface ChowInfo {
 const TodayAtaGlanceCard = () => {
   const [orderCollapsed, setOrderCollapsed] = useState<boolean>(true);
   const [stockCollapsed, setStockCollapsed] = useState<boolean>(true);
+  const [completedorderCollapsed, setCompletedOrderCollapsed] =
+    useState<boolean>(true);
+  const [completedstockCollapsed, setCompletedStockCollapsed] =
+    useState<boolean>(true);
   const [orders, setOrders] = useState<any[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>();
+  const [completedOrders, setCompletedOrders] = useState<any[]>([]);
+  const [customersWithOutstandingOrders, setCustomersWithOutstandingOrders] =
+    useState<Customer[]>();
+  const [customersWithCompletedOrders, setCustomersWithCompletedOrders] =
+    useState<Customer[]>();
   const [chowInfo, setChowInfo] = useState<ChowInfo[]>([]);
+  const [completedOrderChowInfo, setCompletedOrderChowInfo] = useState<
+    ChowInfo[]
+  >([]);
 
   const {
     container,
     highlight,
+    completedHighlight,
     header,
     subHeader,
     deemphasis,
@@ -50,16 +63,29 @@ const TodayAtaGlanceCard = () => {
   };
 
   const populateData = async () => {
-    const filteredOutstandingOrders = await getTodaysOrders();
+    const filteredOutstandingOrders = await getTodaysOrders(false);
+    const filteredCompletedOrders = await getTodaysOrders(true);
+
     if (filteredOutstandingOrders.length < 1) {
       setOrders([]);
-      setCustomers([]);
+      setCustomersWithOutstandingOrders([]);
       setChowInfo([]);
     } else {
       filteredOutstandingOrders && setOrders(filteredOutstandingOrders);
+      filteredCompletedOrders && setCompletedOrders(filteredCompletedOrders);
 
-      const customerList = await Promise.all(
+      const outstandingCustomerList = await Promise.all(
         filteredOutstandingOrders.map(
+          async (
+            order: OrderWithChowDetails | undefined
+          ): Promise<Customer | undefined> => {
+            if (order) return await findCustomer(order.customer_id);
+            return undefined;
+          }
+        )
+      );
+      const completedCustomerList = await Promise.all(
+        filteredCompletedOrders.map(
           async (
             order: OrderWithChowDetails | undefined
           ): Promise<Customer | undefined> => {
@@ -71,17 +97,42 @@ const TodayAtaGlanceCard = () => {
 
       const uniqueCustomerIds: Record<string, boolean> = {}; // Type the object as Record<string, boolean>
 
-      const filteredCustomers = customerList.filter((customer) => {
-        if (customer && !uniqueCustomerIds[customer.id]) {
-          uniqueCustomerIds[customer.id] = true; // Mark the customer ID as seen
-          return true; // Include the customer in the filtered list
+      const outstandingFilteredCustomers = outstandingCustomerList.filter(
+        (customer) => {
+          if (customer && !uniqueCustomerIds[customer.id]) {
+            uniqueCustomerIds[customer.id] = true; // Mark the customer ID as seen
+            return true; // Include the customer in the filtered list
+          }
+          return false; // Exclude duplicate customers
         }
-        return false; // Exclude duplicate customers
-      }) as Customer[];
+      ) as Customer[];
 
-      setCustomers(filteredCustomers);
+      const completedFilteredCustomers = completedCustomerList.filter(
+        (customer) => {
+          if (customer && !uniqueCustomerIds[customer.id]) {
+            uniqueCustomerIds[customer.id] = true; // Mark the customer ID as seen
+            return true; // Include the customer in the filtered list
+          }
+          return false; // Exclude duplicate customers
+        }
+      ) as Customer[];
+
+      setCustomersWithOutstandingOrders(outstandingFilteredCustomers);
+      setCustomersWithCompletedOrders(completedFilteredCustomers);
 
       const customerChowArray = filteredOutstandingOrders.map(
+        (order: OrderWithChowDetails) => ({
+          quantity: order?.quantity ?? 0,
+          details: {
+            brand: order?.chow_details?.brand ?? "",
+            flavour: order?.chow_details?.flavours.flavour_name ?? "",
+            size: order?.chow_details?.flavours.varieties.size ?? 0,
+            unit: order?.chow_details?.flavours.varieties.unit ?? "",
+            order_id: order?.order_id ?? "",
+          },
+        })
+      );
+      const completedOrderCustomerChowArray = filteredCompletedOrders.map(
         (order: OrderWithChowDetails) => ({
           quantity: order?.quantity ?? 0,
           details: {
@@ -110,12 +161,34 @@ const TodayAtaGlanceCard = () => {
         },
         []
       );
+      const cleanedCompletedOrderChowArray: ChowInfo[] =
+        completedOrderCustomerChowArray.reduce(
+          (unique: ChowInfo[], chowObject) => {
+            const existingIndex = unique.findIndex(
+              (obj) => obj.details.order_id === chowObject.details.order_id
+            );
+
+            if (existingIndex !== -1) {
+              unique[existingIndex].quantity += chowObject.quantity;
+            } else {
+              unique.push(chowObject);
+            }
+
+            return unique;
+          },
+          []
+        );
 
       setChowInfo(cleanedChowArray);
+      setCompletedOrderChowInfo(cleanedCompletedOrderChowArray);
     }
   };
 
   const totalBagsOfChow = chowInfo.reduce(
+    (total, chow) => total + chow.quantity,
+    0
+  );
+  const completedOrdersTotalBagOfChow = completedOrderChowInfo.reduce(
     (total, chow) => total + chow.quantity,
     0
   );
@@ -125,7 +198,8 @@ const TodayAtaGlanceCard = () => {
       .filter((order: OrderWithChowDetails) => order.payment_made === false)
       .map(
         (order: OrderWithChowDetails) =>
-          order.chow_details.flavours.varieties.retail_price * order.quantity
+          order.chow_details.flavours.varieties.retail_price * order.quantity +
+          order.delivery_cost
       ) || undefined;
 
   const subTotal = Math.round(
@@ -139,6 +213,17 @@ const TodayAtaGlanceCard = () => {
     const totalOrders = customer.orders?.filter(
       (order) => order.payment_made === false
     );
+    return totalOrders?.length;
+  };
+  const customerCompletedOrdersLength = (customer: Customer) => {
+    const totalOrders = customer.orders?.filter((order) => {
+      const parsedPaymentDate = moment(order.delivery_date).format(
+        "YYYY-MM-DD"
+      );
+      const today = moment().format("YYYY-MM-DD");
+
+      return order.payment_made === true && parsedPaymentDate === today;
+    });
     return totalOrders?.length;
   };
 
@@ -186,9 +271,9 @@ const TodayAtaGlanceCard = () => {
               <Text style={subHeader}>No orders left!</Text>
             )}
             <Collapsible collapsed={orderCollapsed}>
-              {customers &&
-                customers.length > 0 &&
-                customers.map((customer, index) => (
+              {customersWithOutstandingOrders &&
+                customersWithOutstandingOrders.length > 0 &&
+                customersWithOutstandingOrders.map((customer, index) => (
                   <TouchableOpacity
                     key={`${customer.id}, index: ${index}`}
                     onPress={() => handleClick(customer)}
@@ -239,6 +324,85 @@ const TodayAtaGlanceCard = () => {
           </View>
         </View>
       </ScrollView>
+
+      <View>
+        <Text style={subHeader}>Today's completed orders</Text>
+
+        <View>
+          {completedOrders && completedOrders.length > 0 ? (
+            <TouchableOpacity
+              onPress={() =>
+                setCompletedOrderCollapsed(!completedorderCollapsed)
+              }
+            >
+              <Text style={completedHighlight}>
+                {completedOrders.length}{" "}
+                <Text style={subHeader}>
+                  {completedOrders.length > 1 ? "orders" : "order"}
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={subHeader}>No orders left!</Text>
+          )}
+          <Collapsible collapsed={completedorderCollapsed}>
+            {customersWithCompletedOrders &&
+              customersWithCompletedOrders.length > 0 &&
+              customersWithCompletedOrders.map((customer, index) => (
+                <TouchableOpacity
+                  key={`${customer.id}, index: ${index}`}
+                  onPress={() => handleClick(customer)}
+                >
+                  <Text style={deemphasis}>
+                    {customer.name}
+                    {customer.orders && customer.orders?.length > 1
+                      ? ` x ${customerCompletedOrdersLength(customer)}`
+                      : null}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </Collapsible>
+        </View>
+
+        <View>
+          {completedOrderChowInfo && completedOrderChowInfo.length > 0 ? (
+            <TouchableOpacity
+              onPress={() =>
+                setCompletedStockCollapsed(!completedstockCollapsed)
+              }
+            >
+              <Text style={completedHighlight}>
+                {completedOrdersTotalBagOfChow} 
+                <Text style={subHeader}>{`${
+                  completedOrderChowInfo.length > 1 ||
+                  completedOrdersTotalBagOfChow > 1
+                    ? "bags"
+                    : "bag"
+                } of Chow`}</Text>
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={subHeader}>No chow to be delivered</Text>
+          )}
+
+          <Collapsible
+            collapsed={completedstockCollapsed}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            {completedOrderChowInfo.map((chow, index) => (
+              <View key={index}>
+                {chow && (
+                  <View>
+                    <Text style={deemphasis}>
+                      {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </Collapsible>
+        </View>
+      </View>
       <View style={{ paddingBottom: 10, alignItems: "center" }}>
         <Divider style={{ marginTop: 10, marginBottom: 20 }} />
         <View style={totalCostContainer}>
@@ -255,7 +419,7 @@ const TodayAtaGlanceCard = () => {
         <Text
           style={[deemphasis, { alignSelf: "flex-start", paddingLeft: 20 }]}
         >
-          Vat inclusive
+          Vat + Delivery Fee inclusive
         </Text>
       </View>
     </View>
@@ -272,6 +436,10 @@ const styles = StyleSheet.create({
   },
   highlight: {
     color: "#B438FF",
+    fontSize: 30,
+  },
+  completedHighlight: {
+    color: "#588ca8",
     fontSize: 30,
   },
   header: {
