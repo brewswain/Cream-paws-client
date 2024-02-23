@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -18,6 +18,7 @@ import { clearCustomerOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
 import { findCustomer } from "../api";
 import { Customer } from "../models/customer";
+import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -40,13 +41,15 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
     useState("idle");
   const [isFetching, setIsFetching] = useState<boolean>(true);
-  const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([
-    {
-      index: 0,
-      selected: false,
-    },
-  ]);
   const [customer, setCustomer] = useState<Customer>();
+
+  const customerDetails = useContext(CustomerDetailsContext);
+  const {
+    orders: contextOrders,
+    setOrders,
+    selectedOrders,
+    setSelectedOrders,
+  } = customerDetails;
 
   const customerData = findCustomer(route.params.id);
   const populateCustomerData = async () => {
@@ -214,6 +217,13 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     </View>
   );
 
+  useEffect(() => {
+    setOrders({
+      outstandingOrders,
+      completedOrders,
+    });
+  }, [setOrders, outstandingOrders, completedOrders]);
+
   const renderOrders = () => {
     return (
       <View style={container}>
@@ -222,7 +232,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         <CollapsibleOrder
           outstandingCollapsible={outstandingCollapsible}
           setOutstandingCollapsible={setOutstandingCollapsible}
-          outstandingOrders={outstandingOrders}
+          orders={contextOrders.outstandingOrders}
           selectedOrders={selectedOrders}
           setSelectedOrders={setSelectedOrders}
         >
@@ -231,7 +241,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         <CollapsibleOrder
           outstandingCollapsible={completedCollapsible}
           setOutstandingCollapsible={setCompletedCollapsible}
-          outstandingOrders={completedOrders}
+          orders={contextOrders.completedOrders}
           selectedOrders={selectedOrders}
           setSelectedOrders={setSelectedOrders}
           isCompleted

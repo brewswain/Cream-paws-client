@@ -13,7 +13,7 @@ import Dinero from "dinero.js";
 import { Divider } from "native-base";
 import { findCustomer, getAllOrders } from "../../api";
 import { getTodaysOrders } from "../../utils";
-import { OrderWithChowDetails } from "../../models/order";
+import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
 import { Customer } from "../../models/customer";
 import moment from "moment";
 import {
@@ -171,7 +171,7 @@ const TodayAtaGlanceCard = () => {
 
   const mappedCostArray =
     todaysOrders.orders.unpaidOrders.map(
-      (order: OrderWithChowDetails) =>
+      (order: OrderWithChowDetails | CombinedOrder) =>
         order.chow_details.flavours.varieties.retail_price * order.quantity +
         order.delivery_cost
     ) || undefined;

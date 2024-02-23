@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
@@ -9,29 +9,31 @@ import DetailsText from "./DetailsText";
 import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
 import { OrderWithChowDetails } from "../models/order";
 import { SelectedOrder } from "../screens/CustomerDetailsScreen";
+import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
 
 interface FilteredOrderDetailsProps {
-  orders: OrderWithChowDetails[];
-  selectedOrders: SelectedOrder[];
-  setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
   color?: string;
   paddingLeft?: number;
   isCompleted?: boolean;
 }
 
 const FilteredOrderDetails = ({
-  orders,
-  selectedOrders,
-  setSelectedOrders,
   isCompleted,
   color,
   paddingLeft,
 }: FilteredOrderDetailsProps) => {
+  const customerDetails = useContext(CustomerDetailsContext);
+  const {
+    orders: contextOrders,
+    selectedOrders,
+    setSelectedOrders,
+  } = customerDetails;
+
   const { orderContainer, divider } = styles;
-  interface SelectedOrder {
-    index: number;
-    selected: boolean;
-  }
+
+  const orders = isCompleted
+    ? contextOrders.completedOrders
+    : contextOrders.outstandingOrders;
 
   useEffect(() => {
     orders.map((_, index) => {

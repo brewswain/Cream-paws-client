@@ -10,6 +10,7 @@ import Navigation from "./navigation";
 import { useFonts } from "expo-font";
 
 import * as SplashScreen from "expo-splash-screen";
+import { CustomerDetailsProvider } from "./context/CustomerDetailsContext";
 
 export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -36,8 +37,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NativeBaseProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar />
+        <CustomerDetailsProvider>
+          <Navigation colorScheme={colorScheme} />
+          <StatusBar />
+        </CustomerDetailsProvider>
       </NativeBaseProvider>
     </SafeAreaProvider>
   );
