@@ -2,7 +2,7 @@ import CustomerCard from "./cards/CustomerCard";
 import ItemizedBreakdownCard from "./cards/ItemizedBreakdownCard";
 import NavigationCard from "./cards/NavigationCard";
 import OrderCard from "./cards/OrderCard";
-import TodayAtaGlanceCard from "./cards/TodayAtaGlanceCard";
+import TodayAtaGlanceCard from "./TodayAtAGlance/TodayAtaGlanceCard";
 
 import CreateChowModal from "./modals/CreateChowModal";
 import CreateCustomerModal from "./modals/CreateCustomerModal";
@@ -17,18 +17,18 @@ import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
 import CollapsibleOrder from "./Dropdowns/CollapsibleOrder";
 
 export {
-	CustomerCard,
-	NavigationCard,
-	ItemizedBreakdownCard,
-	OrderCard,
-	TodayAtaGlanceCard,
-	CreateChowModal,
-	CreateCustomerModal,
-	CreateOrderModal,
-	EditScreenInfo,
-	DetailsText,
-	FilteredOrderDetails,
-	NavigationMenu,
-	CollapsibleOrder,
-	CollapsibleChowDetails,
+  CustomerCard,
+  NavigationCard,
+  ItemizedBreakdownCard,
+  OrderCard,
+  TodayAtaGlanceCard,
+  CreateChowModal,
+  CreateCustomerModal,
+  CreateOrderModal,
+  EditScreenInfo,
+  DetailsText,
+  FilteredOrderDetails,
+  NavigationMenu,
+  CollapsibleOrder,
+  CollapsibleChowDetails,
 };

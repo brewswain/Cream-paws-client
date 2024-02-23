@@ -122,7 +122,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   ];
 
   return (
-    <View>
+    <View style={{ backgroundColor: "#f1f2f3" }}>
       <Header>Customer Details</Header>
       {renderDetailInputs(customerFields, handleCustomerChange)}
       <Header>Pets</Header>

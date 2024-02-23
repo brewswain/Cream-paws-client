@@ -1,11 +1,18 @@
 import { useNavigation } from "@react-navigation/native";
 import { Button, Modal } from "native-base";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { deleteCustomer } from "../../api";
 import DeleteModal from "../modals/DeleteModal";
 import SettingsModal from "../modals/SettingsModal";
+import { Customer } from "../../models/customer";
 
 interface CustomerCardProps {
   customer: Customer;
@@ -21,10 +28,11 @@ const CustomerCard = ({
 }: CustomerCardProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  const { name } = customer;
+  const { name, city } = customer;
   const {
-    openOrdersContainer,
-    noOrdersContainer,
+    cardContainer,
+    clientDetails,
+    emphasis,
     clientNameHeader,
     detailsContainer,
     priceContainer,
@@ -70,42 +78,32 @@ const CustomerCard = ({
     (order) => order.payment_made === false
   );
 
+  const hasOpenOrders = openOrdersArray && openOrdersArray.length > 0;
+
   return (
     <>
-      <Pressable onPress={() => viewDetails()}>
-        {customer.orders &&
-          customer.orders.length > 0 &&
-          openOrdersArray.length > 0 && (
-            <View style={openOrdersContainer}>
-              <View style={detailsContainer}>
-                <Text style={clientNameHeader}>{name}</Text>
-              </View>
-              <View style={priceContainer}>
-                <Text style={price}>
+      <TouchableOpacity
+        onPress={() => viewDetails()}
+        onLongPress={() => setShowModal(true)}
+      >
+        <View style={cardContainer}>
+          <View style={detailsContainer}>
+            <Text style={clientNameHeader}>{name}</Text>
+            <View style={{ flexDirection: "row" }}>
+              {city && (
+                <Text style={clientDetails}>
+                  {city} {hasOpenOrders && <Icon name="circle" size={8} />}{" "}
+                </Text>
+              )}
+              {hasOpenOrders && (
+                <Text style={emphasis}>
                   {` Open Orders:${openOrdersArray?.length}`}
                 </Text>
-                <Pressable onPress={() => setShowModal(true)}>
-                  <Icon
-                    name="ellipsis-h"
-                    size={20}
-                    style={{ marginLeft: 14 }}
-                  />
-                </Pressable>
-              </View>
+              )}
             </View>
-          )}
-
-        {customer.orders && openOrdersArray.length < 1 && (
-          <View style={noOrdersContainer}>
-            <View style={detailsContainer}>
-              <Text style={[clientNameHeader, { color: "black" }]}>{name}</Text>
-            </View>
-            <Pressable onPress={() => setShowModal(true)}>
-              <Icon name="ellipsis-h" size={20} style={{ marginRight: 7 }} />
-            </Pressable>
           </View>
-        )}
-      </Pressable>
+        </View>
+      </TouchableOpacity>
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}
@@ -118,41 +116,40 @@ const CustomerCard = ({
 };
 
 const styles = StyleSheet.create({
-  openOrdersContainer: {
+  cardContainer: {
     display: "flex",
+    position: "relative",
     flexDirection: "row",
     justifyContent: "space-between",
     alignSelf: "center",
-    borderRadius: 4,
+    borderRadius: 6,
+    borderColor: "#e3e3e3",
+    borderWidth: 1,
     width: "90%",
-    backgroundColor: "#434949",
-    marginBottom: 8,
+    minHeight: 80,
+    marginVertical: 4,
     padding: 8,
-    background:
-      "linear-gradient(89deg, #FFF 24.58%, rgba(255, 255, 255, 0.75) 98.92%))",
+    backgroundColor: "#f9f9f9",
   },
-  noOrdersContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignSelf: "center",
-    alignItems: "center",
-    borderRadius: 4,
-    width: "90%",
-    backgroundColor: "#BFBFBF",
-    marginBottom: 8,
-    padding: 8,
-    background:
-      "linear-gradient(89deg, #FFF 24.58%, rgba(255, 255, 255, 0.75) 98.92%))",
-  },
+
   detailsContainer: {
-    display: "flex",
     marginLeft: 8,
   },
   clientNameHeader: {
     fontSize: 20,
-    color: "white",
-    fontFamily: "Poppins",
+    color: "black",
+    marginVertical: 4,
+    // fontFamily: "Poppins-semibold",
+  },
+  clientDetails: {
+    fontSize: 14,
+    color: "#6c747a",
+  },
+  emphasis: {
+    fontSize: 12,
+    color: "#588ca8",
+    marginTop: 2,
+    fontFamily: "Poppins-semibold",
   },
   orderDetails: {
     color: "white",

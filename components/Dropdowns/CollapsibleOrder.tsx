@@ -5,24 +5,19 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import FilteredOrderDetails from "../FilteredOrderDetails";
 import { OrderWithChowDetails } from "../../models/order";
 import { SelectedOrder } from "../../screens/CustomerDetailsScreen";
-import { useEffect } from "react";
 
 interface CollapsibleOrderProps {
   setOutstandingCollapsible: React.Dispatch<React.SetStateAction<boolean>>;
   outstandingCollapsible: boolean;
-  outstandingOrders: OrderWithChowDetails[];
   children: React.ReactNode;
-  selectedOrders: SelectedOrder[];
-  setSelectedOrders: React.Dispatch<React.SetStateAction<SelectedOrder[]>>;
+  isCompleted?: boolean;
 }
 
 const CollapsibleOrder = ({
   outstandingCollapsible,
   setOutstandingCollapsible,
-  outstandingOrders,
   children,
-  selectedOrders,
-  setSelectedOrders,
+  isCompleted,
 }: CollapsibleOrderProps) => {
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
@@ -45,9 +40,9 @@ const CollapsibleOrder = ({
       <Collapsible collapsed={outstandingCollapsible}>
         {/*  We engage in some prop drilling as a treat--I should honestly see about better state management*/}
         <FilteredOrderDetails
-          orders={outstandingOrders}
-          selectedOrders={selectedOrders}
-          setSelectedOrders={setSelectedOrders}
+          color="black"
+          paddingLeft={0}
+          isCompleted={isCompleted}
         />
       </Collapsible>
     </View>
@@ -59,12 +54,10 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "white",
     padding: 4,
     borderRadius: 4,
     width: "70%",
-    marginBottom: 10,
-    marginLeft: 20,
+    marginTop: 10,
   },
   dropdownText: {
     // TODO: font family+ aliasing please for the love of god

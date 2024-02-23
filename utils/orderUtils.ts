@@ -5,7 +5,6 @@ import { OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
 import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
 
-
 export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
@@ -23,18 +22,24 @@ export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
     console.error(error);
   }
 };
+
 export const clearCustomerOrders = async (
-  orders:
-    | OrderWithChowDetails[]
-    | {
-        order_id: string;
-        customer_id: string;
-      }[]
+  orders: // | OrderWithChowDetails[]
+  // | {
+  //     order_id: string;
+  //     customer_id: string;
+  //   }[]
+  OrderWithChowDetails[]
 ) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        await deleteCustomersOrder(order.order_id!, order.customer_id);
+        const updatedOrder = {
+          ...order,
+          payment_made: true,
+        };
+        // await deleteCustomersOrder(order.order_id!, order.customer_id);
+        await updateOrder(updatedOrder);
       })
     );
 
@@ -44,11 +49,16 @@ export const clearCustomerOrders = async (
   }
 };
 
-export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
+export const clearCourierFees = async (orders: OrderWithChowDetails[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        await deleteCustomersOrder(order.order_id!, order.customer_id);
+        const updatedOrder = {
+          ...order,
+          driver_paid: true,
+        };
+
+        await updateOrder(updatedOrder);
       })
     );
   } catch (error) {
@@ -57,6 +67,7 @@ export const clearCustomerOrders = async (orders: OrderWithChowDetails[]) => {
 };
 
 export const getTodaysOrders = async () => {
+  // export const getTodaysOrders = async (getCompletedOrders: boolean) => {
   const customerResponse: Customer[] = await getAllCustomers();
 
   const filteredOutstandingOrders = customerResponse
@@ -67,7 +78,8 @@ export const getTodaysOrders = async () => {
             "YYYY-MM-DD"
           );
           const today = moment().format("YYYY-MM-DD");
-          return order.payment_made === false && parsedPaymentDate === today;
+
+          return parsedPaymentDate === today;
         }) ?? []
     )
     .filter((order) => order !== undefined);
@@ -90,6 +102,16 @@ export const getUnpaidCustomerOrders = async () => {
   return filteredOutstandingOrders;
 };
 
+export const getUnpaidCourierFees = async () => {
+  const response: OrderWithChowDetails[] = await getAllOrders();
+
+  const filteredUnpaidCourierFees =
+    response.filter((order) => order.driver_paid === false) ??
+    [].filter((order) => order !== undefined);
+
+  return filteredUnpaidCourierFees;
+};
+
 export const getUnpaidWarehouseOrders = async () => {
   const orderResponse: OrderWithChowDetails[] = await getAllOrders();
 
@@ -101,26 +123,30 @@ export const getUnpaidWarehouseOrders = async () => {
 };
 
 export const combineOrders = async (orders: OrderWithChowDetails[]) => {
-  const combinedOrders = {};
+  const combinedOrders: Record<string, any[]> = {};
 
   for (const order of orders) {
-    const customerName = await findCustomer(order.customer_id);
+    const customer = await findCustomer(order.customer_id);
+
     const {
       delivery_date,
       delivery_cost,
+      driver_paid,
       quantity,
       chow_id,
       customer_id,
       ...restOrderDetails
     } = order;
 
-    const orderKey = `${delivery_date}`;
+    const orderKey = `${customer.name}-${delivery_date}`;
 
     if (!combinedOrders[orderKey]) {
       combinedOrders[orderKey] = {
+        name: customer.name,
         delivery_date,
-        delivery_cost, // Place delivery_cost at the root level
-        name: customerName.name,
+        delivery_cost,
+        driver_paid,
+        customer_id,
         orders: [],
       };
     }
@@ -137,10 +163,32 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
       combinedOrders[orderKey].orders.push({
         chow_id,
         quantity,
+        delivery_date,
+        delivery_cost,
+        driver_paid,
         ...restOrderDetails,
       });
     }
   }
 
   return Object.values(combinedOrders);
+};
+
+export const concatFinanceQuantities = async (
+  orders: OrderWithChowDetails[]
+) => {
+  const updatedOrders = {};
+  for (const order of orders) {
+    const existingOrder = updatedOrders[order.chow_id];
+
+    if (existingOrder) {
+      // Update quantity for the existing order
+      existingOrder.quantity += order.quantity;
+    } else {
+      // Add a new order if chow_id is not present
+      updatedOrders[order.chow_id] = { ...order };
+    }
+  }
+
+  return Object.values(updatedOrders);
 };

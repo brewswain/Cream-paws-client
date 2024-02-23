@@ -19,6 +19,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
 import { Chow } from "../../models/chow";
+import { findChowVariety } from "../../api/routes/stock";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ const CreateOrderModal = ({
       brand: "",
       flavour_name: "",
       quantity: 1,
+      retail_price: null,
     },
   ]);
   const [orderInputs, setOrderInputs] = useState<any>({
@@ -74,6 +76,34 @@ const CreateOrderModal = ({
 
   const closeModal = () => {
     setShowModal(false);
+    resetState();
+  };
+
+  const resetState = () => {
+    setOrderInputs({
+      customer_id: "",
+      delivery_date: "",
+      payment_made: false,
+      delivery_cost: 0,
+      payment_date: "",
+      is_delivery: false,
+      driver_paid: false,
+      warehouse_paid: false,
+    });
+
+    setChowInputs([
+      {
+        chow_id: "",
+        brand: "",
+        flavour_name: "",
+        quantity: 1,
+        retail_price: null,
+      },
+    ]);
+
+    setSelectedChow("");
+    setSelectedCustomer("");
+    setSelectedDate(undefined);
   };
 
   const {
@@ -111,12 +141,6 @@ const CreateOrderModal = ({
     if (filteredFlavour) {
       return filteredFlavour[0];
     }
-  };
-
-  const handleDateConfirm = (date: Date) => {
-    setSelectedDate(date);
-    handleDateChange(date);
-    toggleDatePickerVisibility();
   };
 
   const addField = () => {
@@ -173,7 +197,7 @@ const CreateOrderModal = ({
   };
 
   const renderDeliveryCost = () => {
-    const TEST_DELIVERY_COSTS = [1, 2, 3, 4];
+    const TEST_DELIVERY_COSTS = [0, 20, 45, 60, 100];
 
     return TEST_DELIVERY_COSTS.map((price, index) => (
       <Select.Item
@@ -208,10 +232,7 @@ const CreateOrderModal = ({
     payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
     delivery_date: orderInputs.delivery_date,
     is_delivery: orderInputs.is_delivery,
-    ...(orderInputs.is_delivery && {
-      delivery_cost: orderInputs.delivery_cost,
-    }),
-
+    delivery_cost: orderInputs.delivery_cost,
     driver_paid: orderInputs.driver_paid,
     warehouse_paid: orderInputs.warehouse_paid,
     // add chow object
@@ -243,6 +264,11 @@ const CreateOrderModal = ({
     data["delivery_date"] = date;
     setOrderInputs(data);
   };
+  const handleDateConfirm = (date: Date) => {
+    setSelectedDate(date);
+    handleDateChange(date);
+    toggleDatePickerVisibility();
+  };
 
   const handleQuantityChange = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
@@ -259,7 +285,7 @@ const CreateOrderModal = ({
     setChowInputs(data);
   };
 
-  const handleChowSelected = (
+  const handleChowSelected = async (
     itemValue: string,
     index: number,
     name: string
@@ -268,6 +294,22 @@ const CreateOrderModal = ({
     const data = [...chowInputs];
     data[index][name] = itemValue;
 
+    if (name === "chow_id") {
+      const response = await findChowVariety(itemValue);
+      data[index].retail_price = response.retail_price;
+      setChowInputs(data);
+    }
+
+    setChowInputs(data);
+  };
+
+  const handlePriceChange = async (
+    event: NativeSyntheticEvent<TextInputChangeEventData>,
+    index: number,
+    name: string
+  ) => {
+    const data = [...chowInputs];
+    data[index][name] = parseInt(event.nativeEvent.text);
     setChowInputs(data);
   };
 
@@ -282,6 +324,7 @@ const CreateOrderModal = ({
   const handleDeliverySelected = (itemValue: string) => {
     const data = { ...orderInputs };
     data.delivery_cost = parseInt(itemValue);
+
     setOrderInputs(data);
   };
 
@@ -296,7 +339,8 @@ const CreateOrderModal = ({
 
     Promise.all(
       chowArray.map(async (chowDetails: ChowDetails) => {
-        const { chow_id, quantity, flavour_id, brand } = chowDetails;
+        const { chow_id, quantity, flavour_id, brand, retail_price } =
+          chowDetails;
         const { customer_id, delivery_date, payment_date, delivery_cost } =
           orderPayload;
 
@@ -306,6 +350,7 @@ const CreateOrderModal = ({
           payment_date,
           quantity,
           delivery_cost,
+          retail_price,
           flavour_id,
           payment_made: orderInputs.payment_made,
           is_delivery: orderInputs.is_delivery,
@@ -316,9 +361,9 @@ const CreateOrderModal = ({
         };
 
         await createOrder(newOrderPayload);
+        populateCustomersList();
       })
     ).then(() => {
-      populateCustomersList();
       closeModal();
     });
   };
@@ -349,7 +394,11 @@ const CreateOrderModal = ({
           <FormControl.Label>Order Information</FormControl.Label>
           <Pressable onPress={() => toggleDatePickerVisibility()}>
             <Text style={deliveryText}>
-              Choose Delivery Date <Text>*</Text>
+              {selectedDate ? (
+                <Text>{new Date(selectedDate).toDateString()}</Text>
+              ) : (
+                "Choose Delivery Date *"
+              )}
             </Text>
           </Pressable>
           <DateTimePickerModal
@@ -360,30 +409,29 @@ const CreateOrderModal = ({
 
           {/* TODO: fix all the jank. in this case, we need to make our types better */}
 
-          <CheckBox
+          {/* <CheckBox
             title="Is this a delivery?"
             checked={orderInputIsDelivery}
             onPress={() => handleCheckBoxChange("is_delivery")}
-          />
+          /> */}
+          <FormControl.Label>Delivery Cost</FormControl.Label>
 
-          {orderInputs.is_delivery && (
-            <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
-              <Select
-                minWidth="200"
-                selectedValue={orderInputs.delivery_cost}
-                accessibilityLabel="Delivery Cost"
-                placeholder="Delivery Cost *"
-                _selectedItem={{
-                  bg: "teal.600",
-                  endIcon: <CheckIcon size={5} />,
-                }}
-                mt="1"
-                onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
-              >
-                {chow && renderDeliveryCost()}
-              </Select>
-            </TouchableWithoutFeedback>
-          )}
+          <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
+            <Select
+              minWidth="200"
+              selectedValue={orderInputs.delivery_cost}
+              accessibilityLabel="Delivery Cost"
+              placeholder="Delivery Cost *"
+              _selectedItem={{
+                bg: "teal.600",
+                endIcon: <CheckIcon size={5} />,
+              }}
+              mt="1"
+              onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
+            >
+              {chow && renderDeliveryCost()}
+            </Select>
+          </TouchableWithoutFeedback>
 
           <CheckBox
             title="Has Client Paid for order?"
@@ -465,6 +513,7 @@ const CreateOrderModal = ({
                   </TouchableWithoutFeedback>
                 )}
 
+                <FormControl.Label>Quantity</FormControl.Label>
                 <TextInput
                   style={input}
                   placeholder="Quantity *"
@@ -476,6 +525,22 @@ const CreateOrderModal = ({
                   // value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
+                {chowInputs[index].retail_price ? (
+                  <>
+                    <FormControl.Label>Retail Price</FormControl.Label>
+                    <TextInput
+                      style={input}
+                      placeholder="Retail Price"
+                      keyboardType="numeric"
+                      onChange={(event) =>
+                        handlePriceChange(event, index, "retail_price")
+                      }
+                      defaultValue={chowInputs[index].retail_price.toString()}
+                      // value={field.quantity.toString()}
+                      key={`index: ${index} retail_price `}
+                    />
+                  </>
+                ) : null}
                 <View style={buttonContainer}>
                   <Button
                     style={button}

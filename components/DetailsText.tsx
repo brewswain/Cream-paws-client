@@ -4,18 +4,22 @@ interface DetailsTextProps {
   header: string;
   details: string | number;
   color?: string;
+  paddingLeft?: number;
 }
 
 const DetailsText = ({
   header,
   details,
   color = "white",
+  paddingLeft = 20,
 }: DetailsTextProps) => {
   const { container, bold, regular } = styles;
 
   return (
-    <View style={container}>
-      <Text style={[bold, { paddingBottom: 6, color }]}>{header}: </Text>
+    <View style={[container, { gap: 10 }]}>
+      <Text style={[bold, { paddingBottom: 6, color, paddingLeft }]}>
+        {header}: 
+      </Text>
       <Text style={[regular, { color }]}>{details}</Text>
     </View>
   );
@@ -29,13 +33,11 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: "500",
-    paddingLeft: 20,
     fontSize: 16,
     color: "grey",
   },
   regular: {
     fontWeight: "400",
-    paddingLeft: 20,
     fontSize: 14,
   },
 });

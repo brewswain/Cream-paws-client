@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import Icon from "@expo/vector-icons/AntDesign";
@@ -11,32 +11,19 @@ import BrandCard from "../components/cards/BrandCard";
 import ChowCard from "../components/cards/ChowCard";
 import CreateChowModal from "../components/modals/CreateChowModal";
 import { Chow } from "../models/chow";
+import { StockContext } from "../context/StockContext";
 
 const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
-
-  const [chows, setChows] = useState<Chow[]>([]);
-
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { container, buttonContainer, unpaidChowCard, paidChowCard } = styles;
+  const stockDetails = useContext(StockContext);
+  const { isLoading, chows, populateChowList } = stockDetails;
+
+  const { container, buttonContainer } = styles;
 
   const openModal = () => {
     setShowModal(true);
-  };
-
-  const populateChowList = async () => {
-    setIsLoading(true);
-    try {
-      const response: Chow[] = await getAllChow();
-
-      setChows(response);
-      setIsLoading(false);
-    } catch (error) {
-      console.error(error);
-      setIsLoading(false);
-    }
   };
 
   useFocusEffect(
@@ -56,7 +43,6 @@ const StockScreen = () => {
               {chows.map((chow) => {
                 return (
                   <BrandCard
-                    populateStockList={populateChowList}
                     setIsDeleted={setIsDeleted}
                     chow={chow}
                     key={chow.brand_id}
