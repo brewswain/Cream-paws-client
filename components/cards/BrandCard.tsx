@@ -1,28 +1,21 @@
 import { useNavigation } from "@react-navigation/native";
-import { Dispatch, SetStateAction, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dispatch, SetStateAction, useContext, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { deleteChow } from "../../api";
 import { Chow } from "../../models/chow";
 import SettingsModal from "../modals/SettingsModal";
+import { StockContext } from "../../context/StockContext";
 
 interface BrandCardProps {
   chow: Chow;
-  populateStockList: () => void;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
 }
 
-const BrandCard = ({
-  chow,
-  populateStockList,
-  setIsDeleted,
-}: BrandCardProps) => {
+const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
   const [showModal, setShowModal] = useState(false);
+  const stockDetails = useContext(StockContext);
+
+  const { populateChowList } = stockDetails;
 
   const navigation = useNavigation();
 
@@ -31,7 +24,6 @@ const BrandCard = ({
       flavours: chow.flavours,
       brand: chow.brand,
       brand_id: chow.brand_id!,
-      populateChowList: populateStockList,
     });
   };
 
@@ -47,7 +39,7 @@ const BrandCard = ({
       setIsDeleted(false);
       await deleteChow(id);
       setIsDeleted(true);
-      populateStockList();
+      populateChowList();
     } catch (error) {
       console.error(error);
     }

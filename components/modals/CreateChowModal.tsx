@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -16,18 +16,17 @@ import { useNavigation } from "@react-navigation/native";
 import { createChow } from "../../api";
 import { createChowFlavour, findChow } from "../../api/routes/stock";
 import { Chow } from "../../models/chow";
+import { StockContext } from "../../context/StockContext";
 
 interface CreateChowProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
-  populateChowList(): void;
   brand_id?: string;
 }
 
 const CreateChowModal = ({
   isOpen,
   setShowModal,
-  populateChowList,
   brand_id,
 }: CreateChowProps) => {
   const [chowPayload, setChowPayload] = useState<Chow>({
@@ -47,8 +46,10 @@ const CreateChowModal = ({
     ],
   });
   const [unitIndex, setUnitIndex] = useState(0);
-
   const [errors, setErrors] = useState({});
+
+  const stockDetails = useContext(StockContext);
+  const { populateChowList } = stockDetails;
 
   const navigation = useNavigation();
 

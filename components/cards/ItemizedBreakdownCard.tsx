@@ -402,7 +402,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
                     return !order.driver_paid ? (
                       <View
-                        key={`${order.client_name}-${order.delivery_date} `}
+                        key={`${order.name}-${order.delivery_date}-${index}`}
                         style={orderContainer}
                       >
                         <View style={orderCard}>
