@@ -222,7 +222,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       outstandingOrders,
       completedOrders,
     });
-  }, [setOrders, outstandingOrders, completedOrders]);
+  }, []);
 
   const renderOrders = () => {
     return (

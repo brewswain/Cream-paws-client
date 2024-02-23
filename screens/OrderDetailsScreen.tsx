@@ -89,12 +89,12 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   };
 
   const renderBrandDropdown = () => {
-    return chow?.map((item) => {
+    return chow?.map((item, index) => {
       return (
         <Select.Item
           label={`${item.brand}`}
           value={item.brand_id}
-          key={item.brand_id}
+          key={`${item.brand_id} - ${index}`}
         />
       );
     });
@@ -103,11 +103,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const renderFlavourDropdown = (chowInputIndex: number) => {
     const chow = selectedBrand(chowInputIndex);
 
-    return chow?.flavours.map((flavour) => (
+    return chow?.flavours.map((flavour, index) => (
       <Select.Item
         label={flavour.flavour_name}
         value={flavour.flavour_id}
-        key={flavour.flavour_id}
+        key={`${flavour.flavour_id} - ${index}`}
       />
     ));
   };
@@ -115,12 +115,12 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
     const flavour = selectedFlavour(chowInputIndex, flavour_id);
 
-    return flavour?.varieties.map((variety) => {
+    return flavour?.varieties.map((variety, index) => {
       return (
         <Select.Item
           label={`${variety.size} ${variety.unit}`}
           value={variety.chow_id || "not found"}
-          key={variety.chow_id || "not found"}
+          key={`${variety.chow_id || "not found"} - index ${index}`}
         />
       );
     });
@@ -342,7 +342,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         ];
 
         return (
-          <>
+          <View key={`${order.order_id} - ${index}`}>
             <View style={styles.container}>
               {/* Checkmarks like Driver Paid, etc */}
               <Text
@@ -365,7 +365,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                     // handleChowSelected(itemValue, index, "brand")
                     handleChange("chow_details.brand", itemValue, index)
                   }
-                  key={`${currentOrder.chow_id} - brand`}
+                  // key={`${currentOrder.chow_id} - brand`}
                 >
                   {chow && renderBrandDropdown()}
                 </Select>
@@ -525,7 +525,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 Delete Order
               </Button>
             </View>
-          </>
+          </View>
         );
       })}
     </ScrollView>
