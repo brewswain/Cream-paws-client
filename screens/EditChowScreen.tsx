@@ -164,6 +164,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     value={variety.size ? variety.size.toString() : "0"}
                     onChange={(event) =>
@@ -226,6 +227,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={
                       variety.wholesale_price
@@ -245,6 +247,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <FormControl isRequired>
                   <FormControl.Label>Retail Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={
                       variety.retail_price
@@ -305,6 +308,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         <View style={{ alignItems: "center" }}>
           <FormControl.Label>Brand</FormControl.Label>
           <TextInput
+            selectTextOnFocus
             style={input}
             defaultValue={chowPayload.brand}
             onChange={(event) => handleChowChange(event, "brand")}
@@ -318,6 +322,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
           <View>
             <FormControl.Label mt={4}>Name</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               defaultValue={
                 chowPayload.flavours[specifiedFlavourIndex].flavour_name
@@ -343,6 +348,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
               <View key={index}>
                 <FormControl.Label mt={4}>Name</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
                   defaultValue={currentFlavour.flavour_name}
                   onChange={(event) =>

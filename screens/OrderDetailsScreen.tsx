@@ -436,6 +436,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               <Header>Quantity</Header>
               <TextInput
                 onChangeText={(value) => handleChange("quantity", value, index)}
+                selectTextOnFocus
                 style={[
                   styles.customInput,
                   { maxWidth: "15%", textAlign: "center" },

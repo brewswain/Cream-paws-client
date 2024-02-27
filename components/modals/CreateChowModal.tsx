@@ -209,6 +209,7 @@ const CreateChowModal = ({
                   <TextInput
                     style={input}
                     value={variety.size.toString()}
+                    selectTextOnFocus
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -267,6 +268,7 @@ const CreateChowModal = ({
                 <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={variety.wholesale_price.toString()}
                     onChange={(event) =>
@@ -282,6 +284,7 @@ const CreateChowModal = ({
                 <FormControl isRequired>
                   <FormControl.Label>Retail Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={variety.retail_price.toString()}
                     onChange={(event) =>
@@ -344,6 +347,7 @@ const CreateChowModal = ({
             <FormControl isRequired>
               <FormControl.Label>Brand</FormControl.Label>
               <TextInput
+                selectTextOnFocus
                 style={input}
                 onChange={(event) => handleChowChange(event, "brand")}
               />
@@ -356,6 +360,7 @@ const CreateChowModal = ({
               <View key={index}>
                 <FormControl.Label mt={4}>Name</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
                   defaultValue={chowPayload.flavours[index].flavour_name}
                   onChange={(event) =>

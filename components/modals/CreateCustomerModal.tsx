@@ -113,6 +113,7 @@ const CreateCustomerModal = ({
           <FormControl isRequired>
             <FormControl.Label>Name</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleNameChange(event)}
               value={name}
@@ -121,6 +122,7 @@ const CreateCustomerModal = ({
           <FormControl>
             <FormControl.Label>Contact Number</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleContactNumberChange(event)}
               value={contactNumber}
@@ -130,6 +132,7 @@ const CreateCustomerModal = ({
           <FormControl>
             <FormControl.Label>Address</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleLocationChange(event)}
               value={location}
@@ -138,6 +141,7 @@ const CreateCustomerModal = ({
           <FormControl>
             <FormControl.Label>City</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleCityChange(event)}
               value={city}
@@ -149,6 +153,7 @@ const CreateCustomerModal = ({
               return (
                 <View key={index}>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     placeholder="Name"
                     key={`index: ${index} name `}
@@ -157,6 +162,7 @@ const CreateCustomerModal = ({
                   />
 
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     placeholder="Breed"
                     key={`index: ${index} breed `}

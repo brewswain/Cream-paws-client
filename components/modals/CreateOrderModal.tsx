@@ -515,6 +515,7 @@ const CreateOrderModal = ({
 
                 <FormControl.Label>Quantity</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
                   placeholder="Quantity *"
                   keyboardType="numeric"
@@ -529,6 +530,7 @@ const CreateOrderModal = ({
                   <>
                     <FormControl.Label>Retail Price</FormControl.Label>
                     <TextInput
+                      selectTextOnFocus
                       style={input}
                       placeholder="Retail Price"
                       keyboardType="numeric"

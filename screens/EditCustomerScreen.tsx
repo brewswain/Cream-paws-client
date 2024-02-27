@@ -130,6 +130,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
         <>
           <SubHeader>Name</SubHeader>
           <TextInput
+            selectTextOnFocus
             style={styles.input}
             onChangeText={(text: string) =>
               handlePetsChange(text, "name", petIndex)
@@ -139,6 +140,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
           </TextInput>
           <SubHeader>Breed</SubHeader>
           <TextInput
+            selectTextOnFocus
             style={styles.input}
             onChangeText={(text: string) =>
               handlePetsChange(text, "breed", petIndex)
