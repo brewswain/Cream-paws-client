@@ -336,7 +336,15 @@ const CreateChowModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
+    <Modal
+      isOpen={isOpen}
+      onClose={closeModal}
+      avoidKeyboard
+      _overlay={{
+        useRNModal: false,
+        useRNModalOnAndroid: false,
+      }}
+    >
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header>
