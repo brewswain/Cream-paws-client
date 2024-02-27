@@ -36,7 +36,7 @@ const StockScreen = () => {
       ) : (
         <ScrollView>
           {chows.length > 0 ? (
-            <View>
+            <View style={{ marginTop: 4 }}>
               {chows.map((chow) => {
                 return (
                   <BrandCard
