@@ -77,11 +77,14 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     setChowPayload(data);
   };
 
-  const addNewVarietyField = (flavourIndex: number) => {
+  const addNewVarietyField = (flavourIndex: number, varietyIndex: number) => {
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit: "lb" as const,
+      unit:
+        varietyIndex > 0
+          ? data.flavours[flavourIndex].varieties[0].unit
+          : ("lb" as const),
       wholesale_price: 0,
       retail_price: 0,
     };
@@ -178,7 +181,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                   <FormControl.Label>Unit</FormControl.Label>
 
                   <View style={styles.unitButtonContainer}>
-                    {["lb", "kg"].map((unit, index) => {
+                    {["lb", "kg", "oz"].map((unit, index) => {
                       const isActiveButton =
                         unit ===
                         chowPayload.flavours[flavourIndex].varieties[
@@ -261,7 +264,9 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <View style={buttonContainer}>
                   <Button
                     style={button}
-                    onPress={() => addNewVarietyField(flavourIndex)}
+                    onPress={() =>
+                      addNewVarietyField(flavourIndex, varietyIndex)
+                    }
                     key={`flavourIndex: ${varietyIndex} AddField `}
                   >
                     <Icon
