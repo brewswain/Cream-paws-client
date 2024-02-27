@@ -10,15 +10,15 @@ import {
   View,
 } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+
 import { Button, FormControl } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
-import { useNavigation } from "@react-navigation/native";
 import { Chow } from "../models/chow";
 import { RootTabScreenProps } from "../types";
-
 interface EditChowScreenProps {
   navigation: RootTabScreenProps<"EditChow">;
   route: {
@@ -46,7 +46,6 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
       },
     ],
   });
-
   const [unitIndex, setUnitIndex] = useState(0);
   const [specifiedFlavourIndex, setSpecifiedFlavourIndex] = useState(0);
 
@@ -350,6 +349,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <TextInput
                   selectTextOnFocus
                   style={input}
+                  returnKeyType="next"
                   defaultValue={currentFlavour.flavour_name}
                   onChange={(event) =>
                     handleChowFlavourChange(event, "flavour_name", index)

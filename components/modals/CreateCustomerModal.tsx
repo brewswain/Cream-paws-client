@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   StyleSheet,
@@ -30,6 +30,11 @@ const CreateCustomerModal = ({
   const [location, setLocation] = useState("");
   const [city, setCity] = useState("");
   const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
+
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  const inputRef4 = useRef();
+
   const {
     input,
     button,
@@ -122,6 +127,9 @@ const CreateCustomerModal = ({
               style={input}
               onChange={(event) => handleNameChange(event)}
               value={name}
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef2.current.focus()}
+              blurOnSubmit={false}
             />
           </FormControl>
           <FormControl>
@@ -132,6 +140,10 @@ const CreateCustomerModal = ({
               onChange={(event) => handleContactNumberChange(event)}
               value={contactNumber}
               keyboardType="numeric"
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef3.current.focus()}
+              blurOnSubmit={false}
+              ref={inputRef2}
             />
           </FormControl>
           <FormControl>
@@ -141,6 +153,10 @@ const CreateCustomerModal = ({
               style={input}
               onChange={(event) => handleLocationChange(event)}
               value={location}
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef4.current.focus()}
+              blurOnSubmit={false}
+              ref={inputRef3}
             />
           </FormControl>
           <FormControl>
@@ -150,6 +166,7 @@ const CreateCustomerModal = ({
               style={input}
               onChange={(event) => handleCityChange(event)}
               value={city}
+              ref={inputRef4}
             />
           </FormControl>
           <FormControl mt={3}>

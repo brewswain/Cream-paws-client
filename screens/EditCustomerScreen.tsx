@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useRef } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -22,11 +22,9 @@ import { OrderWithChowDetails } from "../models/order";
 import { findCustomer, updateCustomer } from "../api";
 import { Customer } from "../models/customer";
 import {
-  CustomInput,
   Header,
   SubFields,
   SubHeader,
-  renderDetailInputs,
 } from "../components/details/DetailScreenComponents";
 
 interface EditCustomerScreenProps {
@@ -52,6 +50,10 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
 
   const navigate = useNavigation();
 
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  const inputRef4 = useRef();
+
   const addField = () => {
     const data = { ...customerPayload };
     const newField = { name: "", breed: "" };
@@ -68,6 +70,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   };
 
   const handleCustomerChange = (name: string, value: string | number) => {
+    console.log({ name, value });
     setCustomerPayload((prevState) => ({
       ...prevState,
       [name]: value,
@@ -81,7 +84,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   ) => {
     const data = { ...customerPayload };
     data.pets[specifiedPetIndex][name] = text;
-
+    2;
     setCustomerPayload(data);
   };
 
@@ -108,26 +111,91 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
       title: "Contact Number",
       content: customerPayload.contactNumber,
       name: "contactNumber",
+      type: "numeric",
+      ref: inputRef2,
     },
     {
       title: "Address",
       content: customerPayload.location,
       name: "location",
+      ref: inputRef3,
     },
     {
       title: "City",
       content: customerPayload.city,
       name: "city",
+      ref: inputRef4,
     },
   ];
 
+  console.log({ customerPayload });
+
   return (
-    <View style={{ backgroundColor: "#f1f2f3" }}>
+    <View
+      style={{
+        backgroundColor: "#f1f2f3",
+        alignItems: "center",
+        paddingTop: 10,
+      }}
+    >
       <Header>Customer Details</Header>
-      {renderDetailInputs(customerFields, handleCustomerChange)}
+
+      <View>
+        <SubHeader>Name</SubHeader>
+        <TextInput
+          selectTextOnFocus
+          style={styles.input}
+          onChange={(event) =>
+            handleCustomerChange("name", event.nativeEvent.text)
+          }
+          returnKeyType={"next"}
+          blurOnSubmit={false}
+          onSubmitEditing={() => inputRef2.current.focus()}
+          defaultValue={customerPayload.name}
+        />
+        <SubHeader>Contact Number</SubHeader>
+        <TextInput
+          selectTextOnFocus
+          style={styles.input}
+          onChange={(event) =>
+            handleCustomerChange("contactNumber", event.nativeEvent.text)
+          }
+          returnKeyType={"next"}
+          keyboardType="numeric"
+          blurOnSubmit={false}
+          onSubmitEditing={() => inputRef3.current.focus()}
+          defaultValue={customerPayload.contactNumber}
+          ref={inputRef2}
+        />
+        <SubHeader>Address</SubHeader>
+        <TextInput
+          selectTextOnFocus
+          style={styles.input}
+          onChange={(event) =>
+            handleCustomerChange("location", event.nativeEvent.text)
+          }
+          returnKeyType={"next"}
+          blurOnSubmit={false}
+          onSubmitEditing={() => inputRef4.current.focus()}
+          defaultValue={customerPayload.location}
+          ref={inputRef3}
+        />
+
+        <SubHeader>City</SubHeader>
+        <TextInput
+          selectTextOnFocus
+          style={styles.input}
+          onChange={(event) =>
+            handleCustomerChange("city", event.nativeEvent.text)
+          }
+          defaultValue={customerPayload.city}
+          ref={inputRef4}
+        />
+      </View>
+
       <Header>Pets</Header>
       {customerPayload.pets.map((pet, petIndex) => (
-        <>
+        <View style={{ paddingTop: 4 }}>
           <SubHeader>Name</SubHeader>
           <TextInput
             selectTextOnFocus
@@ -172,7 +240,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
               />
             </Button>
           </View>
-        </>
+        </View>
       ))}
       <Button.Group space={2} style={styles.confirmationButtonContainer}>
         <Button variant="ghost" onPress={() => navigate.navigate("Customers")}>
@@ -191,12 +259,13 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1,
-    borderColor: "black",
-    borderRadius: 6,
-    paddingLeft: 12,
-    marginHorizontal: 8,
-    marginTop: 4,
+    margin: 5,
+    marginBottom: 8,
+    marginTop: 0,
+    paddingLeft: 10,
+    width: 270,
+    borderRadius: 4,
+    backgroundColor: "hsl(240,57%,97%)",
   },
   buttonContainer: {
     display: "flex",

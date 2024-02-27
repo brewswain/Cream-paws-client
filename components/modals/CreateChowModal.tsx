@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -45,7 +45,6 @@ const CreateChowModal = ({
       },
     ],
   });
-
   const [unitIndex, setUnitIndex] = useState(0);
   const [errors, setErrors] = useState({});
 
@@ -53,6 +52,11 @@ const CreateChowModal = ({
   const { populateChowList } = stockDetails;
 
   const navigation = useNavigation();
+
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  const inputRef4 = useRef();
+  const inputRef5 = useRef();
 
   const {
     input,
@@ -218,6 +222,7 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    ref={inputRef3}
                   />
                 </FormControl>
                 <FormControl isRequired>
@@ -279,6 +284,10 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    returnKeyType="next"
+                    onSubmitEditing={() => inputRef5.current.focus()}
+                    blurOnSubmit={false}
+                    ref={inputRef4}
                   />
                 </FormControl>
                 <FormControl isRequired>
@@ -295,6 +304,7 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    ref={inputRef5}
                   />
                 </FormControl>
                 <View style={buttonContainer}>
@@ -357,6 +367,9 @@ const CreateChowModal = ({
               <TextInput
                 selectTextOnFocus
                 style={input}
+                returnKeyType="next"
+                onSubmitEditing={() => inputRef2.current.focus()}
+                blurOnSubmit={false}
                 onChange={(event) => handleChowChange(event, "brand")}
               />
             </FormControl>
@@ -374,6 +387,10 @@ const CreateChowModal = ({
                   onChange={(event) =>
                     handleChowFlavourChange(event, "flavour_name", index)
                   }
+                  returnKeyType="next"
+                  onSubmitEditing={() => inputRef3.current.focus()}
+                  blurOnSubmit={false}
+                  ref={inputRef2}
                 />
                 <Text
                   style={header}
