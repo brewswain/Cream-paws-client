@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import Icon from "@expo/vector-icons/AntDesign";
 import { useNavigation } from "@react-navigation/native";
@@ -35,7 +35,7 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.header}>{brand}</Text>
       {sortedFlavours.map((flavour) => (
         <ChowFlavourDetails
@@ -53,7 +53,7 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
         setShowModal={setShowCreationModal}
         brand_id={brand_id}
       />
-    </View>
+    </ScrollView>
   );
 };
 
