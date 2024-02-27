@@ -97,7 +97,7 @@ const CustomerCard = ({
               )}
               {hasOpenOrders && (
                 <Text style={emphasis}>
-                  {` Open Orders:${openOrdersArray?.length}`}
+                  {` Open Orders: ${openOrdersArray?.length}`}
                 </Text>
               )}
             </View>
