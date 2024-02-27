@@ -117,7 +117,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
   ) => {
     const data: any = { ...chowPayload };
     data.flavours[flavourIndex].varieties[varietyIndex][name] =
-      event.nativeEvent.text;
+      event.nativeEvent.text.trim();
 
     setChowPayload(data);
   };
@@ -157,12 +157,12 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${varietyIndex} ${variety.size} ${variety.unit}`}>
+              <View key={`${varietyIndex} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.size ? variety.size.toString() : "0"}
+                    value={variety.size ? variety.size.toString() : "0"}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -173,6 +173,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                     }
                   />
                 </FormControl>
+
                 <FormControl isRequired>
                   <FormControl.Label>Unit</FormControl.Label>
 
@@ -218,6 +219,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                     })}
                   </View>
                 </FormControl>
+
                 <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
@@ -323,9 +325,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 )
               }
             />
-            <Text style={header}>
-              {`${chowPayload.flavours[specifiedFlavourIndex].flavour_name} Size Variations`}
-            </Text>
+            <Text style={header}>Sizes</Text>
             {renderVarietyForm(specifiedFlavourIndex)}
           </View>
         </>

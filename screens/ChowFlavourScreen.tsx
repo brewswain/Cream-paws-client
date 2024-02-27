@@ -25,26 +25,19 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
 
-  const navigate = useNavigation();
-
   const openCreationModal = () => {
     setShowCreationModal(true);
   };
-  const handleEdit = () => {};
   const { flavours, brand, brand_id } = route.params;
 
-  const handleDelete = (id: string) => {
-    return;
-  };
-
-  const navigateToStockScreen = () => {
-    navigate.navigate("Stock");
-  };
+  const sortedFlavours = flavours.sort((a, b) =>
+    a.flavour_name.localeCompare(b.flavour_name)
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>{brand}</Text>
-      {flavours.map((flavour) => (
+      {sortedFlavours.map((flavour) => (
         <ChowFlavourDetails
           key={flavour.flavour_id}
           flavour={flavour}

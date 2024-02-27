@@ -45,6 +45,7 @@ const CreateChowModal = ({
       },
     ],
   });
+
   const [unitIndex, setUnitIndex] = useState(0);
   const [errors, setErrors] = useState({});
 
@@ -199,12 +200,12 @@ const CreateChowModal = ({
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
+              <View key={`${variety.chow_id} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.size.toString()}
+                    value={variety.size.toString()}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,

@@ -1,16 +1,13 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useContext, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import Icon from "@expo/vector-icons/AntDesign";
 
 import { useFocusEffect } from "@react-navigation/native";
-import React from "react";
-import { getAllChow } from "../api/routes/stock";
+
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import BrandCard from "../components/cards/BrandCard";
-import ChowCard from "../components/cards/ChowCard";
 import CreateChowModal from "../components/modals/CreateChowModal";
-import { Chow } from "../models/chow";
 import { StockContext } from "../context/StockContext";
 
 const StockScreen = () => {
