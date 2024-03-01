@@ -1,8 +1,8 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-json-utils
+  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-manifests
 
 PATH: 
-  C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+  C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\android\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\node_modules\.bin;C:\Users\Blee\Important\Code\node_modules\.bin;C:\Users\Blee\Important\node_modules\.bin;C:\Users\Blee\node_modules\.bin;C:\Users\node_modules\.bin;C:\node_modules\.bin;C:\Users\Blee\AppData\Roaming\npm\node_modules\npm\node_modules\@npmcli\run-script\lib\node-gyp-bin;C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
 
 Yarn version: 
   1.22.10
@@ -14,7 +14,7 @@ Platform:
   win32 x64
 
 Trace: 
-  Error: EBUSY: resource busy or locked, unlink 'C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\@react-native\gradle-plugin\.gradle\buildOutputCleanup\buildOutputCleanup.lock'
+  Error: EPERM: operation not permitted, unlink 'C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin\expo'
 
 npm manifest: 
   {
@@ -68,9 +68,11 @@ npm manifest:
       "expo-build-properties": "~0.8.3",
       "expo-constants": "~14.4.2",
       "expo-font": "~11.4.0",
+      "expo-json-utils": "^0.12.3",
       "expo-linking": "~5.0.2",
       "expo-splash-screen": "~0.20.5",
       "expo-status-bar": "~1.6.0",
+      "expo-system-ui": "^2.9.3",
       "expo-updates": "^0.18.12",
       "expo-web-browser": "~12.3.2",
       "global": "^4.4.0",
@@ -5559,6 +5561,11 @@ Lockfile:
     dependencies:
       fontfaceobserver "^2.1.0"
   
+  expo-json-utils@^0.12.3:
+    version "0.12.3"
+    resolved "https://registry.yarnpkg.com/expo-json-utils/-/expo-json-utils-0.12.3.tgz#cabb704a344d6d75f225cf4032c64479e442a2a9"
+    integrity sha512-4pypQdinpNc6XY9wsZk56njvzDh+B/9mISr7FPP3CVk1QGB1nSLh883/BCDSgnsephATZkC5HG+cdE60kCAR6A==
+  
   expo-json-utils@~0.7.0:
     version "0.7.1"
     resolved "https://registry.yarnpkg.com/expo-json-utils/-/expo-json-utils-0.7.1.tgz#efe315c982113204be46419cbc26d4d9a2af145f"
@@ -5633,6 +5640,14 @@ Lockfile:
     version "3.3.0"
     resolved "https://registry.yarnpkg.com/expo-structured-headers/-/expo-structured-headers-3.3.0.tgz#9f0b041a1d243a22a4a23d9eb19f02ace3c5258c"
     integrity sha512-t+h5Zqaukd3Tn97LaWPpibVsmiC/TFP8F+8sAUliwCSMzgcb5TATRs2NcAB+JcIr8EP3JJDyYXJrZle1cjs4mQ==
+  
+  expo-system-ui@^2.9.3:
+    version "2.9.3"
+    resolved "https://registry.yarnpkg.com/expo-system-ui/-/expo-system-ui-2.9.3.tgz#845c7615a6ede9d959dff1719df3d9392a43c080"
+    integrity sha512-RNFNBLJ9lhnjOGrHhtfDc15Ry/lF+SA4kwulmHzYGqaTeYvsL9q0K0+m9qmxuDdrbKJkuurvzvjVylDNnKNFVg==
+    dependencies:
+      "@react-native/normalize-color" "^2.0.0"
+      debug "^4.3.2"
   
   expo-updates-interface@~0.10.0:
     version "0.10.1"
@@ -9101,10 +9116,10 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-4.6.3.tgz#f06cfea05b1c4b018aa9758667a109f619c62b55"
     integrity sha512-3CeZM9HFXkuqiU9HqhOQp1yxhXw6q99axPWrT+VJkITd67gnPSU03+U27Xk2/cr9XrLUnakM07kj7H0hdPnFiQ==
   
-  react-native-screens@~3.22.0:
-    version "3.22.1"
-    resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-3.22.1.tgz#b0eb0696dbf1f9a852061cc71c0f8cdb95ed8e53"
-    integrity sha512-ffzwUdVKf+iLqhWSzN5DXBm0s2w5sN0P+TaHHPAx42LT7+DT0g8PkHT1QDvxpR5vCEPSS1i3EswyVK4HCuhTYg==
+  react-native-screens@~3.29.0:
+    version "3.29.0"
+    resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-3.29.0.tgz#1dee0326defbc1d4ef4e68287abb32a8e6b76b29"
+    integrity sha512-yB1GoAMamFAcYf4ku94uBPn0/ani9QG7NdI98beJ5cet2YFESYYzuEIuU+kt+CNRcO8qqKeugxlfgAa3HyTqlg==
     dependencies:
       react-freeze "^1.0.0"
       warn-once "^0.1.0"
