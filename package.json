@@ -81,6 +81,9 @@
     "react-native-web": "~0.19.6"
   },
   "license": "MIT",
-  "resolutions": {},
+  "resolutions": {
+    "@isaacs/cliui": "npm:cliui@8.0.1",
+    "string-width": "4.2.3"
+  },
   "private": true
 }
