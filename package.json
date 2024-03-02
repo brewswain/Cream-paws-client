@@ -11,7 +11,8 @@
     "test": "jest --watchAll",
     "ota": "npm version patch && eas update --branch preview --message",
     "ota:prod": "eas update --branch production --message",
-    "build:apk": "eas build -p android --profile preview"
+    "build:apk": "eas build -p android --profile preview",
+    "prebuild:apk": "rm -rf android && npx expo prebuild --clean"
   },
   "jest": {
     "preset": "jest-expo"
