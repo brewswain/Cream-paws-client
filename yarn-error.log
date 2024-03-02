@@ -1,8 +1,8 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-manifests
+  C:\Program Files\nodejs\node.exe C:\Users\Blee\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add expo-build-properties@~0.8.3
 
 PATH: 
-  C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\android\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\cream-paws-server\node_modules\.bin;C:\Users\Blee\Important\Code\Microservices\node_modules\.bin;C:\Users\Blee\Important\Code\node_modules\.bin;C:\Users\Blee\Important\node_modules\.bin;C:\Users\Blee\node_modules\.bin;C:\Users\node_modules\.bin;C:\node_modules\.bin;C:\Users\Blee\AppData\Roaming\npm\node_modules\npm\node_modules\@npmcli\run-script\lib\node-gyp-bin;C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+  F:\Code\Cream-paws-client\node_modules\.bin;F:\Code\Cream-paws-client\node_modules\.bin;F:\Code\node_modules\.bin;F:\node_modules\.bin;C:\Users\Blee\AppData\Roaming\npm\node_modules\npm\node_modules\@npmcli\run-script\lib\node-gyp-bin;C:\Users\Blee\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Blee\bin;C:\Program Files\Microsoft\jdk-17.0.10.7-hotspot\bin;C:\Python312\Scripts;C:\Python312;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;D:\VMware\bin;C:\Python310\Scripts;C:\Python310;C:\Python39\Scripts;C:\Python39;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet;C:\Program Files\Git\cmd;C:\Program Files\Calibre2;C:\Program Files\Go\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PowerShell\7;C:\Program Files\CMake\bin;C:\Users\Blee\AppData\Local\Android\Sdk\platform-tools;C:\Users\Blee\AppData\Local\Android\Sdk\platforms;C:\Users\Blee\AppData\Roaming\npm;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\nodejs;C:\Ruby32-x64\bin;C:\Users\Blee\scoop\shims;C:\Users\Blee\.cargo\bin;C:\Users\Blee\AppData\Local\Microsoft\WindowsApps;C:\Users\Blee\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Users\Blee\AppData\Local\GitHubDesktop\bin;C:\Users\Blee\go\bin;C:\Users\Blee\.dotnet\tools;C:\Users\Blee\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Blee\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Git\usr\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Users\Blee\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
 
 Yarn version: 
   1.22.10
@@ -14,14 +14,14 @@ Platform:
   win32 x64
 
 Trace: 
-  Error: EPERM: operation not permitted, unlink 'C:\Users\Blee\Important\Code\Microservices\cream-paws-server\client\node_modules\.bin\expo'
+  Error: EPERM: operation not permitted, unlink 'F:\Code\Cream-paws-client\node_modules\.bin\expo'
 
 npm manifest: 
   {
     "name": "karin-dog-app",
-    "version": "1.1.4",
+    "version": "1.1.1",
     "scripts": {
-      "start": "expo start",
+      "start": "expo start --dev-client",
       "start:development_build": "expo start --dev-client",
       "android": "expo run:android",
       "ios": "expo run:ios",
@@ -41,15 +41,12 @@ npm manifest:
       "@dank-style/react": "latest",
       "@expo-google-fonts/inter": "^0.2.2",
       "@expo-google-fonts/roboto": "^0.2.2",
-      "@expo/config-plugins": "~7.2.2",
       "@expo/ngrok": "4.1.0",
       "@expo/vector-icons": "^13.0.0",
-      "@expo/webpack-config": "^19.0.0",
+      "@expo/webpack-config": " ^19.0.0",
       "@gluestack-ui/provider": "latest",
       "@react-native-community/checkbox": "^0.5.14",
       "@react-native-community/datetimepicker": "7.2.0",
-      "@react-native/codegen": "^0.73.3",
-      "@react-native/gradle-plugin": "^0.73.4",
       "@react-navigation/bottom-tabs": "^6.0.5",
       "@react-navigation/native": "^6.1.9",
       "@react-navigation/native-stack": "^6.1.0",
@@ -59,20 +56,18 @@ npm manifest:
       "@types/dinero.js": "^1.9.0",
       "@types/moment": "^2.13.0",
       "@types/react-dom": "~18.0.10",
+      "@types/react-native": "^0.67.14",
       "@types/react-native-vector-icons": "^6.4.12",
       "@types/uuid": "^9.0.1",
       "axios": "^0.27.2",
       "dinero.js": "^1.9.1",
       "expo": "~49.0.0",
       "expo-asset": "~8.10.1",
-      "expo-build-properties": "~0.8.3",
       "expo-constants": "~14.4.2",
       "expo-font": "~11.4.0",
-      "expo-json-utils": "^0.12.3",
       "expo-linking": "~5.0.2",
       "expo-splash-screen": "~0.20.5",
       "expo-status-bar": "~1.6.0",
-      "expo-system-ui": "^2.9.3",
       "expo-updates": "^0.18.12",
       "expo-web-browser": "~12.3.2",
       "global": "^4.4.0",
@@ -86,9 +81,9 @@ npm manifest:
       "react-native-collapsible": "^1.6.0",
       "react-native-get-random-values": "~1.9.0",
       "react-native-modal-datetime-picker": "^17.1.0",
-      "react-native-reanimated": "~3.7.1",
+      "react-native-reanimated": "~3.3.0",
       "react-native-safe-area-context": "4.6.3",
-      "react-native-screens": "~3.29.0",
+      "react-native-screens": "~3.22.0",
       "react-native-svg": "13.9.0",
       "react-native-switch-selector": "^2.3.0",
       "react-native-vector-icons": "^9.2.0",
@@ -101,7 +96,6 @@ npm manifest:
       "@react-navigation/stack": "^6.3.20",
       "@types/react": "~18.2.14",
       "@types/react-navigation": "^3.4.0",
-      "prettier-plugin-tailwindcss": "^0.5.11",
       "react-native-dotenv": "^3.4.9",
       "react-native-web": "~0.19.6"
     },
@@ -1438,10 +1432,59 @@ Lockfile:
       xcode "^3.0.1"
       xml2js "0.6.0"
   
+  "@expo/config-plugins@~7.3.0":
+    version "7.3.1"
+    resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-7.3.1.tgz#001b72ac2e51e56c4bf574452ac76b106fa95adc"
+    integrity sha512-TkDtAP3P/rrjhr7GBQtyYH/l1SQUGAO/gByBCwHjfRa4RIPFs+iiq7hocytAl+oSmVsB28ipZCC3O1IPg1OZ7g==
+    dependencies:
+      "@expo/config-types" "^49.0.0-alpha.1"
+      "@expo/json-file" "~8.2.37"
+      "@expo/plist" "^0.0.20"
+      "@expo/sdk-runtime-versions" "^1.0.0"
+      "@react-native/normalize-color" "^2.0.0"
+      chalk "^4.1.2"
+      debug "^4.3.1"
+      find-up "~5.0.0"
+      getenv "^1.0.0"
+      glob "7.1.6"
+      resolve-from "^5.0.0"
+      semver "^7.5.3"
+      slash "^3.0.0"
+      xcode "^3.0.1"
+      xml2js "0.6.0"
+  
+  "@expo/config-plugins@~7.8.2":
+    version "7.8.4"
+    resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-7.8.4.tgz#533b5d536c1dc8b5544d64878b51bda28f2e1a1f"
+    integrity sha512-hv03HYxb/5kX8Gxv/BTI8TLc9L06WzqAfHRRXdbar4zkLcP2oTzvsLEF4/L/TIpD3rsnYa0KU42d0gWRxzPCJg==
+    dependencies:
+      "@expo/config-types" "^50.0.0-alpha.1"
+      "@expo/fingerprint" "^0.6.0"
+      "@expo/json-file" "~8.3.0"
+      "@expo/plist" "^0.1.0"
+      "@expo/sdk-runtime-versions" "^1.0.0"
+      "@react-native/normalize-color" "^2.0.0"
+      chalk "^4.1.2"
+      debug "^4.3.1"
+      find-up "~5.0.0"
+      getenv "^1.0.0"
+      glob "7.1.6"
+      resolve-from "^5.0.0"
+      semver "^7.5.3"
+      slash "^3.0.0"
+      slugify "^1.6.6"
+      xcode "^3.0.1"
+      xml2js "0.6.0"
+  
   "@expo/config-types@^49.0.0-alpha.1":
     version "49.0.0"
     resolved "https://registry.yarnpkg.com/@expo/config-types/-/config-types-49.0.0.tgz#15ffef715285c06703f6fb7ec0cda853f645cc09"
     integrity sha512-8eyREVi+K2acnMBe/rTIu1dOfyR2+AMnTLHlut+YpMV9OZPdeKV0Bs9BxAewGqBA2slslbQ9N39IS2CuTKpXkA==
+  
+  "@expo/config-types@^50.0.0", "@expo/config-types@^50.0.0-alpha.1":
+    version "50.0.0"
+    resolved "https://registry.yarnpkg.com/@expo/config-types/-/config-types-50.0.0.tgz#b534d3ec997ec60f8af24f6ad56244c8afc71a0b"
+    integrity sha512-0kkhIwXRT6EdFDwn+zTg9R2MZIAEYGn1MVkyRohAd+C9cXOb5RA8WLQi7vuxKF9m1SMtNAUrf0pO+ENK0+/KSw==
   
   "@expo/config@8.1.2", "@expo/config@~8.1.0":
     version "8.1.2"
@@ -1459,6 +1502,40 @@ Lockfile:
       semver "7.5.3"
       slugify "^1.3.4"
       sucrase "^3.20.0"
+  
+  "@expo/config@~8.2.0":
+    version "8.2.1"
+    resolved "https://registry.yarnpkg.com/@expo/config/-/config-8.2.1.tgz#ca84025f8869add12c13a1eb0615cc59b66523a2"
+    integrity sha512-15XjV0WrSb5hChRM5pAEK5uyh55njfgFOEZpov3YKYBeMd9D6QT/azWWqnaFuuCWKzgzyxD9HaYgGo5VbnOU1g==
+    dependencies:
+      "@babel/code-frame" "~7.10.4"
+      "@expo/config-plugins" "~7.3.0"
+      "@expo/config-types" "^49.0.0-alpha.1"
+      "@expo/json-file" "^8.2.37"
+      getenv "^1.0.0"
+      glob "7.1.6"
+      require-from-string "^2.0.2"
+      resolve-from "^5.0.0"
+      semver "7.5.3"
+      slugify "^1.3.4"
+      sucrase "^3.20.0"
+  
+  "@expo/config@~8.5.0":
+    version "8.5.4"
+    resolved "https://registry.yarnpkg.com/@expo/config/-/config-8.5.4.tgz#bb5eb06caa36e4e35dc8c7647fae63e147b830ca"
+    integrity sha512-ggOLJPHGzJSJHVBC1LzwXwR6qUn8Mw7hkc5zEKRIdhFRuIQ6s2FE4eOvP87LrNfDF7eZGa6tJQYsiHSmZKG+8Q==
+    dependencies:
+      "@babel/code-frame" "~7.10.4"
+      "@expo/config-plugins" "~7.8.2"
+      "@expo/config-types" "^50.0.0"
+      "@expo/json-file" "^8.2.37"
+      getenv "^1.0.0"
+      glob "7.1.6"
+      require-from-string "^2.0.2"
+      resolve-from "^5.0.0"
+      semver "7.5.3"
+      slugify "^1.3.4"
+      sucrase "3.34.0"
   
   "@expo/dev-server@0.5.5":
     version "0.5.5"
@@ -1511,6 +1588,19 @@ Lockfile:
       dotenv-expand "~10.0.0"
       getenv "^1.0.0"
   
+  "@expo/fingerprint@^0.6.0":
+    version "0.6.0"
+    resolved "https://registry.yarnpkg.com/@expo/fingerprint/-/fingerprint-0.6.0.tgz#77366934673d4ecea37284109b4dd67f9e6a7487"
+    integrity sha512-KfpoVRTMwMNJ/Cf5o+Ou8M/Y0EGSTqK+rbi70M2Y0K2qgWNfMJ1gm6sYO9uc8lcTr7YSYM1Rme3dk7QXhpScNA==
+    dependencies:
+      "@expo/spawn-async" "^1.5.0"
+      chalk "^4.1.2"
+      debug "^4.3.4"
+      find-up "^5.0.0"
+      minimatch "^3.0.4"
+      p-limit "^3.1.0"
+      resolve-from "^5.0.0"
+  
   "@expo/image-utils@0.3.22":
     version "0.3.22"
     resolved "https://registry.yarnpkg.com/@expo/image-utils/-/image-utils-0.3.22.tgz#3a45fb2e268d20fcc761c87bca3aca7fd8e24260"
@@ -1545,7 +1635,7 @@ Lockfile:
       semver "7.3.2"
       tempy "0.3.0"
   
-  "@expo/json-file@^8.2.37":
+  "@expo/json-file@^8.2.37", "@expo/json-file@~8.3.0":
     version "8.3.0"
     resolved "https://registry.yarnpkg.com/@expo/json-file/-/json-file-8.3.0.tgz#fc84af77b532a4e9bfb5beafd0e3b7f692b6bd7e"
     integrity sha512-yROUeXJXR5goagB8c3muFLCzLmdGOvoPpR5yDNaXrnTp4euNykr9yW0wWhJx4YVRTNOPtGBnEbbJBW+a9q+S6g==
@@ -1700,6 +1790,15 @@ Lockfile:
     version "0.0.20"
     resolved "https://registry.yarnpkg.com/@expo/plist/-/plist-0.0.20.tgz#a6b3124438031c02b762bad5a47b70584d3c0072"
     integrity sha512-UXQ4LXCfTZ580LDHGJ5q62jSTwJFFJ1GqBu8duQMThiHKWbMJ+gajJh6rsB6EJ3aLUr9wcauxneL5LVRFxwBEA==
+    dependencies:
+      "@xmldom/xmldom" "~0.7.7"
+      base64-js "^1.2.3"
+      xmlbuilder "^14.0.0"
+  
+  "@expo/plist@^0.1.0":
+    version "0.1.0"
+    resolved "https://registry.yarnpkg.com/@expo/plist/-/plist-0.1.0.tgz#eabc95f951d14e10c87fd0443ee01d567371f058"
+    integrity sha512-xWD+8vIFif0wKyuqe3fmnmnSouXYucciZXFzS0ZD5OV9eSAS1RGQI5FaGGJ6zxJ4mpdy/4QzbLdBjnYE5vxA0g==
     dependencies:
       "@xmldom/xmldom" "~0.7.7"
       base64-js "^1.2.3"
@@ -5542,6 +5641,14 @@ Lockfile:
       "@expo/config" "~8.1.0"
       uuid "^3.3.2"
   
+  expo-constants@~14.5.0:
+    version "14.5.1"
+    resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-14.5.1.tgz#2b996604dc5ec642d29fc16380daa0a61a66472d"
+    integrity sha512-06OKXQmKI0vuje++6lm7w1kO3rKsZAHio/4d9hwQuVAtExJ6RM92BnpzkDAV16ZheVN/FHKzNyY1BYLqXfujMw==
+    dependencies:
+      "@expo/config" "~8.2.0"
+      uuid "^3.3.2"
+  
   expo-eas-client@~0.6.0:
     version "0.6.0"
     resolved "https://registry.yarnpkg.com/expo-eas-client/-/expo-eas-client-0.6.0.tgz#b722dde0de1b8b56701b282a5fdf28d3d3e79ec4"
@@ -5561,7 +5668,7 @@ Lockfile:
     dependencies:
       fontfaceobserver "^2.1.0"
   
-  expo-json-utils@^0.12.3:
+  expo-json-utils@^0.12.3, expo-json-utils@~0.12.0:
     version "0.12.3"
     resolved "https://registry.yarnpkg.com/expo-json-utils/-/expo-json-utils-0.12.3.tgz#cabb704a344d6d75f225cf4032c64479e442a2a9"
     integrity sha512-4pypQdinpNc6XY9wsZk56njvzDh+B/9mISr7FPP3CVk1QGB1nSLh883/BCDSgnsephATZkC5HG+cdE60kCAR6A==
@@ -5586,6 +5693,14 @@ Lockfile:
       invariant "^2.2.4"
       qs "^6.11.0"
       url-parse "^1.5.9"
+  
+  expo-manifests@^0.13.2:
+    version "0.13.2"
+    resolved "https://registry.yarnpkg.com/expo-manifests/-/expo-manifests-0.13.2.tgz#02b28bb2fb002ef93a03faf1ede9ecaa43e5d6c0"
+    integrity sha512-l0Sia1WmLULx8V41K8RzGLsFoTe4qqthPRGpHjItsYn8ZB6lRrdTBM9OYp2McIflgqN1HAimUCQMFIwJyH+UmA==
+    dependencies:
+      "@expo/config" "~8.5.0"
+      expo-json-utils "~0.12.0"
   
   expo-manifests@~0.7.0:
     version "0.7.2"
@@ -5613,6 +5728,11 @@ Lockfile:
     dependencies:
       compare-versions "^3.4.0"
       invariant "^2.2.4"
+  
+  expo-modules@^0.0.0:
+    version "0.0.0"
+    resolved "https://registry.yarnpkg.com/expo-modules/-/expo-modules-0.0.0.tgz#fb56b22404c1688d817552f52a9fbcbcc527a61d"
+    integrity sha512-RsXPsVjxeLIr2AKE9YWIcVhuDvA446DaUP8J9yoQ2VA7DfcgNQdx2ZNpXfy3CI45AFJjtEqFKJ46Vnb3asM/OQ==
   
   expo-pwa@0.0.127:
     version "0.0.127"
@@ -5679,7 +5799,7 @@ Lockfile:
       compare-urls "^2.0.0"
       url "^0.11.0"
   
-  expo@~49.0.0:
+  expo@^49.0.0:
     version "49.0.23"
     resolved "https://registry.yarnpkg.com/expo/-/expo-49.0.23.tgz#b8dc4daecdc2e912607a4bc63dede5506017976d"
     integrity sha512-mFdBpWisPXBuocRGywC14nDai5vSUmvEyQpwvKH/xUo+m5/TUvfqV6YIewFpW22zn5WFGFiuJPhzNrqhBBinIw==
@@ -8347,7 +8467,7 @@ Lockfile:
     dependencies:
       p-try "^2.0.0"
   
-  p-limit@^3.0.2:
+  p-limit@^3.0.2, p-limit@^3.1.0:
     version "3.1.0"
     resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-3.1.0.tgz#e1daccbe78d0d1388ca18c64fea38e3e57e3706b"
     integrity sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==
@@ -9805,7 +9925,7 @@ Lockfile:
       astral-regex "^1.0.0"
       is-fullwidth-code-point "^2.0.0"
   
-  slugify@^1.3.4:
+  slugify@^1.3.4, slugify@^1.6.6:
     version "1.6.6"
     resolved "https://registry.yarnpkg.com/slugify/-/slugify-1.6.6.tgz#2d4ac0eacb47add6af9e04d3be79319cbcc7924b"
     integrity sha512-h+z7HKHYXj6wJU+AnS/+IH8Uh9fdcX1Lrhg1/VMdf9PwoBQXFcXiAdsy2tSK0P6gKwJLXp02r90ahUCqHk9rrw==
@@ -9970,6 +10090,7 @@ Lockfile:
     integrity sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==
   
   "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+    name string-width-cjs
     version "4.2.3"
     resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
     integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -10078,6 +10199,19 @@ Lockfile:
     version "0.1.3"
     resolved "https://registry.yarnpkg.com/styleq/-/styleq-0.1.3.tgz#8efb2892debd51ce7b31dc09c227ad920decab71"
     integrity sha512-3ZUifmCDCQanjeej1f6kyl/BeP/Vae5EYkQ9iJfUm/QwZvlgnZzyflqAsAWYURdtea8Vkvswu2GrC57h3qffcA==
+  
+  sucrase@3.34.0:
+    version "3.34.0"
+    resolved "https://registry.yarnpkg.com/sucrase/-/sucrase-3.34.0.tgz#1e0e2d8fcf07f8b9c3569067d92fbd8690fb576f"
+    integrity sha512-70/LQEZ07TEcxiU2dz51FKaE6hCTWC6vr7FOk3Gr0U60C3shtAN+H+BFr9XlYe5xqf3RA8nrc+VIwzCfnxuXJw==
+    dependencies:
+      "@jridgewell/gen-mapping" "^0.3.2"
+      commander "^4.0.0"
+      glob "7.1.6"
+      lines-and-columns "^1.1.6"
+      mz "^2.7.0"
+      pirates "^4.0.1"
+      ts-interface-checker "^0.1.9"
   
   sucrase@^3.20.0:
     version "3.35.0"
@@ -10807,6 +10941,7 @@ Lockfile:
     integrity sha512-CjpbqNtBGNAeyNS/9W6q3kSkKE52+FjIj7AkFlLr11s/VWGUu6a2CdYSdGxocIhIVjaW/zchesBQUKPVU69Cqg==
   
   "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+    name wrap-ansi-cjs
     version "7.0.0"
     resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
     integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
