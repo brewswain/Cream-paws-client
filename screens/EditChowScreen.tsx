@@ -10,15 +10,15 @@ import {
   View,
 } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+
 import { Button, FormControl } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
-import { useNavigation } from "@react-navigation/native";
 import { Chow } from "../models/chow";
 import { RootTabScreenProps } from "../types";
-
 interface EditChowScreenProps {
   navigation: RootTabScreenProps<"EditChow">;
   route: {
@@ -46,7 +46,6 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
       },
     ],
   });
-
   const [unitIndex, setUnitIndex] = useState(0);
   const [specifiedFlavourIndex, setSpecifiedFlavourIndex] = useState(0);
 
@@ -77,11 +76,14 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     setChowPayload(data);
   };
 
-  const addNewVarietyField = (flavourIndex: number) => {
+  const addNewVarietyField = (flavourIndex: number, varietyIndex: number) => {
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit: "lb" as const,
+      unit:
+        varietyIndex > 0
+          ? data.flavours[flavourIndex].varieties[0].unit
+          : ("lb" as const),
       wholesale_price: 0,
       retail_price: 0,
     };
@@ -117,7 +119,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
   ) => {
     const data: any = { ...chowPayload };
     data.flavours[flavourIndex].varieties[varietyIndex][name] =
-      event.nativeEvent.text;
+      event.nativeEvent.text.trim();
 
     setChowPayload(data);
   };
@@ -157,12 +159,13 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${varietyIndex} ${variety.size} ${variety.unit}`}>
+              <View key={`${varietyIndex} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
-                    defaultValue={variety.size ? variety.size.toString() : "0"}
+                    value={variety.size ? variety.size.toString() : "0"}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -173,11 +176,12 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                     }
                   />
                 </FormControl>
+
                 <FormControl isRequired>
                   <FormControl.Label>Unit</FormControl.Label>
 
                   <View style={styles.unitButtonContainer}>
-                    {["lb", "kg"].map((unit, index) => {
+                    {["lb", "kg", "oz"].map((unit, index) => {
                       const isActiveButton =
                         unit ===
                         chowPayload.flavours[flavourIndex].varieties[
@@ -218,9 +222,11 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                     })}
                   </View>
                 </FormControl>
+
                 <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={
                       variety.wholesale_price
@@ -240,6 +246,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <FormControl isRequired>
                   <FormControl.Label>Retail Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={
                       variety.retail_price
@@ -259,7 +266,9 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <View style={buttonContainer}>
                   <Button
                     style={button}
-                    onPress={() => addNewVarietyField(flavourIndex)}
+                    onPress={() =>
+                      addNewVarietyField(flavourIndex, varietyIndex)
+                    }
                     key={`flavourIndex: ${varietyIndex} AddField `}
                   >
                     <Icon
@@ -298,6 +307,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
         <View style={{ alignItems: "center" }}>
           <FormControl.Label>Brand</FormControl.Label>
           <TextInput
+            selectTextOnFocus
             style={input}
             defaultValue={chowPayload.brand}
             onChange={(event) => handleChowChange(event, "brand")}
@@ -311,6 +321,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
           <View>
             <FormControl.Label mt={4}>Name</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               defaultValue={
                 chowPayload.flavours[specifiedFlavourIndex].flavour_name
@@ -323,9 +334,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 )
               }
             />
-            <Text style={header}>
-              {`${chowPayload.flavours[specifiedFlavourIndex].flavour_name} Size Variations`}
-            </Text>
+            <Text style={header}>Sizes</Text>
             {renderVarietyForm(specifiedFlavourIndex)}
           </View>
         </>
@@ -338,7 +347,9 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
               <View key={index}>
                 <FormControl.Label mt={4}>Name</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
+                  returnKeyType="next"
                   defaultValue={currentFlavour.flavour_name}
                   onChange={(event) =>
                     handleChowFlavourChange(event, "flavour_name", index)

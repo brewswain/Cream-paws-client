@@ -3,8 +3,6 @@ import Collapsible from "react-native-collapsible";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import FilteredOrderDetails from "../FilteredOrderDetails";
-import { OrderWithChowDetails } from "../../models/order";
-import { SelectedOrder } from "../../screens/CustomerDetailsScreen";
 
 interface CollapsibleOrderProps {
   setOutstandingCollapsible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +36,6 @@ const CollapsibleOrder = ({
       </TouchableOpacity>
 
       <Collapsible collapsed={outstandingCollapsible}>
-        {/*  We engage in some prop drilling as a treat--I should honestly see about better state management*/}
         <FilteredOrderDetails
           color="black"
           paddingLeft={0}
@@ -60,7 +57,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dropdownText: {
-    // TODO: font family+ aliasing please for the love of god
     fontSize: 16,
   },
   dropdownIcon: {
