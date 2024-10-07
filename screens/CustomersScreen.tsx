@@ -10,6 +10,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
+import { Customer } from "../models/customer";
 
 const CustomersScreen = () => {
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
