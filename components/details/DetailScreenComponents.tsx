@@ -1,3 +1,4 @@
+import { Ref } from "react";
 import {
   KeyboardType,
   ScrollView,
@@ -19,15 +20,16 @@ export interface SubFields {
   content: string | number;
   name: string;
   type?: KeyboardType;
+  ref?: React.MutableRefObject<undefined>;
 }
 [];
 
 export const Header = ({ children }: HeaderProps) => {
-  return <Text style={{ fontSize: 16, fontWeight: "500" }}>{children}</Text>;
+  return <Text style={{ fontSize: 20, fontWeight: "500" }}>{children}</Text>;
 };
 
 export const SubHeader = ({ children }: HeaderProps) => {
-  return <Text style={{ fontSize: 12 }}>{children}</Text>;
+  return <Text style={{ fontSize: 16 }}>{children}</Text>;
 };
 
 export const CustomInput = (props: {

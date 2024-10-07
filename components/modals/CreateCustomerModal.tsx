@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   StyleSheet,
@@ -30,6 +30,11 @@ const CreateCustomerModal = ({
   const [location, setLocation] = useState("");
   const [city, setCity] = useState("");
   const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
+
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  const inputRef4 = useRef();
+
   const {
     input,
     button,
@@ -105,7 +110,12 @@ const CreateCustomerModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
+    <Modal
+      isOpen={isOpen}
+      onClose={closeModal}
+      avoidKeyboard
+      _overlay={{ useRNModal: false, useRNModalOnAndroid: false }}
+    >
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header>Create Customer</Modal.Header>
@@ -113,34 +123,50 @@ const CreateCustomerModal = ({
           <FormControl isRequired>
             <FormControl.Label>Name</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleNameChange(event)}
               value={name}
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef2.current.focus()}
+              blurOnSubmit={false}
             />
           </FormControl>
           <FormControl>
             <FormControl.Label>Contact Number</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleContactNumberChange(event)}
               value={contactNumber}
               keyboardType="numeric"
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef3.current.focus()}
+              blurOnSubmit={false}
+              ref={inputRef2}
             />
           </FormControl>
           <FormControl>
             <FormControl.Label>Address</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleLocationChange(event)}
               value={location}
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef4.current.focus()}
+              blurOnSubmit={false}
+              ref={inputRef3}
             />
           </FormControl>
           <FormControl>
             <FormControl.Label>City</FormControl.Label>
             <TextInput
+              selectTextOnFocus
               style={input}
               onChange={(event) => handleCityChange(event)}
               value={city}
+              ref={inputRef4}
             />
           </FormControl>
           <FormControl mt={3}>
@@ -149,6 +175,7 @@ const CreateCustomerModal = ({
               return (
                 <View key={index}>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     placeholder="Name"
                     key={`index: ${index} name `}
@@ -157,6 +184,7 @@ const CreateCustomerModal = ({
                   />
 
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     placeholder="Breed"
                     key={`index: ${index} breed `}

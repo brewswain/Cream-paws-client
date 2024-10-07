@@ -369,7 +369,12 @@ const CreateOrderModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
+    <Modal
+      isOpen={isOpen}
+      onClose={closeModal}
+      avoidKeyboard
+      _overlay={{ useRNModal: false, useRNModalOnAndroid: false }}
+    >
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header>Create Order</Modal.Header>
@@ -385,6 +390,7 @@ const CreateOrderModal = ({
                 endIcon: <CheckIcon size={5} />,
               }}
               mt="1"
+              pl="4"
               onValueChange={(nextValue) => handleCustomerSelected(nextValue)}
             >
               {chow && renderCustomersDropdown()}
@@ -427,6 +433,7 @@ const CreateOrderModal = ({
                 endIcon: <CheckIcon size={5} />,
               }}
               mt="1"
+              pl="4"
               onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
             >
               {chow && renderDeliveryCost()}
@@ -458,6 +465,7 @@ const CreateOrderModal = ({
                       endIcon: <CheckIcon size={5} />,
                     }}
                     mt="1"
+                    pl="4"
                     onValueChange={(itemValue) =>
                       handleChowSelected(itemValue, index, "brand")
                     }
@@ -480,6 +488,7 @@ const CreateOrderModal = ({
                         endIcon: <CheckIcon size={5} />,
                       }}
                       mt="1"
+                      pl="4"
                       onValueChange={(itemValue) =>
                         handleChowSelected(itemValue, index, "flavour_id")
                       }
@@ -503,6 +512,7 @@ const CreateOrderModal = ({
                         endIcon: <CheckIcon size={5} />,
                       }}
                       mt="1"
+                      pl="4"
                       onValueChange={(itemValue) =>
                         handleChowSelected(itemValue, index, "chow_id")
                       }
@@ -515,6 +525,7 @@ const CreateOrderModal = ({
 
                 <FormControl.Label>Quantity</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
                   placeholder="Quantity *"
                   keyboardType="numeric"
@@ -522,13 +533,13 @@ const CreateOrderModal = ({
                     handleQuantityChange(event, index, "quantity")
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
-                  // value={field.quantity.toString()}
                   key={`index: ${index} Quantity `}
                 />
                 {chowInputs[index].retail_price ? (
                   <>
                     <FormControl.Label>Retail Price</FormControl.Label>
                     <TextInput
+                      selectTextOnFocus
                       style={input}
                       placeholder="Retail Price"
                       keyboardType="numeric"
@@ -536,7 +547,6 @@ const CreateOrderModal = ({
                         handlePriceChange(event, index, "retail_price")
                       }
                       defaultValue={chowInputs[index].retail_price.toString()}
-                      // value={field.quantity.toString()}
                       key={`index: ${index} retail_price `}
                     />
                   </>
@@ -599,7 +609,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 8,
     marginTop: 10,
-    paddingLeft: 10,
+    paddingLeft: 16,
     width: 270,
     borderRadius: 4,
     backgroundColor: "hsl(240,57%,97%)",

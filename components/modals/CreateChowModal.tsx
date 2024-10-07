@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -53,6 +53,11 @@ const CreateChowModal = ({
 
   const navigation = useNavigation();
 
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  const inputRef4 = useRef();
+  const inputRef5 = useRef();
+
   const {
     input,
     confirmationButton,
@@ -94,11 +99,14 @@ const CreateChowModal = ({
     setChowPayload(newData);
   };
 
-  const addNewVarietyField = (flavourIndex: number) => {
+  const addNewVarietyField = (flavourIndex: number, varietyIndex: number) => {
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit: "lb" as const,
+      unit:
+        varietyIndex > 0
+          ? data.flavours[flavourIndex].varieties[0].unit
+          : ("lb" as const),
       wholesale_price: 0,
       retail_price: 0,
     };
@@ -199,12 +207,13 @@ const CreateChowModal = ({
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${variety.chow_id} ${variety.size} ${variety.unit}`}>
+              <View key={`${variety.chow_id} ${variety.unit}`}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
-                    defaultValue={variety.size.toString()}
+                    value={variety.size.toString()}
+                    selectTextOnFocus
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -213,13 +222,14 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    ref={inputRef3}
                   />
                 </FormControl>
                 <FormControl isRequired>
                   <FormControl.Label>Unit</FormControl.Label>
 
                   <View style={styles.unitButtonContainer}>
-                    {["lb", "kg"].map((unit, index) => {
+                    {["lb", "kg", "oz"].map((unit, index) => {
                       const isActiveButton =
                         unit ===
                         chowPayload.flavours[flavourIndex].varieties[
@@ -263,6 +273,7 @@ const CreateChowModal = ({
                 <FormControl isRequired>
                   <FormControl.Label>Wholesale Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={variety.wholesale_price.toString()}
                     onChange={(event) =>
@@ -273,11 +284,16 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    returnKeyType="next"
+                    onSubmitEditing={() => inputRef5.current.focus()}
+                    blurOnSubmit={false}
+                    ref={inputRef4}
                   />
                 </FormControl>
                 <FormControl isRequired>
                   <FormControl.Label>Retail Price</FormControl.Label>
                   <TextInput
+                    selectTextOnFocus
                     style={input}
                     defaultValue={variety.retail_price.toString()}
                     onChange={(event) =>
@@ -288,12 +304,15 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
+                    ref={inputRef5}
                   />
                 </FormControl>
                 <View style={buttonContainer}>
                   <Button
                     style={button}
-                    onPress={() => addNewVarietyField(flavourIndex)}
+                    onPress={() =>
+                      addNewVarietyField(flavourIndex, varietyIndex)
+                    }
                     key={`flavourIndex: ${varietyIndex} AddField `}
                   >
                     <Icon
@@ -327,7 +346,15 @@ const CreateChowModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={closeModal} avoidKeyboard>
+    <Modal
+      isOpen={isOpen}
+      onClose={closeModal}
+      avoidKeyboard
+      _overlay={{
+        useRNModal: false,
+        useRNModalOnAndroid: false,
+      }}
+    >
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Header>
@@ -338,7 +365,11 @@ const CreateChowModal = ({
             <FormControl isRequired>
               <FormControl.Label>Brand</FormControl.Label>
               <TextInput
+                selectTextOnFocus
                 style={input}
+                returnKeyType="next"
+                onSubmitEditing={() => inputRef2.current.focus()}
+                blurOnSubmit={false}
                 onChange={(event) => handleChowChange(event, "brand")}
               />
             </FormControl>
@@ -350,11 +381,16 @@ const CreateChowModal = ({
               <View key={index}>
                 <FormControl.Label mt={4}>Name</FormControl.Label>
                 <TextInput
+                  selectTextOnFocus
                   style={input}
                   defaultValue={chowPayload.flavours[index].flavour_name}
                   onChange={(event) =>
                     handleChowFlavourChange(event, "flavour_name", index)
                   }
+                  returnKeyType="next"
+                  onSubmitEditing={() => inputRef3.current.focus()}
+                  blurOnSubmit={false}
+                  ref={inputRef2}
                 />
                 <Text
                   style={header}
