@@ -1,6 +1,7 @@
 import axios from "axios";
 import { axiosInstance } from "../api";
 import { Customer, CustomerPayload } from "../../models/customer";
+import { supabase } from "../../utils/supabase";
 
 // Creating default param in case we don't have any pets added
 export const createCustomer = async (customer: CustomerPayload) => {
@@ -39,12 +40,20 @@ export const findCustomer = async (id: string) => {
 
 export const getAllCustomers = async () => {
   try {
-    const response = await axiosInstance.get("/customer");
-    return response.data;
+    const { data } = await supabase.from("customers").select("*").order("name");
+    return data;
   } catch (error) {
     console.error(error);
   }
 };
+// export const getAllCustomers = async () => {
+//   try {
+//     const response = await axiosInstance.get("/customer");
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 export const updateCustomer = async (id: string, customer: Customer) => {
   try {
