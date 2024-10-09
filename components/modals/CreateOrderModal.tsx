@@ -20,6 +20,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { createOrder } from "../../api";
 import { Chow } from "../../models/chow";
 import { findChowVariety } from "../../api/routes/stock";
+import { Customer } from "../../models/customer";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -393,7 +394,7 @@ const CreateOrderModal = ({
               pl="4"
               onValueChange={(nextValue) => handleCustomerSelected(nextValue)}
             >
-              {chow && renderCustomersDropdown()}
+              {renderCustomersDropdown()}
             </Select>
           </View>
           {/* </TouchableWithoutFeedback> */}
