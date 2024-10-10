@@ -28,19 +28,8 @@ import {
   CustomersMap,
   OrdersMap,
 } from "./TodayAtAGlanceCard.model";
-import { test } from "../../api/routes/stock";
 
 const TodayAtaGlanceCard = () => {
-  const fetchTestData = async () => {
-    const response = await test();
-
-    console.log({ response });
-  };
-
-  useEffect(() => {
-    fetchTestData();
-  }, []);
-
   const [todaysOrders, dispatch] = useReducer(
     todaysOrdersReducer,
     initialState
