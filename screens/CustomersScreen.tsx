@@ -44,7 +44,7 @@ const CustomersScreen = () => {
       });
     };
 
-    if (storedCustomers?.length) {
+    if (storedCustomers && storedCustomers?.length > 0) {
       const parsedCustomers: Customer[] = JSON.parse(storedCustomers);
 
       setCustomersWithOpenOrders(filterOpenOrders(parsedCustomers));
@@ -52,7 +52,8 @@ const CustomersScreen = () => {
 
       return;
     }
-    await fetchCustomers();
+
+    fetchCustomers();
 
     setCustomersWithOpenOrders(filterOpenOrders(customers));
     setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));

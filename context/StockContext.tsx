@@ -32,7 +32,6 @@ export const StockContextProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const response = await getAllChow();
-      console.log({ response });
       setChows(response);
       setIsLoading(false);
     } catch (error) {
