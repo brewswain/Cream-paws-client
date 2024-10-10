@@ -56,7 +56,7 @@ export const createChow = async (chow: Chow) => {
   });
 
   const { error: chowFlavourVarietiesError } = await supabase
-    .from("chow_flavour_varieties")
+    .from("chow_intermediary")
     .insert({
       flavour_id: chowsTableData.id,
       variety_id: chowVarietyData.id,
@@ -66,7 +66,7 @@ export const createChow = async (chow: Chow) => {
 
   if (chowFlavourVarietiesError) {
     console.error(
-      "Error adding data to chow_flavour_varieties table: ",
+      "Error adding data to chow_intermediary table: ",
       chowVarietyError
     );
     throw new Error(chowFlavourVarietiesError.message);
@@ -143,7 +143,7 @@ export const getAllChow = async () => {
     `
       id,
       brand_name,
-    flavours:chow_flavour_varieties (details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  )
+    flavours:chow_intermediary (details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  )
       `
   );
 
@@ -215,7 +215,7 @@ export const getAllChow = async () => {
 
 //   const { data: chowFlavourVarietyData, error: chowFlavourVarietyError } =
 //     await supabase
-//       .from("chow_flavour_varieties")
+//       .from("chow_intermediary")
 //       .select(`id, flavour_id, variety_id`)
 //       .order("flavour_id");
 
