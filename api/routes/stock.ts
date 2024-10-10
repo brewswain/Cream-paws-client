@@ -78,15 +78,6 @@ export const createChow = async (chow: Chow) => {
 
   console.log("Chow created successfully");
 };
-// export const createChow = async (chow: Chow) => {
-//   try {
-//     const response = await axiosInstance.post("/stock", chow);
-
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 export const createChowFlavour = async (
   brand_id: string,
@@ -147,18 +138,21 @@ export const updateChowFlavour = async (chowFlavour: ChowFlavour) => {
   }
 };
 
-// export const getAllChow = async () => {
-//   const { data, error } = await supabase
-//     .from("chows")
-//     .select("*")
-//     .returns<Chow[]>()
-//     .order("name");
+export const test = async () => {
+  const { data, error } = await supabase.from("brands").select(
+    `
+      id,
+      brand_name,
+    flavours:chow_flavour_varieties (details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  )
+      `
+  );
 
-//   if (error) {
-//     throw new Error(error.message);
-//   }
-//   return data;
-// };
+  if (error) {
+    console.error("Error retrieving brands", error);
+    throw new Error(error.message);
+  }
+  return data;
+};
 
 export const getAllChow = async () => {
   // Retrieve brands data
@@ -251,8 +245,6 @@ export const getAllChow = async () => {
     ],
   }));
 
-  console.log({ chows });
-
   // // Add brand ID and target group details to each Chow object
   const mergedChows = chows.map((chow) => {
     const brandDetail = brandChowDetailData.find(
@@ -287,16 +279,6 @@ export const getAllChow = async () => {
 
   return finalChows;
 };
-
-// export const getAllChow = async () => {
-//   try {
-//     const response = await axiosInstance.get("/stock");
-
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 export const findChow = async (id: string) => {
   try {
