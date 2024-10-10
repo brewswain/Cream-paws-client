@@ -11,42 +11,54 @@ import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
 import { Customer } from "../models/customer";
+import { PostgrestError } from "@supabase/supabase-js";
+import { useCustomerStore } from "../store/customerStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CustomersScreen = () => {
+  const { customers, error, isFetching, fetchCustomers } = useCustomerStore();
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
     useState<Customer[]>();
   const [customersWithoutOpenOrders, setCustomersWithoutOpenOrders] =
     useState<Customer[]>();
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const populateCustomersList = async () => {
-    setIsLoading(true);
-    try {
-      const response: Customer[] = await getAllCustomers();
-      // TODO: this logic should be  localised inside of the backend. Let's refactor this later.
-      // The goal is that getAllCustomers() will return an object with 2 fields: customersWithOrders and customersWithoutOrders.
-      // So basically, we'll get response.customersWithOrders and response.customersWithoutOrders. That too can be optimized so that our state
-      // only uses one object and specifies from there, but i like the separation for now as it makes my life easier
+    const storedCustomers = await AsyncStorage.getItem("customers");
 
-      const mappedCustomersWithOrders = response.filter((customer) => {
+    const filterOpenOrders = (customers: Customer[]) => {
+      return customers.filter((customer) => {
         if (customer.orders) {
           return customer.orders.some((order) => order.payment_made === false);
         }
       });
-      const mappedCustomersWithoutOrders = response.filter((customer) => {
+    };
+
+    const filterNoOpenOrders = (customers: Customer[]) => {
+      return customers.filter((customer) => {
         if (customer.orders) {
           return customer.orders.every((order) => order.payment_made === true);
         }
         return customer;
       });
+    };
 
-      setCustomersWithOpenOrders(mappedCustomersWithOrders);
-      setCustomersWithoutOpenOrders(mappedCustomersWithoutOrders);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
+    if (storedCustomers && storedCustomers?.length > 0) {
+      const parsedCustomers: Customer[] = JSON.parse(storedCustomers);
+
+      setCustomersWithOpenOrders(filterOpenOrders(parsedCustomers));
+      setCustomersWithoutOpenOrders(filterNoOpenOrders(parsedCustomers));
+
+      return;
+    }
+
+    fetchCustomers();
+
+    setCustomersWithOpenOrders(filterOpenOrders(customers));
+    setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));
+
+    if (error) {
       console.error(error);
     }
   };
@@ -57,14 +69,13 @@ const CustomersScreen = () => {
 
   const renderCustomerCard = (customer: Customer) => {};
 
-  useFocusEffect(
-    useCallback(() => {
-      populateCustomersList();
-    }, [isDeleted])
-  );
+  useEffect(() => {
+    populateCustomersList();
+  }, []);
+
   return (
     <View style={styles.container}>
-      {isLoading ? (
+      {isFetching ? (
         generateSkeletons({ count: 12, type: "CustomerSkeleton" })
       ) : (
         <ScrollView>

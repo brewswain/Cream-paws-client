@@ -80,3 +80,18 @@ export interface CombinedOrder {
     version?: number;
   }[];
 }
+
+export interface OrderPayload {
+  brand_id: number;
+  flavour_id: number;
+  variety_id: number;
+  quantity: number;
+  customer_id: number;
+  delivery_date: string;
+  delivery_cost: number;
+  payment_date: number;
+  payment_made: boolean;
+  is_delivery: boolean;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+}

@@ -33,7 +33,9 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
   const navigation = useNavigation();
 
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
-  const { flavour_name, varieties } = flavour;
+  const { flavour_name, varieties } = flavour.details;
+
+  console.log({ flavour_name });
 
   const handleEdit = () => {
     setShowModal(false);
@@ -74,7 +76,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
           style={dropdownIcon}
         />
       </TouchableOpacity>
-
       <Collapsible collapsed={varietyCollapsible}>
         <View
           style={[
@@ -124,7 +125,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
         </View>
       </Collapsible>
       <Divider />
-
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}

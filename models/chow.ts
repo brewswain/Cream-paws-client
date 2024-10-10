@@ -4,12 +4,15 @@ export interface ChowVariety {
   wholesale_price: number;
   retail_price: number;
   chow_id?: string;
+  id?: number;
 }
 
 export interface ChowFlavour {
-  flavour_name: string;
-  varieties: ChowVariety[];
-  flavour_id?: string;
+  details: {
+    flavour_name: string;
+    varieties: ChowVariety[];
+    flavour_id?: string;
+  };
 }
 
 export interface FilteredChowFlavour {
@@ -19,7 +22,8 @@ export interface FilteredChowFlavour {
 }
 
 export interface Chow {
-  brand: string;
+  id?: string;
+  brand_name: string;
   brand_id?: string;
   flavours: ChowFlavour[];
 }

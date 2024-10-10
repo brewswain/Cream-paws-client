@@ -26,20 +26,21 @@ import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
 import { CombinedOrder, OrderWithChowDetails } from "../models/order";
 import { Chow } from "../models/chow";
 import { Customer } from "../models/customer";
+import { useCustomerStore } from "../store/customerStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [chow, setChow] = useState<Chow[]>();
-  const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<CombinedOrder[]>();
+  const { customers, fetchCustomers } = useCustomerStore();
 
   const populateAllData = async () => {
     setIsLoading(true);
     try {
       const response = await getUnpaidCustomerOrders();
-      populateCustomersList();
+      fetchCustomers();
       populateChowList();
       const formattedOrders = response && (await combineOrders(response));
 

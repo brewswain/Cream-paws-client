@@ -52,7 +52,7 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
       onLongPress={() => setShowModal(true)}
     >
       <View>
-        <Text style={styles.header}>{chow.brand}</Text>
+        <Text style={styles.header}>{chow.brand_name}</Text>
         {chow.flavours.length > 0 ? (
           <Text style={styles.flavourDetails}>{`${chow.flavours.length} ${
             chow.flavours.length > 1 ? "flavours" : "flavour"
