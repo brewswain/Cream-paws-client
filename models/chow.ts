@@ -7,9 +7,11 @@ export interface ChowVariety {
 }
 
 export interface ChowFlavour {
-  flavour_name: string;
-  varieties: ChowVariety[];
-  flavour_id?: string;
+  details: {
+    flavour_name: string;
+    varieties: ChowVariety[];
+    flavour_id?: string;
+  };
 }
 
 export interface FilteredChowFlavour {
@@ -20,7 +22,7 @@ export interface FilteredChowFlavour {
 
 export interface Chow {
   id?: string;
-  brand: string;
+  brand_name: string;
   brand_id?: string;
   flavours: ChowFlavour[];
 }

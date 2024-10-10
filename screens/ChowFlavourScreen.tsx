@@ -31,16 +31,17 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   const { flavours, brand, brand_id } = route.params;
 
   const sortedFlavours = flavours.sort((a, b) =>
-    a.flavour_name.localeCompare(b.flavour_name)
+    a.details.flavour_name.localeCompare(b.details.flavour_name)
   );
 
+  console.log({ sortedFlavours });
   return (
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.header}>{brand}</Text>
         {sortedFlavours.map((flavour) => (
           <ChowFlavourDetails
-            key={flavour.flavour_id}
+            key={flavour.details.flavour_id}
             flavour={flavour}
             brand_id={brand_id}
           />
