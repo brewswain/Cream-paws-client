@@ -7,7 +7,6 @@ import {
 } from "react";
 import { Chow } from "../models/chow";
 import { getAllChow } from "../api";
-import { test } from "../api/routes/stock";
 
 interface StockContextInterface {
   isLoading: boolean;
@@ -32,10 +31,9 @@ export const StockContextProvider = ({ children }: { children: ReactNode }) => {
   const populateChowList = async () => {
     setIsLoading(true);
     try {
-      // const response = await getAllChow();
-      // setChows(response);
-      const response = await test();
+      const response = await getAllChow();
       setChows(response);
+
       setIsLoading(false);
     } catch (error) {
       console.error(error);
