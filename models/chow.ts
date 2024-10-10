@@ -4,6 +4,7 @@ export interface ChowVariety {
   wholesale_price: number;
   retail_price: number;
   chow_id?: string;
+  id?: number;
 }
 
 export interface ChowFlavour {

@@ -125,8 +125,8 @@ const CreateOrderModal = ({
 
   const selectedBrand = (chowInputIndex: number) => {
     const filteredChow = chow
-      ?.map((brand) => brand)
-      .filter((item) => item.brand === chowInputs[chowInputIndex].brand);
+      ?.map((brand_name) => brand_name)
+      .filter((item) => item.brand_name === chowInputs[chowInputIndex].brand);
 
     if (filteredChow) {
       return filteredChow[0];
@@ -135,8 +135,9 @@ const CreateOrderModal = ({
 
   const selectedFlavour = (chowInputIndex: number, flavour_id: string) => {
     const chow = selectedBrand(chowInputIndex);
+
     const filteredFlavour = chow?.flavours.filter(
-      (flavour) => flavour.flavour_id === flavour_id
+      (flavour) => flavour.details.flavour_id === flavour_id
     );
 
     if (filteredFlavour) {
@@ -165,8 +166,8 @@ const CreateOrderModal = ({
     return chow?.map((item) => {
       return (
         <Select.Item
-          label={`${item.brand}`}
-          value={`${item.brand}`}
+          label={`${item.brand_name}`}
+          value={`${item.brand_name}`}
           key={item.brand_id}
         />
       );
@@ -178,8 +179,8 @@ const CreateOrderModal = ({
 
     return chow?.flavours.map((flavour) => (
       <Select.Item
-        label={flavour.flavour_name}
-        value={flavour.flavour_id}
+        label={flavour.details.flavour_name}
+        value={flavour.details.flavour_id}
         key={flavour.flavour_id}
       />
     ));
@@ -188,13 +189,15 @@ const CreateOrderModal = ({
   const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
     const flavour = selectedFlavour(chowInputIndex, flavour_id);
 
-    return flavour?.varieties.map((variety) => (
-      <Select.Item
-        label={`${variety.size} ${variety.unit}`}
-        value={variety.chow_id}
-        key={variety.chow_id}
-      />
-    ));
+    return flavour?.details.varieties.map((variety) => {
+      return (
+        <Select.Item
+          label={`${variety.size} ${variety.unit}`}
+          value={variety.id}
+          key={variety.id}
+        />
+      );
+    });
   };
 
   const renderDeliveryCost = () => {
