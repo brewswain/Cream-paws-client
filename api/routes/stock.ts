@@ -1,8 +1,8 @@
-import { getParsedCommandLineOfConfigFile } from "typescript";
 import { Chow, ChowFlavour } from "../../models/chow";
 import { axiosInstance } from "../api";
 import { supabase } from "../../utils/supabase";
 
+//TODO: Allow us to add multiple flavours and varieties--should be simple, just remove the index part here or check our promise.all logic to see what the shape of our payload looks like
 export const createChow = async (chow: Chow) => {
   const { data: brandData, error: brandError } = await supabase
     .from("brands")
@@ -55,21 +55,22 @@ export const createChow = async (chow: Chow) => {
     variety_id: chowVarietyData.id,
   });
 
-  const { error: chowFlavourVarietiesError } = await supabase
+  const { error: chowIntermediaryError } = await supabase
     .from("chow_intermediary")
     .insert({
       flavour_id: chowsTableData.id,
       variety_id: chowVarietyData.id,
+      brand_id: brandData.id,
     })
     .select()
     .single();
 
-  if (chowFlavourVarietiesError) {
+  if (chowIntermediaryError) {
     console.error(
       "Error adding data to chow_intermediary table: ",
-      chowVarietyError
+      chowIntermediaryError
     );
-    throw new Error(chowFlavourVarietiesError.message);
+    throw new Error(chowIntermediaryError.message);
   }
 
   const { error: chowDetailsError } = await supabase
