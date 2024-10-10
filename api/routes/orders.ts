@@ -1,4 +1,5 @@
 import { OrderWithChowDetails } from "../../models/order";
+import { supabase } from "../../utils/supabase";
 import { axiosInstance } from "../api";
 
 export const createOrder = async (order: OrderWithChowDetails) => {
@@ -32,13 +33,26 @@ export const deleteCustomersOrder = async (
   } catch (error) {}
 };
 
+// export const getAllOrders = async () => {
+//   try {
+//     const response = await axiosInstance.get("/orders");
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+
 export const getAllOrders = async () => {
-  try {
-    const response = await axiosInstance.get("/orders");
-    return response.data;
-  } catch (error) {
-    console.error(error);
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .returns<OrderWithChowDetails[]>()
+    .order("name");
+
+  if (error) {
+    throw new Error(error.message);
   }
+  return data;
 };
 
 // TODO: fix typings lol

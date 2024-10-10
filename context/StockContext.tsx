@@ -31,8 +31,8 @@ export const StockContextProvider = ({ children }: { children: ReactNode }) => {
   const populateChowList = async () => {
     setIsLoading(true);
     try {
-      const response: Chow[] = await getAllChow();
-
+      const response = await getAllChow();
+      console.log({ response });
       setChows(response);
       setIsLoading(false);
     } catch (error) {

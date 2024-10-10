@@ -35,6 +35,7 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
   const { flavour_name, varieties } = flavour;
 
+  console.log({ flavour });
   const handleEdit = () => {
     setShowModal(false);
     navigation.navigate("EditChow", {

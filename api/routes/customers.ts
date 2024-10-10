@@ -51,14 +51,6 @@ export const getAllCustomers = async () => {
   }
   return data;
 };
-// export const getAllCustomers = async () => {
-//   try {
-//     const response = await axiosInstance.get("/customer");
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 export const updateCustomer = async (id: string, customer: Customer) => {
   try {

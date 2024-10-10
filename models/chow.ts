@@ -19,6 +19,7 @@ export interface FilteredChowFlavour {
 }
 
 export interface Chow {
+  id?: string;
   brand: string;
   brand_id?: string;
   flavours: ChowFlavour[];

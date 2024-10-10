@@ -40,6 +40,7 @@ const CustomersScreen = () => {
         if (customer.orders) {
           return customer.orders.every((order) => order.payment_made === true);
         }
+        return customer;
       });
     };
 
@@ -48,10 +49,11 @@ const CustomersScreen = () => {
 
       setCustomersWithOpenOrders(filterOpenOrders(parsedCustomers));
       setCustomersWithoutOpenOrders(filterNoOpenOrders(parsedCustomers));
+
+      return;
     }
     await fetchCustomers();
 
-    console.log(filterNoOpenOrders(customers));
     setCustomersWithOpenOrders(filterOpenOrders(customers));
     setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));
 
@@ -66,11 +68,10 @@ const CustomersScreen = () => {
 
   const renderCustomerCard = (customer: Customer) => {};
 
-  useFocusEffect(
-    useCallback(() => {
-      populateCustomersList();
-    }, [isDeleted])
-  );
+  useEffect(() => {
+    populateCustomersList();
+  }, []);
+
   return (
     <View style={styles.container}>
       {isFetching ? (
