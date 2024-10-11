@@ -1,4 +1,8 @@
-import { OrderPayload, OrderWithChowDetails } from "../../models/order";
+import {
+  OrderFromSupabase,
+  OrderPayload,
+  OrderWithChowDetails,
+} from "../../models/order";
 import { supabase } from "../../utils/supabase";
 import { axiosInstance } from "../api";
 
@@ -85,13 +89,31 @@ export const deleteCustomersOrder = async (
 export const getAllOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
-    .select("*")
-    .returns<OrderWithChowDetails[]>()
-    .order("name");
+    .select(
+      `
+        id,
+        is_delivery,
+        delivery_date,
+        delivery_cost,
+        payment_made,
+        payment_date,
+        retail_price,
+        quantity,
+        driver_paid,
+        warehouse_paid,
+        customer_id,
+        flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))),
+        customers (name)
+      `
+    )
+    .returns<OrderFromSupabase[]>()
+    .order("customers (name)");
 
   if (error) {
+    console.error("Error retrieving all Orders: ", error);
     throw new Error(error.message);
   }
+
   return data;
 };
 
