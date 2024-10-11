@@ -70,7 +70,6 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   };
 
   const handleCustomerChange = (name: string, value: string | number) => {
-    console.log({ name, value });
     setCustomerPayload((prevState) => ({
       ...prevState,
       [name]: value,
@@ -127,8 +126,6 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
       ref: inputRef4,
     },
   ];
-
-  console.log({ customerPayload });
 
   return (
     <View

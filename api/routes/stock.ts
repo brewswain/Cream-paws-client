@@ -50,10 +50,6 @@ export const createChow = async (chow: Chow) => {
     );
     throw new Error(chowVarietyError.message);
   }
-  console.log({
-    flavour_id: chowsTableData.id,
-    variety_id: chowVarietyData.id,
-  });
 
   const { error: chowIntermediaryError } = await supabase
     .from("chow_intermediary")

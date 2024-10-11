@@ -34,7 +34,6 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
     a.details.flavour_name.localeCompare(b.details.flavour_name)
   );
 
-  console.log({ sortedFlavours });
   return (
     <View style={styles.container}>
       <ScrollView>
