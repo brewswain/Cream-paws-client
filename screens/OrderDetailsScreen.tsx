@@ -55,6 +55,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
 
   const navigate = useNavigation();
   const populateChowList = async () => {
@@ -63,24 +64,26 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   };
   // TODO: sanitize our inputs
 
-  const selectedBrand = (chowInputIndex: number) => {
+  const selectedBrand = () => {
     const filteredChow = chow
       ?.map((brand) => brand)
-      .filter(
-        (item) =>
-          item.brand === orderPayload.orders[chowInputIndex].chow_details.brand
-      );
+      .filter((item) => {
+        return parseInt(item.id) === orderPayload.flavours.brand_details.id;
+      });
 
     if (filteredChow) {
       return filteredChow[0];
     }
   };
 
-  const selectedFlavour = (chowInputIndex: number, flavour_id: string) => {
-    const chow = selectedBrand(chowInputIndex);
-    const filteredFlavour = chow?.flavours.filter(
-      (flavour) => flavour.flavour_id === flavour_id
-    );
+  const selectedFlavour = () => {
+    const chow = selectedBrand();
+    const filteredFlavour = chow?.flavours.filter((flavour) => {
+      return (
+        parseInt(flavour.details.flavour_id) ===
+        orderPayload.flavours.details.flavour_id
+      );
+    });
 
     if (filteredFlavour) {
       return filteredFlavour[0];
@@ -88,38 +91,39 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   };
 
   const renderBrandDropdown = () => {
-    return chow?.map((item, index) => {
+    return chow?.map((item) => {
       return (
         <Select.Item
-          label={`${item.brand}`}
-          value={item.brand_id}
-          key={`${item.brand_id} - ${index}`}
+          label={`${item.brand_name}`}
+          value={item.id}
+          key={item.brand_id}
         />
       );
     });
   };
 
-  const renderFlavourDropdown = (chowInputIndex: number) => {
-    const chow = selectedBrand(chowInputIndex);
+  const renderFlavourDropdown = () => {
+    const chow = selectedBrand();
 
-    return chow?.flavours.map((flavour, index) => (
+    return chow?.flavours.map((flavour) => (
       <Select.Item
-        label={flavour.flavour_name}
-        value={flavour.flavour_id}
-        key={`${flavour.flavour_id} - ${index}`}
+        label={flavour.details.flavour_name}
+        value={flavour.details.flavour_id}
+        key={flavour.details.flavour_id}
       />
     ));
   };
 
-  const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
-    const flavour = selectedFlavour(chowInputIndex, flavour_id);
+  const renderVarieties = () => {
+    const flavour = selectedFlavour();
 
-    return flavour?.varieties.map((variety, index) => {
+    console.log({ flavour });
+    return flavour?.details.varieties.map((variety) => {
       return (
         <Select.Item
           label={`${variety.size} ${variety.unit}`}
-          value={variety.chow_id || "not found"}
-          key={`${variety.chow_id || "not found"} - index ${index}`}
+          value={variety.id}
+          key={variety.id}
         />
       );
     });
@@ -141,20 +145,12 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     setDatePickerIsVisible(!datePickerIsVisible);
   };
 
-  const handleDateConfirm = (date: Date, selectedIndex: number) => {
-    setOrderPayload((prevState) => ({
-      ...prevState,
-      orders: prevState.orders.map((order, index) => {
-        if (index === selectedIndex) {
-          return {
-            ...order,
-            delivery_date: date.toString(),
-          };
-        }
-        return order;
-      }),
-    }));
-    toggleDatePickerVisibility();
+  const handleDateConfirm = (date: Date) => {
+    setSelectedDate(date);
+
+    let data = orderPayload;
+    data.delivery_date = date.toString();
+    setOrderPayload(data);
   };
 
   //TODO: This needs a **MASSIVE** Refactor. If i'm going this far with excessive specificity
@@ -304,7 +300,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     order.quantity < 1 ||
     !orderPayload.delivery_date;
 
-  const formattedDeliveryDate = formatDate(order.delivery_date);
+  const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
   const chowFields = (index: number) => [
     {
@@ -335,7 +331,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           <TouchableWithoutFeedback onPress={renderBrandDropdown}>
             <Select
               minWidth="200"
-              selectedValue={order.flavours.brand_details.id}
+              selectedValue={orderPayload.flavours.brand_details.id}
               accessibilityLabel="Choose Brand"
               placeholder="Choose Brand *"
               _selectedItem={{
@@ -343,22 +339,22 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 endIcon: <CheckIcon size={5} />,
               }}
               mt="1"
-              // onValueChange={(itemValue) =>
-              //   // handleChowSelected(itemValue, index, "brand")
-              //   handleChange("chow_details.brand", itemValue, index)
-              // }
-              // key={`${currentOrder.chow_id} - brand`}
+              onValueChange={(itemValue) => {
+                let data = orderPayload;
+                data.flavours.brand_details.id = parseInt(itemValue);
+
+                setOrderPayload(data);
+              }}
+              key={order.flavours.brand_details.id}
             >
-              {/* {chow && renderBrandDropdown()} */}
+              {chow && renderBrandDropdown()}
             </Select>
           </TouchableWithoutFeedback>
 
-          <TouchableWithoutFeedback
-          // onPress={() => renderFlavourDropdown(index)}
-          >
+          <TouchableWithoutFeedback onPress={() => renderFlavourDropdown()}>
             <Select
               minWidth="200"
-              selectedValue={order.flavours.details.flavour_id}
+              selectedValue={orderPayload.flavours.details.flavour_id}
               accessibilityLabel="Choose Flavour"
               placeholder="Choose Flavour *"
               _selectedItem={{
@@ -366,32 +362,24 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 endIcon: <CheckIcon size={5} />,
               }}
               mt="1"
-              // onValueChange={(itemValue) =>
-              //   handleChange(
-              //     "chow_details.flavours.flavour_name",
-              //     itemValue,
-              //     index
-              //   )
-              // }
+              onValueChange={(itemValue) => {
+                let data = orderPayload;
+                data.flavours.details.flavour_id = parseInt(itemValue);
+                setOrderPayload(data);
+              }}
             >
-              {/* {renderFlavourDropdown(index)} */}
+              {selectedBrand() && renderFlavourDropdown()}
             </Select>
           </TouchableWithoutFeedback>
 
           <TouchableWithoutFeedback
-            onPress={
-              () => {
-                console.log("hi");
-              }
-              // renderVarieties(
-              //   index,
-              //   currentOrder.chow_details.flavours.flavour_id
-              // )
-            }
+            onPress={() => {
+              renderVarieties();
+            }}
           >
             <Select
               minWidth="200"
-              selectedValue={order.flavours.details.varieties[0].chow_id}
+              selectedValue={orderPayload.flavours.details.varieties[0].id}
               accessibilityLabel="Choose Size"
               placeholder="Choose Size *"
               _selectedItem={{
@@ -399,28 +387,23 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                 endIcon: <CheckIcon size={5} />,
               }}
               mt="1"
-              // onValueChange={(itemValue) =>
-              //   handleChange(
-              //     "chow_details.flavours.varieties.chow_id",
-              //     itemValue,
-              //     index
-              //   )
-              // }
+              onValueChange={(itemValue) => {
+                let data = orderPayload;
+                data.flavours.details.varieties[0].id = parseInt(itemValue);
+
+                setOrderPayload(data);
+              }}
             >
-              {/* {
-                !!order.flavours.details.flavour_id && {}
-                // renderVarieties(
-                //   index,
-                //   currentOrder.chow_details.flavours.flavour_id
-                // )
-              } */}
+              {selectedFlavour() && renderVarieties()}
             </Select>
           </TouchableWithoutFeedback>
           {/* {renderDetailInputs(chowFields(index), handleChange, index)} */}
 
           <Header>Quantity</Header>
           <TextInput
-            // onChangeText={(value) => handleChange("quantity", value, index)}
+            onChangeText={(value) =>
+              setOrderPayload({ ...order, quantity: parseInt(value) })
+            }
             selectTextOnFocus
             style={[
               styles.customInput,
@@ -429,7 +412,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             keyboardType="numeric"
             selectTextOnFocus
           >
-            {order.quantity}
+            {orderPayload.quantity}
           </TextInput>
 
           <View style={{ marginVertical: 6 }}>
@@ -437,7 +420,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
               <Select
                 minWidth="200"
-                selectedValue={order.delivery_cost}
+                selectedValue={orderPayload.delivery_cost}
                 accessibilityLabel="Delivery Cost"
                 placeholder="Delivery Cost"
                 _selectedItem={{
@@ -445,10 +428,13 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   endIcon: <CheckIcon size={5} />,
                 }}
                 mt="1"
-                // onValueChange={(itemValue) =>
-                //   handleChange("delivery_cost", itemValue, index)
-                // }
-                // key={`${currentOrder.order_id} - delivery_cost - ${index}`}
+                onValueChange={(itemValue) =>
+                  setOrderPayload({
+                    ...order,
+                    delivery_cost: parseInt(itemValue),
+                  })
+                }
+                key={orderPayload.id}
               >
                 {renderDeliveryCost()}
               </Select>
@@ -456,23 +442,26 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           </View>
 
           <Header>Delivery Date</Header>
-          {/*  ignore this error till we implement the date-selector */}
-          {/* @ts-ignore */}
 
           <Pressable onPress={() => toggleDatePickerVisibility()}>
-            <CustomInput name="delivery_date" customStyle={styles.customInput}>
-              {formattedDeliveryDate}
-            </CustomInput>
-            {/* <Text>
-                  Choose Delivery Date <Text>*</Text>
-                </Text> */}
+            <Text style={styles.deliveryText}>
+              {selectedDate ? (
+                <Text>{new Date(selectedDate).toDateString()}</Text>
+              ) : orderPayload.delivery_date ? (
+                <Text>{formattedDeliveryDate}</Text>
+              ) : (
+                "Choose Delivery Date *"
+              )}
+            </Text>
           </Pressable>
 
-          {/* <DateTimePickerModal
-                isVisible={datePickerIsVisible}
-                onConfirm={(date) => handleDateConfirm(date, index)}
-                onCancel={toggleDatePickerVisibility}
-              /> */}
+          <DateTimePickerModal
+            isVisible={datePickerIsVisible}
+            onConfirm={(date) => {
+              handleDateConfirm(date);
+            }}
+            onCancel={toggleDatePickerVisibility}
+          />
           {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
         </View>
         <Header>Costs</Header>
@@ -534,6 +523,15 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     marginHorizontal: 0,
     marginBottom: 10,
+  },
+  deliveryText: {
+    backgroundColor: "hsl(213,74%,54%)",
+    padding: 10,
+    fontSize: 16,
+    color: "white",
+    marginBottom: 10,
+    textAlign: "center",
+    borderRadius: 4,
   },
 });
 
