@@ -15,7 +15,7 @@ interface OrderCardProps {
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
-  customerId: string;
+  customerId: number;
 }
 
 const OrderCard = ({
@@ -95,15 +95,7 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            {/* {orders.map((order, index) => {
-              return (
-                <View key={`${order.id} - ${index}`}>
-                  <Text style={orderDetails}>
-                    {`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}
-                  </Text>
-                </View>
-                );
-                })} */}
+
             <View key={data.id}>
               <Text
                 style={orderDetails}

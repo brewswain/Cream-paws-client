@@ -12,10 +12,11 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Chow, ChowFlavour } from "./models/chow";
 import { Customer } from "./models/customer";
+import { OrderFromSupabase } from "./models/order";
 
 declare global {
   namespace ReactNavigation {
-    type RootParamList = RootStackParamList;
+    interface RootParamList extends RootStackParamList {}
   }
 }
 
@@ -30,7 +31,7 @@ export type RootStackParamList = {
   Finance: undefined;
   Auth: undefined;
   CustomerDetails: Customer;
-  OrderDetails: OrderDetails;
+  OrderDetails: { order: OrderFromSupabase };
   ChowDetails: {
     chow: Chow;
     populateChowList: () => void;

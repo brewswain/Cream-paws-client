@@ -162,11 +162,14 @@ const CreateOrderModal = ({
   };
 
   const renderBrandDropdown = () => {
-    return chow?.map((item) => {
+    if (!chow) {
+      return;
+    }
+    return chow.map((item) => {
       return (
         <Select.Item
           label={`${item.brand_name}`}
-          value={item.id}
+          value={item.id ? item.id : "id not found"}
           key={item.brand_id}
         />
       );
@@ -179,8 +182,8 @@ const CreateOrderModal = ({
     return chow?.flavours.map((flavour) => (
       <Select.Item
         label={flavour.details.flavour_name}
-        value={flavour.details.flavour_id}
-        key={flavour.flavour_id}
+        value={flavour.details.flavour_id!}
+        key={flavour.details.flavour_id}
       />
     ));
   };
@@ -192,7 +195,7 @@ const CreateOrderModal = ({
       return (
         <Select.Item
           label={`${variety.size} ${variety.unit}`}
-          value={variety.id}
+          value={variety.id!}
           key={variety.id}
         />
       );
@@ -216,7 +219,7 @@ const CreateOrderModal = ({
       return (
         <Select.Item
           key={customer.id}
-          label={customer.name}
+          label={customer.name ? customer.name : "N/A"}
           value={customer.id}
         />
       );
