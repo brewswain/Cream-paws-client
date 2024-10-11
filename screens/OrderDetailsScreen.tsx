@@ -9,17 +9,11 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button, CheckIcon, Divider, ScrollView, Select } from "native-base";
+import { Button, CheckIcon, ScrollView, Select } from "native-base";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import { getAllChow, updateOrder } from "../api";
-import {
-  CustomInput,
-  Header,
-  SubFields,
-  SubHeader,
-  renderDetailInputs,
-} from "../components/details/DetailScreenComponents";
+import { Header } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import {
   ChowDetails,
@@ -28,11 +22,8 @@ import {
 } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Chow } from "../models/chow";
-import {
-  findChow,
-  findChowFlavour,
-  findChowVariety,
-} from "../api/routes/stock";
+
+import Dinero from "dinero.js";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -117,7 +108,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const renderVarieties = () => {
     const flavour = selectedFlavour();
 
-    console.log({ flavour });
     return flavour?.details.varieties.map((variety) => {
       return (
         <Select.Item
@@ -136,7 +126,9 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
       <Select.Item
         key={`${price}+${index}`}
         value={price}
-        label={price.toString()}
+        label={Dinero({
+          amount: Math.round(price * 100 || 0),
+        }).toFormat("$0,0.00")}
       />
     ));
   };
@@ -152,112 +144,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     data.delivery_date = date.toString();
     setOrderPayload(data);
   };
-
-  //TODO: This needs a **MASSIVE** Refactor. If i'm going this far with excessive specificity
-  // in mind, then i should just split these into separate change handlers, as the bloat is
-  // crazy rn
-
-  // That being said i'll treat this as a monolith for now, as bad as it feels.
-  // const handleChange = async (
-  //   name: string,
-  //   value: string | number,
-  //   selectedIndex: number
-  // ) => {
-  //   if (name.includes("brand")) {
-  //     const response = await findChow(value as string);
-
-  //     setOrderPayload((prevState) => ({
-  //       ...prevState,
-  //       orders: prevState.orders.map((order, index) => {
-  //         if (index === selectedIndex) {
-  //           return {
-  //             ...order,
-  //             chow_details: response as ChowDetails,
-  //           };
-  //         }
-  //         return order;
-  //       }),
-  //     }));
-  //   } else if (name.includes("flavour_name")) {
-  //     const foundFlavour = await findChowFlavour(value as string);
-  //     if (foundFlavour) {
-  //       setOrderPayload((prevState) => ({
-  //         ...prevState,
-  //         orders: prevState.orders.map((order, index) => {
-  //           if (index === selectedIndex) {
-  //             return {
-  //               ...order,
-  //               chow_details: {
-  //                 ...order.chow_details,
-  //                 flavours: {
-  //                   ...foundFlavour,
-  //                   varieties: foundFlavour.varieties[0],
-  //                 },
-  //               },
-  //             };
-  //           }
-  //           return order;
-  //         }),
-  //       }));
-  //     }
-  //   } else if (name.includes("chow_id")) {
-  //     const foundVariety = await findChowVariety(value as string);
-
-  //     setOrderPayload((prevState) => ({
-  //       ...prevState,
-  //       orders: prevState.orders.map((order, index) => {
-  //         if (index === selectedIndex) {
-  //           return {
-  //             ...order,
-  //             chow_details: {
-  //               ...order.chow_details,
-  //               flavours: {
-  //                 ...order.chow_details.flavours,
-  //                 varieties: foundVariety,
-  //               },
-  //             },
-  //           };
-  //         }
-  //         return order;
-  //       }),
-  //     }));
-  //   } else if (name.includes("retail_price")) {
-  //     setOrderPayload((prevState) => ({
-  //       ...prevState,
-  //       orders: prevState.orders.map((order, index) => {
-  //         if (index === selectedIndex) {
-  //           return {
-  //             ...order,
-  //             chow_details: {
-  //               ...order.chow_details,
-  //               flavours: {
-  //                 ...order.chow_details.flavours,
-  //                 varieties: {
-  //                   ...order.chow_details.flavours.varieties,
-  //                   retail_price: parseInt(value),
-  //                 },
-  //               },
-  //             },
-  //           };
-  //         }
-  //         return order;
-  //       }),
-  //     }));
-  //   } else {
-  //     setOrderPayload((prevState) => ({
-  //       ...prevState,
-  //       orders: prevState.orders.map((order, index) => {
-  //         if (index === selectedIndex) {
-  //           return {
-  //             ...order,
-  //             [name]: value,
-  //           };
-  //         }
-  //         return order;
-  //       }),
-  //     }));
-  //   }
-  // };
 
   const handleUpdate = async (index: number) => {
     const selectedOrder = {
@@ -293,31 +179,15 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   }, []);
 
   const isPayloadMissingDetails =
-    !order.flavours.brand_details.name ||
-    !order.flavours ||
-    !order.flavours.details.varieties ||
-    !order.quantity ||
-    order.quantity < 1 ||
+    !orderPayload.flavours.brand_details.name ||
+    !orderPayload.flavours ||
+    !orderPayload.flavours.details.varieties ||
+    !orderPayload.quantity ||
+    orderPayload.quantity < 1 ||
     !orderPayload.delivery_date;
 
   const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
 
-  const chowFields = (index: number) => [
-    {
-      title: "Quantity",
-      content: order.quantity,
-      name: "quantity",
-    },
-  ];
-
-  // const costsFields: SubFields[] = [
-  //   {
-  //     title: "Retail Price",
-  //     content: currentOrder.chow_details.flavours.varieties.retail_price,
-  //     name: "currentOrder.chow_details.flavours.varieties.retail_price",
-  //     type: "numeric",
-  //   },
-  // ];
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       <View key={order.id}>
@@ -397,12 +267,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               {selectedFlavour() && renderVarieties()}
             </Select>
           </TouchableWithoutFeedback>
-          {/* {renderDetailInputs(chowFields(index), handleChange, index)} */}
 
           <Header>Quantity</Header>
           <TextInput
             onChangeText={(value) =>
-              setOrderPayload({ ...order, quantity: parseInt(value) })
+              setOrderPayload({ ...order, quantity: parseInt(value) || 0 })
             }
             selectTextOnFocus
             style={[
@@ -410,7 +279,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               { maxWidth: "15%", textAlign: "center" },
             ]}
             keyboardType="numeric"
-            selectTextOnFocus
           >
             {orderPayload.quantity}
           </TextInput>
@@ -462,10 +330,39 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             }}
             onCancel={toggleDatePickerVisibility}
           />
-          {/* TODO:  Add driver fees here: remember that we want a dropdown of 4 different delivery fees */}
+
+          <Header>Costs</Header>
+          <Text>Retail Price</Text>
+          <TextInput
+            onChangeText={(value) =>
+              setOrderPayload({ ...order, quantity: parseInt(value) || 0 })
+            }
+            selectTextOnFocus
+            style={{ fontSize: 20 }}
+            keyboardType="numeric"
+          >
+            {Dinero({
+              amount: Math.round(orderPayload.retail_price * 100 || 0),
+            }).toFormat("$0,0.00")}
+          </TextInput>
+          <Text>Total</Text>
+          <TextInput
+            onChangeText={(value) =>
+              setOrderPayload({ ...order, quantity: parseInt(value) || 0 })
+            }
+            selectTextOnFocus
+            style={{ fontSize: 28, paddingBottom: 18 }}
+            keyboardType="numeric"
+          >
+            {Dinero({
+              amount: Math.round(
+                (orderPayload.retail_price + orderPayload.delivery_cost) *
+                  100 || 0
+              ),
+            }).toFormat("$0,0.00")}
+          </TextInput>
         </View>
-        <Header>Costs</Header>
-        {/* {renderDetailInputs(costsFields, handleChange)} */}
+
         <View
           style={{
             flexDirection: "row",
