@@ -30,7 +30,7 @@ export type RootStackParamList = {
   Stock: undefined;
   Finance: undefined;
   Auth: undefined;
-  CustomerDetails: Customer;
+  CustomerDetails: { customer: Customer };
   OrderDetails: { order: OrderFromSupabase };
   ChowDetails: {
     chow: Chow;

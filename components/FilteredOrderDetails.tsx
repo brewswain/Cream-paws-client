@@ -7,9 +7,10 @@ import { CheckBox } from "@rneui/themed";
 
 import DetailsText from "./DetailsText";
 import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
-import { OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
 import { SelectedOrder } from "../screens/CustomerDetailsScreen";
 import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
+import { useOrderStore } from "../store/orderStore";
 
 interface FilteredOrderDetailsProps {
   color?: string;
@@ -30,18 +31,13 @@ const FilteredOrderDetails = ({
   } = customerDetails;
 
   const { orderContainer, divider } = styles;
-
-  const orders = isCompleted
-    ? contextOrders.completedOrders
-    : contextOrders.outstandingOrders;
-
-  useEffect(() => {
-    orders.map((_, index) => {
-      if (!selectedOrders[index]) {
-        setSelectedOrders([...selectedOrders, { index, selected: false }]);
-      }
-    });
-  }, []);
+  const {
+    completedOrders,
+    outstandingOrders,
+    selectedOrderIds,
+    setSelectedOrderIds,
+  } = useOrderStore();
+  const orders = isCompleted ? completedOrders : outstandingOrders;
 
   const handleCheckBoxChange = (orderIndex: number) => {
     const data = [...selectedOrders];
@@ -57,13 +53,11 @@ const FilteredOrderDetails = ({
 
   return (
     <View>
-      {orders?.map((order: OrderWithChowDetails, orderIndex: number) => {
+      {orders?.map((order: OrderFromSupabase, orderIndex: number) => {
         const formattedDeliveryDate = formatDate(order.delivery_date);
         const totalCost = order.delivery_cost
-          ? order.chow_details.flavours.varieties.retail_price *
-              order.quantity +
-            order.delivery_cost
-          : order.chow_details.flavours.varieties.retail_price * order.quantity;
+          ? order.retail_price * order.quantity + order.delivery_cost
+          : order.retail_price * order.quantity;
 
         return (
           <View
@@ -79,12 +73,8 @@ const FilteredOrderDetails = ({
                     paddingLeft: 0,
                     marginLeft: 0,
                   }}
-                  checked={
-                    selectedOrders[orderIndex]
-                      ? selectedOrders[orderIndex].selected
-                      : false
-                  }
-                  onPress={() => handleCheckBoxChange(orderIndex)}
+                  checked={selectedOrderIds.includes(order.id)}
+                  onPress={() => setSelectedOrderIds(order.id)}
                 />
               </View>
             ) : null}
@@ -93,12 +83,10 @@ const FilteredOrderDetails = ({
               color={color}
               paddingLeft={paddingLeft}
               header="Summary"
-              details={`${order.chow_details.brand}-${
-                order.chow_details.flavours.varieties.size
-              } ${order.chow_details.flavours.varieties.unit} (${Dinero({
-                amount: Math.round(
-                  order.chow_details.flavours.varieties.retail_price * 100
-                ),
+              details={`${order.flavours.brand_details.name}-${
+                order.flavours.details.varieties[0].size
+              } ${order.flavours.details.varieties[0].unit} (${Dinero({
+                amount: Math.round(order.retail_price * 100),
               }).toFormat("$0,0.00")})  x ${order.quantity}`}
             />
             {/* <DetailsText color={color}
@@ -195,7 +183,7 @@ const FilteredOrderDetails = ({
               details={order.driver_paid ? "Yes" : "No"}
             />
             <CollapsibleChowDetails
-              chowDetails={order.chow_details}
+              order={order}
               index={orderIndex}
               color="black"
               paddingLeft={0}

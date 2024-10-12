@@ -55,7 +55,7 @@ const CustomerCard = ({
   // };
 
   const viewDetails = () => {
-    navigation.navigate("CustomerDetails", customer);
+    navigation.navigate("CustomerDetails", { customer });
   };
 
   const handleEdit = () => {

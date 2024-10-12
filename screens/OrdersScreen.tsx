@@ -32,52 +32,18 @@ import { Chow } from "../models/chow";
 import { Customer } from "../models/customer";
 import { useCustomerStore } from "../store/customerStore";
 import { supabase } from "../utils/supabase";
+import { useOrderStore } from "../store/orderStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [chow, setChow] = useState<Chow[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<OrderFromSupabase[]>();
   const { customers, fetchCustomers } = useCustomerStore();
+  const { orders, fetchOrders, isFetching } = useOrderStore();
 
   const populateAllData = async () => {
-    setIsLoading(true);
-    try {
-      const ordersData = await getAllOrders();
-
-      setData(ordersData);
-      // const response = await getUnpaidCustomerOrders();
-      // fetchCustomers();
-      // populateChowList();
-      // const formattedOrders = response && (await combineOrders(response));
-
-      // const
-
-      // // Sort the orders first by delivery_date in ascending order, then by name
-      // formattedOrders.sort((a, b) => {
-      //   // Compare delivery_date
-      //   const dateA = new Date(a.delivery_date);
-      //   const dateB = new Date(b.delivery_date);
-      //   const dateComparison = dateA - dateB;
-
-      //   // If delivery_date is the same, compare by name
-      //   if (dateComparison === 0) {
-      //     const nameA = a.name.toLowerCase(); // assuming case-insensitive comparison
-      //     const nameB = b.name.toLowerCase();
-      //     return nameA.localeCompare(nameB);
-      //   }
-
-      //   return dateComparison;
-      // });
-
-      // setData(formattedOrders);
-
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.error(error);
-    }
+    fetchOrders();
   };
 
   const populateData = async () => {
@@ -116,11 +82,11 @@ const OrdersScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        {isLoading ? (
+        {isFetching ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
           <View>
-            {data?.map((order, index) => {
+            {orders?.map((order, index) => {
               return (
                 <View key={order.customer_id + index.toString()}>
                   <OrderCard

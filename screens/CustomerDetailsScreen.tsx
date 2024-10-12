@@ -13,12 +13,14 @@ import Dinero from "dinero.js";
 import { RootTabScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
-import { OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
 import { findCustomer } from "../api";
 import { Customer } from "../models/customer";
 import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
+import { getCustomersOrders } from "../api/routes/orders";
+import { useOrderStore } from "../store/orderStore";
 
 interface CustomerDetailProps {
   navigation: RootTabScreenProps<"CustomerDetails">;
@@ -31,6 +33,7 @@ export interface SelectedOrder {
 }
 
 const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
+  const { customer } = route.params;
   //   False by default to ensure Outstanding orders are displayed
   const [outstandingCollapsible, setOutstandingCollapsible] =
     useState<boolean>(true);
@@ -41,24 +44,53 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
     useState("idle");
   const [isFetching, setIsFetching] = useState<boolean>(true);
-  const [customer, setCustomer] = useState<Customer>();
+  const [customerPayload, setCustomerPayload] = useState<Customer>(customer);
+  const [orders, setOrders] = useState<OrderFromSupabase[]>();
 
   const customerDetails = useContext(CustomerDetailsContext);
+  const { selectedOrders, setSelectedOrders } = customerDetails;
   const {
-    orders: contextOrders,
-    setOrders,
-    selectedOrders,
-    setSelectedOrders,
-  } = customerDetails;
+    customerOrders,
+    fetchCustomerOrders,
+    setCompletedOrders,
+    setOutstandingOrders,
+    outstandingOrders,
+    selectedOrderIds,
+  } = useOrderStore();
 
-  const customerData = findCustomer(route.params.id);
-  const populateCustomerData = async () => {
-    const data = await findCustomer(route.params.id);
-    setCustomer(data);
+  const populateOrders = async () => {
+    fetchCustomerOrders(customer.id);
+
+    const outstandingOrders = customerOrders
+      ? customerOrders.filter(
+          (order: OrderFromSupabase) => order.payment_made === false
+        )
+      : [];
+
+    const completedOrders = customerOrders
+      ? customerOrders
+          .filter((order: OrderFromSupabase) => order.payment_made === true)
+          .sort((a: OrderFromSupabase, b: OrderFromSupabase) =>
+            b.delivery_date.localeCompare(a.delivery_date)
+          )
+      : [];
+
+    setOutstandingOrders(outstandingOrders);
+    setCompletedOrders(completedOrders);
   };
-  const { pets, orders, name, id, contactNumber, location, city } =
-    route.params;
-  // const { pets, orders, name, id } = testCustomerDetails;
+
+  useEffect(() => {
+    populateOrders();
+  }, []);
+  // const customerData = findCustomer(route.params.id);
+  // const populateCustomerData = async () => {
+  //   const data = await findCustomer(route.params.id);
+  //   setCustomer(data);
+  // };
+
+  // const { pets, orders, name, id, contactNumber, location, city } =
+  //   route.params;
+  // // const { pets, orders, name, id } = testCustomerDetails;
   const {
     container,
     header,
@@ -74,25 +106,16 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
   const { height, width } = useWindowDimensions();
 
-  const petsExist = pets.length > 0;
-  const ordersExist = orders && orders.length > 0;
-  const locationExist = location !== undefined;
-  const contactNumberExist = contactNumber !== undefined;
-  const outstandingOrders = orders.filter(
-    (order: OrderWithChowDetails) => order.payment_made === false
-  );
-  const completedOrders = orders
-    .filter((order: OrderWithChowDetails) => order.payment_made === true)
-    .sort((a: OrderWithChowDetails, b: OrderWithChowDetails) =>
-      b.delivery_date.localeCompare(a.delivery_date)
-    );
+  // const petsExist = pets.length > 0;
+  const ordersExist = customerOrders && customerOrders.length > 0;
+  // const locationExist = location !== undefined;
+  // const contactNumberExist = contactNumber !== undefined;
 
-  const mappedCostArray = orders
-    .filter((order: OrderWithChowDetails) => order.payment_made === false)
-    .map(
-      (order: OrderWithChowDetails) =>
-        order.chow_details.flavours.varieties.retail_price * order.quantity
-    );
+  const mappedCostArray = customerOrders
+    ? customerOrders
+        .filter((order: OrderFromSupabase) => order.payment_made === false)
+        .map((order: OrderFromSupabase) => order.retail_price * order.quantity)
+    : [];
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
@@ -111,7 +134,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     .map((order) => order.index);
 
   const ordersChosenForClearing = selectedIndicesArray.map(
-    (selectedIndex) => orders[selectedIndex]
+    (selectedIndex) => orders![selectedIndex]
   );
 
   //TODO: implement navigation from collapsibleOrder to order edit screen
@@ -124,126 +147,117 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   //     customer_id: id,
   //   });
 
-  const handleClearingSelectedOrders = async () => {
-    setButtonStateSelectedOrders("loading"); // Set loading state
+  // const handleClearingSelectedOrders = async () => {
+  //   setButtonStateSelectedOrders("loading"); // Set loading state
 
-    try {
-      // await clearOrders(ordersChosenForClearing);
-      clearCustomerOrders(ordersChosenForClearing);
+  //   try {
+  //     // await clearOrders(ordersChosenForClearing);
+  //     clearCustomerOrders(ordersChosenForClearing);
 
-      // On success, set success state
-      setButtonStateSelectedOrders("success");
-      setIsFetching(true);
+  //     // On success, set success state
+  //     setButtonStateSelectedOrders("success");
+  //     setIsFetching(true);
 
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateSelectedOrders("idle");
-      }, 1000);
-    } catch (error) {
-      // On error, set error state
-      setButtonStateSelectedOrders("error");
+  //     // Revert to idle state after a delay
+  //     setTimeout(() => {
+  //       setButtonStateSelectedOrders("idle");
+  //     }, 1000);
+  //   } catch (error) {
+  //     // On error, set error state
+  //     setButtonStateSelectedOrders("error");
 
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateSelectedOrders("idle");
-      }, 1000);
-    }
-  };
+  //     // Revert to idle state after a delay
+  //     setTimeout(() => {
+  //       setButtonStateSelectedOrders("idle");
+  //     }, 1000);
+  //   }
+  // };
 
-  const handleClearingAllOrders = async () => {
-    setButtonStateClearAllOrders("loading"); // Set loading state
+  // const handleClearingAllOrders = async () => {
+  //   setButtonStateClearAllOrders("loading"); // Set loading state
 
-    try {
-      clearCustomerOrders(orders);
-      // On success, set success state
-      setButtonStateClearAllOrders("success");
-      setIsFetching(true);
+  //   try {
+  //     clearCustomerOrders(orders);
+  //     // On success, set success state
+  //     setButtonStateClearAllOrders("success");
+  //     setIsFetching(true);
 
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateClearAllOrders("idle");
-      }, 1000);
-    } catch (error) {
-      // On error, set error state
-      setButtonStateClearAllOrders("error");
+  //     // Revert to idle state after a delay
+  //     setTimeout(() => {
+  //       setButtonStateClearAllOrders("idle");
+  //     }, 1000);
+  //   } catch (error) {
+  //     // On error, set error state
+  //     setButtonStateClearAllOrders("error");
 
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateClearAllOrders("idle");
-      }, 1000);
-    }
-  };
+  //     // Revert to idle state after a delay
+  //     setTimeout(() => {
+  //       setButtonStateClearAllOrders("idle");
+  //     }, 1000);
+  //   }
+  // };
 
-  const renderContactNumber = () => {
-    return (
-      <>
-        <Text style={subHeader}>Contact Number</Text>
-        <Text style={content}>{contactNumber}</Text>
-      </>
-    );
-  };
-  const renderLocation = () => {
-    return (
-      <>
-        <Text style={subHeader}>Location</Text>
-        <Text style={content}>{location}</Text>
-        <Text style={subHeader}>City</Text>
-        <Text style={content}>{city}</Text>
-      </>
-    );
-  };
-  const renderPets = () => (
-    <View>
-      <Text style={[subHeader]}>{pets?.length > 1 ? "Pets" : "Pet"}</Text>
+  // const renderContactNumber = () => {
+  //   return (
+  //     <>
+  //       <Text style={subHeader}>Contact Number</Text>
+  //       <Text style={content}>{contactNumber}</Text>
+  //     </>
+  //   );
+  // };
+  // const renderLocation = () => {
+  //   return (
+  //     <>
+  //       <Text style={subHeader}>Location</Text>
+  //       <Text style={content}>{location}</Text>
+  //       <Text style={subHeader}>City</Text>
+  //       <Text style={content}>{city}</Text>
+  //     </>
+  //   );
+  // };
+  // const renderPets = () => (
+  //   <View>
+  //     <Text style={[subHeader]}>{pets?.length > 1 ? "Pets" : "Pet"}</Text>
 
-      {pets?.map((pet: { name: string; breed: string }, index: number) => (
-        <View key={`${index} Pet Container`}>
-          <DetailsText
-            header={"Name"}
-            details={pet.name}
-            color="black"
-            paddingLeft={0}
-          />
-          {pet.breed ? (
-            <DetailsText
-              header={"Breed"}
-              details={pet.breed}
-              color="black"
-              paddingLeft={0}
-            />
-          ) : null}
-        </View>
-      ))}
-    </View>
-  );
-
-  useEffect(() => {
-    setOrders({
-      outstandingOrders,
-      completedOrders,
-    });
-  }, []);
+  //     {pets?.map((pet: { name: string; breed: string }, index: number) => (
+  //       <View key={`${index} Pet Container`}>
+  //         <DetailsText
+  //           header={"Name"}
+  //           details={pet.name}
+  //           color="black"
+  //           paddingLeft={0}
+  //         />
+  //         {pet.breed ? (
+  //           <DetailsText
+  //             header={"Breed"}
+  //             details={pet.breed}
+  //             color="black"
+  //             paddingLeft={0}
+  //           />
+  //         ) : null}
+  //       </View>
+  //     ))}
+  //   </View>
+  // );
 
   const renderOrders = () => {
     return (
       <View style={container}>
-        <Text style={subHeader}>{orders?.length > 1 ? "Orders" : "Order"}</Text>
+        {orders ? (
+          <Text style={subHeader}>
+            {orders?.length > 1 ? "Orders" : "Order"}
+          </Text>
+        ) : null}
 
         <CollapsibleOrder
           outstandingCollapsible={outstandingCollapsible}
           setOutstandingCollapsible={setOutstandingCollapsible}
-          orders={contextOrders.outstandingOrders}
-          selectedOrders={selectedOrders}
-          setSelectedOrders={setSelectedOrders}
         >
           Outstanding Orders
         </CollapsibleOrder>
         <CollapsibleOrder
           outstandingCollapsible={completedCollapsible}
           setOutstandingCollapsible={setCompletedCollapsible}
-          orders={contextOrders.completedOrders}
-          selectedOrders={selectedOrders}
-          setSelectedOrders={setSelectedOrders}
           isCompleted
         >
           Completed Orders
@@ -266,7 +280,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
                 ) {
                   setButtonStateSelectedOrders("loading");
                   try {
-                    await handleClearingSelectedOrders();
+                    // await handleClearingSelectedOrders();
                     setButtonStateSelectedOrders("success");
                     setTimeout(
                       () => setButtonStateSelectedOrders("idle"),
@@ -281,10 +295,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
                   }
                 }
               }}
-              isDisabled={selectedIndicesArray.length < 1}
-              colorScheme={
-                selectedIndicesArray.length < 1 ? "trueGray" : "teal"
-              }
+              isDisabled={selectedOrderIds.length < 1}
+              colorScheme={selectedOrderIds.length ? "teal" : "trueGray"}
               style={button}
             >
               {buttonStateSelectedOrders === "loading" ? (
@@ -308,7 +320,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
                 if (buttonStateClearAllOrders === "idle") {
                   setButtonStateClearAllOrders("loading");
                   try {
-                    await handleClearingAllOrders();
+                    // await handleClearingAllOrders();
                     setButtonStateClearAllOrders("success");
                     setTimeout(
                       () => setButtonStateClearAllOrders("idle"),
@@ -350,11 +362,11 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       style={[container, { height: height, width: width }]}
       contentContainerStyle={{ alignItems: "center" }}
     >
-      <Text style={header}>{capitalizedName(name)}</Text>
+      <Text style={header}>{capitalizedName(customer.name)}</Text>
       {outstandingOrders.length > 0 ? (
         <View style={card}>
           <Text style={outstandingCosts}>
-            Total Outstanding Cost:{" "}
+            Outstanding Cost: 
             {subTotal
               ? Dinero({
                   amount: subTotal || 0,
@@ -365,10 +377,11 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         </View>
       ) : null}
       <View>
-        {locationExist && renderLocation()}
+        {/* {locationExist && renderLocation()}
         {contactNumberExist && renderContactNumber()}
         {petsExist && renderPets()}
-        {ordersExist && renderOrders()}
+        */}
+        {customerOrders && renderOrders()}
       </View>
     </ScrollView>
   );

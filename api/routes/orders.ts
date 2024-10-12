@@ -6,6 +6,21 @@ import {
 import { supabase } from "../../utils/supabase";
 import { axiosInstance } from "../api";
 
+const orderQuery = `
+id,
+is_delivery,
+delivery_date,
+delivery_cost,
+payment_made,
+payment_date,
+retail_price,
+quantity,
+driver_paid,
+warehouse_paid,
+customer_id,
+flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))),
+customers (name)
+`;
 export const createOrder = async (orderPayload: OrderPayload) => {
   const { data: varietyRetailPriceData, error: varietyRetailPriceError } =
     await supabase
@@ -89,28 +104,28 @@ export const deleteCustomersOrder = async (
 export const getAllOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
-    .select(
-      `
-        id,
-        is_delivery,
-        delivery_date,
-        delivery_cost,
-        payment_made,
-        payment_date,
-        retail_price,
-        quantity,
-        driver_paid,
-        warehouse_paid,
-        customer_id,
-        flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))),
-        customers (name)
-      `
-    )
+    .select(orderQuery)
     .returns<OrderFromSupabase[]>()
     .order("customers (name)");
 
   if (error) {
     console.error("Error retrieving all Orders: ", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const getCustomersOrders = async (customerId: number) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(orderQuery)
+    .eq("customer_id", customerId)
+    .returns<OrderFromSupabase[]>()
+    .order("customers (name)");
+
+  if (error) {
+    console.error("Error retrieving customer's orders: ", error);
     throw new Error(error.message);
   }
 
