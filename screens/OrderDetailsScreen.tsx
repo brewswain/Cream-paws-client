@@ -21,7 +21,12 @@ import {
   OrderWithChowDetails,
 } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
-import { Chow } from "../models/chow";
+import {
+  ChosenFlavour,
+  ChosenVariety,
+  Chow,
+  ChowFromSupabase,
+} from "../models/chow";
 
 import Dinero from "dinero.js";
 
@@ -42,7 +47,8 @@ interface OrderDetailsProps {
 const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const { order } = route.params;
   const [orderPayload, setOrderPayload] = useState<OrderFromSupabase>(order);
-  const [chow, setChow] = useState<Chow[]>();
+  const [chow, setChow] = useState<ChowFromSupabase[]>();
+  const [chosenVariety, setChosenVariety] = useState<ChosenVariety>();
 
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
@@ -59,7 +65,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     const filteredChow = chow
       ?.map((brand) => brand)
       .filter((item) => {
-        return parseInt(item.id) === orderPayload.flavours.brand_details.id;
+        return item.id === orderPayload.flavours.brand_details.id;
       });
 
     if (filteredChow) {
@@ -70,14 +76,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const selectedFlavour = () => {
     const chow = selectedBrand();
     const filteredFlavour = chow?.flavours.filter((flavour) => {
-      return (
-        parseInt(flavour.details.flavour_id) ===
-        orderPayload.flavours.details.flavour_id
-      );
+      return flavour.flavour_id === orderPayload.flavours.details.flavour_id;
     });
 
     if (filteredFlavour) {
-      return filteredFlavour[0];
+      return filteredFlavour[0] as ChosenFlavour;
     }
   };
 
@@ -87,7 +90,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         <Select.Item
           label={`${item.brand_name}`}
           value={item.id}
-          key={item.brand_id}
+          key={item.id}
         />
       );
     });
@@ -95,24 +98,22 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const renderFlavourDropdown = () => {
     const chow = selectedBrand();
-
     return chow?.flavours.map((flavour) => (
       <Select.Item
-        label={flavour.details.flavour_name}
-        value={flavour.details.flavour_id}
-        key={flavour.details.flavour_id}
+        label={flavour.flavour_name}
+        value={flavour.flavour_id}
+        key={flavour.flavour_id}
       />
     ));
   };
 
   const renderVarieties = () => {
     const flavour = selectedFlavour();
-
-    return flavour?.details.varieties.map((variety) => {
+    return flavour?.varieties.map((variety) => {
       return (
         <Select.Item
           label={`${variety.size} ${variety.unit}`}
-          value={variety.id}
+          value={variety.id ? variety.id : "Variety ID not found"}
           key={variety.id}
         />
       );
@@ -178,10 +179,14 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     populateChowList();
   }, []);
 
+  useEffect(() => {
+    console.log({ orderPayload: orderPayload });
+  }, [orderPayload]);
+
   const isPayloadMissingDetails =
     !orderPayload.flavours.brand_details.name ||
     !orderPayload.flavours ||
-    !orderPayload.flavours.details.varieties ||
+    !orderPayload.variety ||
     !orderPayload.quantity ||
     orderPayload.quantity < 1 ||
     !orderPayload.delivery_date;
@@ -249,7 +254,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           >
             <Select
               minWidth="200"
-              selectedValue={orderPayload.flavours.details.varieties[0].id}
+              selectedValue={orderPayload.variety.id}
               accessibilityLabel="Choose Size"
               placeholder="Choose Size *"
               _selectedItem={{
@@ -258,10 +263,15 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               }}
               mt="1"
               onValueChange={(itemValue) => {
-                let data = orderPayload;
-                data.flavours.details.varieties[0].id = parseInt(itemValue);
+                const flavour = selectedFlavour();
 
-                setOrderPayload(data);
+                const filteredVariety = flavour?.varieties.filter((variety) => {
+                  return variety.id === Number(itemValue);
+                });
+                setOrderPayload({
+                  ...orderPayload,
+                  variety: filteredVariety[0]!,
+                });
               }}
             >
               {selectedFlavour() && renderVarieties()}

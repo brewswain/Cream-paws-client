@@ -142,7 +142,7 @@ export const getAllChow = async () => {
       `
       id,
       brand_name,
-    flavours:chow_intermediary (details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  )
+    flavours:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  
       `
     )
     .returns<ChowFromSupabase[]>();

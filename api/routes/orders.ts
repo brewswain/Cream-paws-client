@@ -14,11 +14,14 @@ delivery_cost,
 payment_made,
 payment_date,
 retail_price,
+wholesale_price,
 quantity,
+variety_id,
 driver_paid,
 warehouse_paid,
 customer_id,
-flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))),
+flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
+variety:chow_varieties(*),
 customers (name)
 `;
 export const createOrder = async (orderPayload: OrderPayload) => {
@@ -59,7 +62,7 @@ export const createOrder = async (orderPayload: OrderPayload) => {
     is_delivery: orderPayload.is_delivery,
     driver_paid: orderPayload.driver_paid,
     warehouse_paid: orderPayload.warehouse_paid,
-
+    variety_id: orderPayload.variety_id,
     retail_price: varietyRetailPriceData[0].retail_price,
   });
 
@@ -101,11 +104,15 @@ export const deleteCustomersOrder = async (
 //   }
 // };
 
+// flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(id, size, unit, wholesale_price, retail_price, chow_id))),
+
 export const getAllOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
     .select(orderQuery)
+    // .filter("chow_intermediary.chows.varieties.id", "eq", "variety_id")
     .returns<OrderFromSupabase[]>()
+
     .order("customers (name)");
 
   if (error) {

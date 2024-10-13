@@ -104,26 +104,26 @@ export interface OrderFromSupabase {
   payment_made: boolean;
   payment_date: string;
   retail_price: number;
+  wholesale_price: number;
   quantity: number;
   driver_paid: boolean;
   warehouse_paid: boolean;
   customer_id: number;
   flavours: {
     details: {
-      varieties: [
-        {
-          id: number;
-          size: number;
-          unit: "lb" | "kg" | "oz";
-          chow_id: number;
-          retail_price: number;
-          wholesale_price: number;
-        }
-      ];
       flavour_id: number;
       flavour_name: string;
     };
     brand_details: { id: number; name: string };
   };
+  variety: {
+    id: number;
+    size: number;
+    unit: "lb" | "kg" | "oz";
+    chow_id: number;
+    retail_price: number;
+    wholesale_price: number;
+  };
+
   customers: { name: string };
 }
