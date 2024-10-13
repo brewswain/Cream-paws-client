@@ -215,10 +215,25 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               }}
               mt="1"
               onValueChange={(itemValue) => {
+                const filteredChow = chow
+                  ?.map((brand) => brand)
+                  .filter((item) => {
+                    return item.id === Number(itemValue);
+                  });
+
                 let data = orderPayload;
                 data.flavours.brand_details.id = parseInt(itemValue);
-
-                setOrderPayload(data);
+                setOrderPayload({
+                  ...orderPayload,
+                  flavours: {
+                    ...orderPayload.flavours,
+                    brand_details: {
+                      id: parseInt(itemValue),
+                      name: filteredChow[0].brand_name,
+                    },
+                  },
+                });
+                // setOrderPayload(data);
               }}
               key={order.flavours.brand_details.id}
             >
@@ -238,9 +253,19 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               }}
               mt="1"
               onValueChange={(itemValue) => {
-                let data = orderPayload;
-                data.flavours.details.flavour_id = parseInt(itemValue);
-                setOrderPayload(data);
+                const chow = selectedBrand();
+                const filteredFlavour = chow!.flavours.filter(
+                  (flavour) => flavour.flavour_id === parseInt(itemValue)
+                );
+
+                const data = {
+                  details: {
+                    flavour_id: filteredFlavour[0].flavour_id,
+                    flavour_name: filteredFlavour[0].flavour_name,
+                  },
+                  brand_details: orderPayload.flavours.brand_details,
+                };
+                setOrderPayload({ ...orderPayload, flavours: data });
               }}
             >
               {selectedBrand() && renderFlavourDropdown()}
@@ -265,7 +290,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               onValueChange={(itemValue) => {
                 const flavour = selectedFlavour();
 
-                const filteredVariety = flavour?.varieties.filter((variety) => {
+                const filteredVariety = flavour!.varieties.filter((variety) => {
                   return variety.id === Number(itemValue);
                 });
                 setOrderPayload({
