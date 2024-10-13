@@ -7,16 +7,18 @@ import { useNavigation } from "@react-navigation/native";
 import { CreateChowModal } from "../components";
 import ChowFlavourDetails from "../components/details/ChowFlavourDetails";
 import SettingsModal from "../components/modals/SettingsModal";
-import { ChowFlavour } from "../models/chow";
+import {
+  ChowFlavour,
+  ChowFlavourFromSupabase,
+  ChowFromSupabase,
+} from "../models/chow";
 import { RootTabScreenProps } from "../types";
 
 interface ChowFlavourProps {
   navigation: RootTabScreenProps<"ChowDetails">;
   route: {
     params: {
-      flavours: ChowFlavour[];
-      brand: string;
-      brand_id: string;
+      chow: ChowFromSupabase;
     };
   };
 }
@@ -28,21 +30,21 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   const openCreationModal = () => {
     setShowCreationModal(true);
   };
-  const { flavours, brand, brand_id } = route.params;
+  const { chow } = route.params;
 
-  const sortedFlavours = flavours.sort((a, b) =>
+  const sortedFlavours: ChowFlavourFromSupabase[] = chow.flavours.sort((a, b) =>
     a.details.flavour_name.localeCompare(b.details.flavour_name)
   );
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        <Text style={styles.header}>{brand}</Text>
+        <Text style={styles.header}>{chow.brand_name}</Text>
         {sortedFlavours.map((flavour) => (
           <ChowFlavourDetails
             key={flavour.details.flavour_id}
             flavour={flavour}
-            brand_id={brand_id}
+            brand_id={chow.id}
           />
         ))}
       </ScrollView>
@@ -53,7 +55,7 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
       <CreateChowModal
         isOpen={showCreationModal}
         setShowModal={setShowCreationModal}
-        brand_id={brand_id}
+        brand_id={chow.id}
       />
     </View>
   );

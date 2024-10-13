@@ -27,3 +27,43 @@ export interface Chow {
   brand_id?: string;
   flavours: ChowFlavour[];
 }
+
+export interface ChowFromSupabase {
+  id: number;
+  brand_name: string;
+  flavours: [
+    {
+      details: {
+        varieties: [
+          {
+            id?: number;
+            size: number;
+            unit: "lb" | "kg" | "oz";
+            chow_id: number;
+            retail_price: number;
+            wholesale_price: number;
+          }
+        ];
+        flavour_id: number;
+        flavour_name: string;
+      };
+    }
+  ];
+}
+
+export interface ChowFlavourFromSupabase {
+  details: {
+    varieties: [
+      {
+        id?: number;
+        size: number;
+        unit: "lb" | "kg" | "oz";
+        chow_id: number;
+        retail_price: number;
+        wholesale_price: number;
+      }
+    ];
+    flavour_id: number;
+    flavour_name: string;
+  };
+}

@@ -45,6 +45,7 @@ const CustomersScreen = () => {
     };
 
     if (storedCustomers && storedCustomers?.length > 0) {
+      console.log("loading from asyncStorage");
       const parsedCustomers: Customer[] = JSON.parse(storedCustomers);
 
       setCustomersWithOpenOrders(filterOpenOrders(parsedCustomers));
@@ -53,6 +54,7 @@ const CustomersScreen = () => {
       return;
     }
 
+    console.log("fetching from supabase");
     fetchCustomers();
 
     setCustomersWithOpenOrders(filterOpenOrders(customers));

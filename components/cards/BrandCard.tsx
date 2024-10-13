@@ -2,12 +2,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { deleteChow } from "../../api";
-import { Chow } from "../../models/chow";
+import { Chow, ChowFromSupabase } from "../../models/chow";
 import SettingsModal from "../modals/SettingsModal";
 import { StockContext } from "../../context/StockContext";
 
 interface BrandCardProps {
-  chow: Chow;
+  chow: ChowFromSupabase;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
 }
 
@@ -21,20 +21,18 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
 
   const handleNavigation = () => {
     navigation.navigate("ChowFlavour", {
-      flavours: chow.flavours,
-      brand: chow.brand,
-      brand_id: chow.brand_id!,
+      chow,
     });
   };
 
   const handleEdit = () => {
     setShowModal(false);
     navigation.navigate("EditChow", {
-      brand_id: chow.brand_id!,
+      brand_id: chow.id,
     });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       setIsDeleted(false);
       await deleteChow(id);
@@ -66,7 +64,7 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
         setShowModal={setShowModal}
         handleDeletion={handleDelete}
         handleEdit={handleEdit}
-        deletionId={chow.brand_id}
+        deletionId={chow.id}
       />
     </TouchableOpacity>
   );

@@ -1,4 +1,4 @@
-import { Chow, ChowFlavour } from "../../models/chow";
+import { Chow, ChowFlavour, ChowFromSupabase } from "../../models/chow";
 import { axiosInstance } from "../api";
 import { supabase } from "../../utils/supabase";
 
@@ -91,7 +91,7 @@ export const createChowFlavour = async (
   }
 };
 
-export const deleteChow = async (id: string) => {
+export const deleteChow = async (id: number) => {
   try {
     const response = await axiosInstance.delete(`/stock/${id}`);
 
@@ -101,7 +101,7 @@ export const deleteChow = async (id: string) => {
   }
 };
 
-export const deleteChowFlavour = async (flavour_id: string) => {
+export const deleteChowFlavour = async (flavour_id: number) => {
   try {
     const response = await axiosInstance.delete("/stock/flavour", {
       data: {
@@ -115,7 +115,7 @@ export const deleteChowFlavour = async (flavour_id: string) => {
   }
 };
 
-export const updateChow = async (id: string, chow: Chow) => {
+export const updateChow = async (id: number, chow: Chow) => {
   try {
     const response = await axiosInstance.put(`/stock/${id}`, chow);
 
@@ -136,13 +136,16 @@ export const updateChowFlavour = async (chowFlavour: ChowFlavour) => {
 };
 
 export const getAllChow = async () => {
-  const { data, error } = await supabase.from("brands").select(
-    `
+  const { data, error } = await supabase
+    .from("brands")
+    .select(
+      `
       id,
       brand_name,
     flavours:chow_intermediary (details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(*))  )
       `
-  );
+    )
+    .returns<ChowFromSupabase[]>();
 
   if (error) {
     console.error("Error retrieving brands", error);
@@ -277,7 +280,7 @@ export const getAllChow = async () => {
 //   return finalChows;
 // };
 
-export const findChow = async (id: string) => {
+export const findChow = async (id: number) => {
   try {
     const response = await axiosInstance.get(`/stock/${id}`);
 
@@ -287,7 +290,7 @@ export const findChow = async (id: string) => {
   }
 };
 
-export const findChowFlavour = async (id: string) => {
+export const findChowFlavour = async (id: number) => {
   try {
     const response = await axiosInstance.get(`/stock/flavour/${id}`);
 
@@ -296,7 +299,7 @@ export const findChowFlavour = async (id: string) => {
     console.error(error);
   }
 };
-export const findChowVariety = async (id: string) => {
+export const findChowVariety = async (id: number) => {
   try {
     const response = await axiosInstance.get(`/stock/variety/${id}`);
 

@@ -47,7 +47,7 @@ const StockScreen = () => {
                   <BrandCard
                     setIsDeleted={setIsDeleted}
                     chow={chow}
-                    key={chow.brand_id}
+                    key={chow.id}
                   />
                 );
               })}
@@ -61,7 +61,7 @@ const StockScreen = () => {
       <CreateChowModal
         isOpen={showModal}
         setShowModal={setShowModal}
-        populateChowList={() => {}}
+        //   populateChowList={() => {}}
       />
     </View>
   );

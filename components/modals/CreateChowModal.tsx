@@ -21,7 +21,7 @@ import { StockContext } from "../../context/StockContext";
 interface CreateChowProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
-  brand_id?: string;
+  brand_id?: number;
 }
 
 const CreateChowModal = ({

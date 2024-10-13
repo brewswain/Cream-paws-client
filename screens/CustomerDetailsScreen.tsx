@@ -59,24 +59,24 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   } = useOrderStore();
 
   const populateOrders = async () => {
-    fetchCustomerOrders(customer.id);
-
-    const outstandingOrders = customerOrders
-      ? customerOrders.filter(
-          (order: OrderFromSupabase) => order.payment_made === false
-        )
-      : [];
-
-    const completedOrders = customerOrders
-      ? customerOrders
-          .filter((order: OrderFromSupabase) => order.payment_made === true)
-          .sort((a: OrderFromSupabase, b: OrderFromSupabase) =>
-            b.delivery_date.localeCompare(a.delivery_date)
+    if (customerOrders) {
+      const outstandingOrders = customerOrders
+        ? customerOrders.filter(
+            (order: OrderFromSupabase) => order.payment_made === false
           )
-      : [];
+        : [];
 
-    setOutstandingOrders(outstandingOrders);
-    setCompletedOrders(completedOrders);
+      const completedOrders = customerOrders
+        ? customerOrders
+            .filter((order: OrderFromSupabase) => order.payment_made === true)
+            .sort((a: OrderFromSupabase, b: OrderFromSupabase) =>
+              b.delivery_date.localeCompare(a.delivery_date)
+            )
+        : [];
+
+      setOutstandingOrders(outstandingOrders);
+      setCompletedOrders(completedOrders);
+    }
   };
 
   useEffect(() => {

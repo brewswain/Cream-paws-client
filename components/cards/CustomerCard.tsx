@@ -13,6 +13,7 @@ import { deleteCustomer } from "../../api";
 import DeleteModal from "../modals/DeleteModal";
 import SettingsModal from "../modals/SettingsModal";
 import { Customer } from "../../models/customer";
+import { useOrderStore } from "../../store/orderStore";
 
 interface CustomerCardProps {
   customer: Customer;
@@ -39,6 +40,8 @@ const CustomerCard = ({
     price,
   } = styles;
 
+  const { fetchCustomerOrders } = useOrderStore();
+
   const navigation = useNavigation();
 
   // Keeping this as reference for using Animations
@@ -55,6 +58,7 @@ const CustomerCard = ({
   // };
 
   const viewDetails = () => {
+    fetchCustomerOrders(customer.id);
     navigation.navigate("CustomerDetails", { customer });
   };
 
