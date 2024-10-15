@@ -198,12 +198,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   };
 
   const handleUpdate = async () => {
-    // const selectedOrder = {
-    //   ...orderPayload,
-    //   ...orderPayload.orders[index],
-    // };
-    // delete selectedOrder.orders;
-
     await updateOrder(orderPayload);
     navigate.goBack();
   };
