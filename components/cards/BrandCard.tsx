@@ -27,10 +27,14 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
 
   const handleEdit = () => {
     setShowModal(false);
-    navigation.navigate("EditChow", {
-      brand_id: chow.id,
-    });
+    // navigation.navigate("EditChow", {
+    //   brand_id: chow.id,
+    // });
+
+    console.log("Temporarily disabled till we allow users to edit brands");
   };
+
+  console.log("first");
 
   const handleDelete = async (id: number) => {
     try {

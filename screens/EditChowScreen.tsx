@@ -52,71 +52,31 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
 
   const { flavour } = route.params;
 
-  // const isEmpty = !Object.values(chowPayload).some(
-  //   (x) => x !== null && x !== ""
-  // );
-
-  // const handleChowChange = (
-  //   event: NativeSyntheticEvent<TextInputChangeEventData>,
-  //   name: string
-  // ) => {
-  //   const data: any = { ...chowPayload };
-
-  //   data[name] = event.nativeEvent.text;
-
-  //   setChowPayload(data);
-  // };
-
   const addNewVarietyField = (varietyIndex: number) => {
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit: varietyIndex > 0 ? data.details.varieties[0].unit : ("lb" as const),
+      unit: varietyIndex > 0 ? data.varieties[0].unit : ("lb" as const),
       wholesale_price: 0,
-      chow_id: data.details.varieties[0].chow_id,
+      chow_id: data.varieties[0].chow_id,
       retail_price: 0,
     };
 
-    // {
-    //   id: number;
-    //   size: number;
-    //   unit: "lb" | "kg" | "oz";
-    //   chow_id: number;
-    //   retail_price: number;
-    //   wholesale_price: number;
-    // }
-
-    data.details.varieties.push(newField);
+    data.varieties.push(newField);
     setChowPayload(data);
   };
 
   const removeVarietyField = (varietyIndex: number) => {
     const data = { ...chowPayload };
 
-    data.details.varieties.splice(varietyIndex, 1);
+    data.varieties.splice(varietyIndex, 1);
     setChowPayload(data);
   };
-
-  // const handleUpdate = async () => {
-  //   if (flavour_id) {
-  //     await updateChowFlavour(chowPayload.flavours[specifiedFlavourIndex]);
-  //     navigate.navigate("ChowFlavour", {
-  //       flavours: chowPayload.flavours,
-  //       brand: chowPayload.brand,
-  //       brand_id: route.params.brand_id,
-  //     });
-  //   } else {
-  //     await updateChow(brand_id, chowPayload);
-  //     navigate.navigate("Stock");
-  //   }
-
-  //   getChow();
-  // };
 
   const renderVarietyForm = () => {
     return (
       <>
-        {chowPayload.details.varieties.map((variety, varietyIndex) => {
+        {chowPayload.varieties.map((variety, varietyIndex) => {
           return (
             <View key={`${varietyIndex} ${variety.unit}`}>
               <FormControl isRequired>
@@ -127,7 +87,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                   value={variety.size ? variety.size.toString() : "0"}
                   onChange={(event) => {
                     const data = { ...chowPayload };
-                    data.details.varieties[varietyIndex].size = Number(
+                    data.varieties[varietyIndex].size = Number(
                       event.nativeEvent.text
                     );
                     setChowPayload(data);
@@ -141,7 +101,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                 <View style={styles.unitButtonContainer}>
                   {["lb", "kg", "oz"].map((unit, index) => {
                     const isActiveButton =
-                      unit === chowPayload.details.varieties[varietyIndex].unit;
+                      unit === chowPayload.varieties[varietyIndex].unit;
 
                     return (
                       <View key={unit}>
@@ -157,7 +117,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
 
                             const data = { ...chowPayload };
 
-                            data.details.varieties[varietyIndex].unit = unit as
+                            data.varieties[varietyIndex].unit = unit as
                               | "lb"
                               | "kg"
                               | "oz";
@@ -191,8 +151,9 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                   }
                   onChange={(event) => {
                     const data = { ...chowPayload };
-                    data.details.varieties[varietyIndex].wholesale_price =
-                      Number(event.nativeEvent.text);
+                    data.varieties[varietyIndex].wholesale_price = Number(
+                      event.nativeEvent.text
+                    );
                     setChowPayload(data);
                   }}
                 />
@@ -207,7 +168,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                   }
                   onChange={(event) => {
                     const data = { ...chowPayload };
-                    data.details.varieties[varietyIndex].retail_price = Number(
+                    data.varieties[varietyIndex].retail_price = Number(
                       event.nativeEvent.text
                     );
                     setChowPayload(data);
@@ -227,7 +188,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
                   />
                 </Button>
                 <Button
-                  isDisabled={chowPayload.details.varieties.length <= 1}
+                  isDisabled={chowPayload.varieties.length <= 1}
                   onPress={() => removeVarietyField(varietyIndex)}
                   key={`flavourIndex: ${varietyIndex} RemoveField `}
                 >
@@ -247,7 +208,7 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
 
   return (
     <ScrollView contentContainerStyle={{ alignItems: "center" }}>
-      {chowPayload.details.flavour_id ? (
+      {chowPayload.flavour_id ? (
         <>
           <Text style={header}>Flavour</Text>
           <View>
@@ -255,10 +216,10 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
             <TextInput
               selectTextOnFocus
               style={input}
-              defaultValue={chowPayload.details.flavour_name}
+              defaultValue={chowPayload.flavour_name}
               onChange={(event) => {
                 const data = { ...chowPayload };
-                data.details.flavour_name = event.nativeEvent.text;
+                data.flavour_name = event.nativeEvent.text;
                 setChowPayload(data);
               }}
             />

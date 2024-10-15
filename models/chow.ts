@@ -50,20 +50,18 @@ export interface ChowFromSupabase {
 }
 
 export interface ChowFlavourFromSupabase {
-  details: {
-    varieties: [
-      {
-        id?: number;
-        size: number;
-        unit: "lb" | "kg" | "oz";
-        chow_id: number;
-        retail_price: number;
-        wholesale_price: number;
-      }
-    ];
-    flavour_id: number;
-    flavour_name: string;
-  };
+  varieties: [
+    {
+      id?: number;
+      size: number;
+      unit: "lb" | "kg" | "oz";
+      chow_id: number;
+      retail_price: number;
+      wholesale_price: number;
+    }
+  ];
+  flavour_id: number;
+  flavour_name: string;
 }
 
 export interface ChosenFlavour {

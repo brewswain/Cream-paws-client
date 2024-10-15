@@ -32,9 +32,9 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
   };
   const { chow } = route.params;
 
-  const sortedFlavours: ChowFlavourFromSupabase[] = chow.flavours.sort((a, b) =>
-    a.details.flavour_name.localeCompare(b.details.flavour_name)
-  );
+  const sortedFlavours: ChowFlavourFromSupabase[] = chow
+    ? chow.flavours.sort((a, b) => a.flavour_name.localeCompare(b.flavour_name))
+    : [];
 
   return (
     <View style={styles.container}>
@@ -42,7 +42,7 @@ const ChowFlavourScreen = ({ navigation, route }: ChowFlavourProps) => {
         <Text style={styles.header}>{chow.brand_name}</Text>
         {sortedFlavours.map((flavour) => (
           <ChowFlavourDetails
-            key={flavour.details.flavour_id}
+            key={flavour.flavour_id}
             flavour={flavour}
             brand_id={chow.id}
           />

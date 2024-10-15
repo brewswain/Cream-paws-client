@@ -1,15 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Button, CheckIcon, ScrollView, Select } from "native-base";
+import {
+  Button,
+  CheckIcon,
+  ScrollView,
+  //  Select`
+} from "native-base";
+import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
+
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import { getAllChow, updateOrder } from "../api";
@@ -54,6 +62,9 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const [chosenFlavour, setChosenFlavour] = useState<
     ChosenFlavour | undefined
   >();
+  const [selectedIndex, setSelectedIndex] = useState<IndexPath | IndexPath[]>(
+    new IndexPath(0)
+  );
 
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
@@ -64,6 +75,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     const response = await getAllChow();
     setChow(response);
   };
+
   // TODO: sanitize our inputs
 
   const selectedBrand = () => {
@@ -90,23 +102,37 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   };
 
   const renderBrandDropdown = () => {
-    return chow?.map((item) => {
+    return chow?.map((brand, index) => {
+      // using index for key since our brand information isn't unique-- multiple entities can use the same brand
       return (
-        <Select.Item
-          label={`${item.brand_name}`}
-          value={item.id}
-          key={item.id}
+        <SelectItem
+          key={index}
+          title={brand.brand_name}
+          onPressIn={() =>
+            setOrderPayload({
+              ...orderPayload,
+              flavours: {
+                ...orderPayload.flavours,
+                brand_details: {
+                  id: brand.id,
+                  name: brand.brand_name,
+                },
+              },
+            })
+          }
         />
       );
     });
   };
 
+  console.log({ orderPayload });
+
   const renderFlavourDropdown = () => {
     const chow = selectedBrand();
-    return chow?.flavours.map((flavour) => (
-      <Select.Item
-        label={flavour.flavour_name}
-        value={flavour.flavour_id}
+    return chow?.flavours.map((flavour, index) => (
+      <SelectItem
+        key={index}
+        title={flavour.flavour_name}
         key={flavour.flavour_id}
       />
     ));
@@ -185,8 +211,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   }, []);
 
   useEffect(() => {
-    console.log({ orderPayload: orderPayload });
-  }, [orderPayload]);
+    console.log({ chosenFlavour, chosenVariety, orderPayload });
+  }, [chosenFlavour, chosenVariety, orderPayload]);
 
   const isPayloadMissingDetails =
     !orderPayload.flavours.brand_details.name ||
@@ -209,13 +235,23 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             {order.customers.name}
           </Text>
           <TouchableWithoutFeedback onPress={renderBrandDropdown}>
-            <Select
+            <Layout>
+              <Select
+                selectedIndex={selectedIndex}
+                value={orderPayload.flavours.brand_details.name}
+                onSelect={(index) => setSelectedIndex(index)}
+              >
+                {chow && renderBrandDropdown()}
+              </Select>
+            </Layout>
+            {/* <Select
               minWidth="200"
               selectedValue={
                 orderPayload.flavours.brand_details.id
                   ? orderPayload.flavours.brand_details.id
                   : undefined
               }
+              defaultValue=""
               accessibilityLabel="Choose Brand"
               placeholder="Choose Brand *"
               _selectedItem={{
@@ -248,14 +284,16 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                       id: parseInt(itemValue),
                       name: filteredChow[0].brand_name,
                     },
-                    details: {}
+                    details: {},
                   },
                 });
+                setChosenFlavour(undefined);
+                setChosenVariety(undefined);
               }}
               key={order.flavours.brand_details.id}
             >
               {chow && renderBrandDropdown()}
-            </Select>
+            </Select> */}
           </TouchableWithoutFeedback>
 
           <TouchableWithoutFeedback onPress={() => {}}>
@@ -267,6 +305,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               //     ? orderPayload.flavours.details.flavour_id
               //     : undefined
               // }
+              defaultValue=""
               accessibilityLabel="Choose Flavour"
               placeholder="Choose Flavour *"
               _selectedItem={{
@@ -275,13 +314,13 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               }}
               mt="1"
               onValueChange={(itemValue) => {
+                console.log("updating Flavour");
                 const filteredChow = selectedBrand();
                 const filteredFlavour = filteredChow
                   ? filteredChow.flavours.filter(
                       (flavour) => flavour.flavour_id === parseInt(itemValue)
                     )
                   : [];
-                setChosenFlavour(filteredFlavour[0]);
 
                 const data = {
                   details: {
@@ -290,21 +329,28 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                   },
                   brand_details: orderPayload.flavours.brand_details,
                 };
-                setOrderPayload({ ...orderPayload, flavours: data });
+                setOrderPayload({
+                  ...orderPayload,
+                  flavours: data,
+                  variety: {},
+                });
+                setChosenFlavour(filteredFlavour[0]);
+                setChosenVariety(undefined);
               }}
             >
-              {renderFlavourDropdown()}
+              {/* {renderFlavourDropdown()} */}
             </Select>
           </TouchableWithoutFeedback>
 
           <TouchableWithoutFeedback
-            onPress={() => {
-              renderVarieties();
-            }}
+            onPress={
+              () => {}
+              // renderVarieties();
+            }
           >
             <Select
               minWidth="200"
-              selectedValue={chosenVariety?.id}
+              selectedValue={chosenVariety ? chosenVariety.id : null}
               accessibilityLabel="Choose Size"
               placeholder="Choose Size *"
               _selectedItem={{
@@ -350,15 +396,14 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
                     return variety.id === Number(itemValue);
                   }
                 );
-
                 setChosenVariety(filteredVariety[0]);
-                // setOrderPayload({
-                //   ...orderPayload,
-                //   variety: filteredVariety[0]!,
-                // });
+                setOrderPayload({
+                  ...orderPayload,
+                  variety: filteredVariety[0]!,
+                });
               }}
             >
-              {renderVarieties()}
+              {/* {renderVarieties()} */}
             </Select>
           </TouchableWithoutFeedback>
 

@@ -79,6 +79,7 @@ const OrdersScreen = () => {
     new Date(order.delivery_date).toDateString()
   );
   const today = new Date().toDateString();
+
   return (
     <View style={styles.container}>
       <ScrollView>
