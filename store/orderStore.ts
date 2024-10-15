@@ -1,9 +1,11 @@
 import { Dispatch, SetStateAction } from "react";
 import { OrderFromSupabase, OrderPayload } from "../models/order";
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { supabase } from "../utils/supabase";
 import { createOrder, getAllOrders } from "../api";
 import { getCustomersOrders } from "../api/routes/orders";
+import { createJSONStorage, persist, PersistOptions } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type UseOrderStore = {
   orders: OrderFromSupabase[];
@@ -24,59 +26,72 @@ type UseOrderStore = {
   setCompletedOrders: (orders: OrderFromSupabase[]) => void;
 };
 
-const useOrderStore = create<UseOrderStore>((set) => ({
-  orders: [],
-  customerOrders: [],
-  outstandingOrders: [],
-  completedOrders: [],
-  isFetching: false,
-  error: null,
-  selectedOrderIds: [],
-  setSelectedOrderIds: (orderId: number) => {
-    set((state) => ({
-      ...state,
-      selectedOrderIds: state.selectedOrderIds.includes(orderId)
-        ? state.selectedOrderIds.filter((id) => id !== orderId)
-        : [...(state.selectedOrderIds || []), orderId],
-    }));
-  },
-  setCompletedOrders: (orders: OrderFromSupabase[]) => {
-    set({ completedOrders: orders });
-  },
-  setOutstandingOrders: (orders: OrderFromSupabase[]) => {
-    set({ outstandingOrders: orders });
-  },
-  fetchOrders: async () => {
-    set({ isFetching: true });
-    try {
-      const data = await getAllOrders();
+type OrderPersist = (
+  config: StateCreator<UseOrderStore>,
+  options: PersistOptions<UseOrderStore>
+) => StateCreator<UseOrderStore>;
 
-      data && set({ orders: data, isFetching: false, error: null });
-    } catch (error) {
-      set({ isFetching: false, error: `Failed to fetch orders: ${error}` });
-      console.error(error);
+const useOrderStore = create<UseOrderStore>(
+  (persist as OrderPersist)(
+    (set, get) => ({
+      orders: [],
+      customerOrders: [],
+      outstandingOrders: [],
+      completedOrders: [],
+      isFetching: false,
+      error: null,
+      selectedOrderIds: [],
+      setSelectedOrderIds: (orderId: number) => {
+        set((state) => ({
+          ...state,
+          selectedOrderIds: state.selectedOrderIds.includes(orderId)
+            ? state.selectedOrderIds.filter((id) => id !== orderId)
+            : [...(state.selectedOrderIds || []), orderId],
+        }));
+      },
+      setCompletedOrders: (orders: OrderFromSupabase[]) => {
+        set({ completedOrders: orders });
+      },
+      setOutstandingOrders: (orders: OrderFromSupabase[]) => {
+        set({ outstandingOrders: orders });
+      },
+      fetchOrders: async () => {
+        set({ isFetching: true });
+        try {
+          const data = await getAllOrders();
+
+          data && set({ orders: data, isFetching: false, error: null });
+        } catch (error) {
+          set({ isFetching: false, error: `Failed to fetch orders: ${error}` });
+          console.error(error);
+        }
+      },
+      fetchCustomerOrders: async (customerId: number) => {
+        try {
+          const data = await getCustomersOrders(customerId);
+          set({ customerOrders: data, isFetching: false, error: null });
+        } catch (error) {
+          set({
+            isFetching: false,
+            error: `Failed to fetch customer's orders: ${error}`,
+          });
+          console.error(error);
+        }
+      },
+      createOrder: async (orderPayload: OrderPayload) => {
+        try {
+          await createOrder(orderPayload);
+        } catch (error) {
+          set({ error: `Failed to create order: ${error} ` });
+          console.error(error);
+        }
+      },
+    }),
+    {
+      name: "order-storage",
+      storage: createJSONStorage(() => AsyncStorage),
     }
-  },
-  fetchCustomerOrders: async (customerId: number) => {
-    try {
-      const data = await getCustomersOrders(customerId);
-      set({ customerOrders: data, isFetching: false, error: null });
-    } catch (error) {
-      set({
-        isFetching: false,
-        error: `Failed to fetch customer's orders: ${error}`,
-      });
-      console.error(error);
-    }
-  },
-  createOrder: async (orderPayload: OrderPayload) => {
-    try {
-      await createOrder(orderPayload);
-    } catch (error) {
-      set({ error: `Failed to create order: ${error} ` });
-      console.error(error);
-    }
-  },
-}));
+  )
+);
 
 export { useOrderStore };

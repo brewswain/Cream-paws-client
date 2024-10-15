@@ -106,7 +106,8 @@ const OrderCard = ({
             <Text style={price}>
               {Dinero({
                 amount: Math.round(
-                  (data.delivery_cost + data.retail_price) * 100 || 0
+                  (data.delivery_cost + data.retail_price * data.quantity) *
+                    100 || 0
                 ),
               }).toFormat("$0,0.00")}
               {/* {Dinero({

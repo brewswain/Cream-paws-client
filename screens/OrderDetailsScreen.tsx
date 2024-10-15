@@ -197,14 +197,14 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     setOrderPayload(data);
   };
 
-  const handleUpdate = async (index: number) => {
-    const selectedOrder = {
-      ...orderPayload,
-      ...orderPayload.orders[index],
-    };
-    delete selectedOrder.orders;
+  const handleUpdate = async () => {
+    // const selectedOrder = {
+    //   ...orderPayload,
+    //   ...orderPayload.orders[index],
+    // };
+    // delete selectedOrder.orders;
 
-    await updateOrder(selectedOrder);
+    await updateOrder(orderPayload);
     navigate.goBack();
   };
 
@@ -405,7 +405,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               width: 150,
               alignSelf: "center",
             }}
-            // onPress={() => handleUpdate(index)}
+            onPress={() => handleUpdate()}
           >
             Update Order
           </Button>

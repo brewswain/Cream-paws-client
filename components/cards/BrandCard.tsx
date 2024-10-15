@@ -34,8 +34,6 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
     console.log("Temporarily disabled till we allow users to edit brands");
   };
 
-  console.log("first");
-
   const handleDelete = async (id: number) => {
     try {
       setIsDeleted(false);

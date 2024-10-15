@@ -1,5 +1,6 @@
 import {
   OrderFromSupabase,
+  OrderFromSupabasePayload,
   OrderPayload,
   OrderWithChowDetails,
 } from "../../models/order";
@@ -139,18 +140,59 @@ export const getCustomersOrders = async (customerId: number) => {
   return data;
 };
 
-// TODO: fix typings lol
-export const updateOrder = async (order: OrderWithChowDetails) => {
-  try {
-    const response = await axiosInstance.put(
-      `/orders/${order.order_id}`,
-      order
-    );
+export const updateOrder = async (order: OrderFromSupabasePayload) => {
+  const { data: intermediaryId, error: intermediaryError } = await supabase
+    .from("chow_intermediary")
+    .upsert(
+      {
+        brand_id: order.flavours.brand_details.id,
+        flavour_id: order.flavours.details?.flavour_id,
+        variety_id: order.variety?.id,
+      },
+      {
+        ignoreDuplicates: false,
+        onConflict: "brand_id, flavour_id, variety_id",
+      }
+    )
+    .select("id")
+    .single();
 
-    return response.data;
-  } catch (error) {
-    console.error({ error });
+  if (intermediaryError) {
+    console.error("Error upserting intermediary ID: ", intermediaryError);
+    throw new Error(intermediaryError.message);
   }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .update({
+      customer_id: order.customer_id,
+      chow_intermediary_ids: intermediaryId.id,
+      delivery_date: order.delivery_date,
+      delivery_cost: order.delivery_cost,
+      retail_price: order.retail_price,
+      wholesale_price: order.wholesale_price,
+      quantity: order.quantity,
+      variety_id: order.variety?.id,
+    })
+    .eq("id", order.id)
+    .single();
+
+  if (error) {
+    console.error("Error updating customer's orders: ", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+  // try {
+  //   const response = await axiosInstance.put(
+  //     `/orders/${order.id}`,
+  //     order
+  //   );
+
+  //   return response.data;
+  // } catch (error) {
+  //   console.error({ error });
+  // }
 };
 
 export const payWarehouseOrders = async (orders: OrderWithChowDetails[]) => {};
