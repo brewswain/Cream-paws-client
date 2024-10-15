@@ -26,6 +26,7 @@ import { RootTabScreenProps } from "../types";
 import {
   ChowDetails,
   OrderFromSupabase,
+  OrderFromSupabasePayload,
   OrderWithChowDetails,
 } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
@@ -54,17 +55,21 @@ interface OrderDetailsProps {
 
 const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const { order } = route.params;
-  const [orderPayload, setOrderPayload] = useState<OrderFromSupabase>(order);
+  const [orderPayload, setOrderPayload] =
+    useState<OrderFromSupabasePayload>(order);
   const [chow, setChow] = useState<ChowFromSupabase[]>();
-  const [chosenVariety, setChosenVariety] = useState<
-    ChosenVariety | undefined
-  >();
-  const [chosenFlavour, setChosenFlavour] = useState<
-    ChosenFlavour | undefined
-  >();
-  const [selectedIndex, setSelectedIndex] = useState<IndexPath | IndexPath[]>(
-    new IndexPath(0)
-  );
+  const [selectedBrandIndex, setSelectedBrandIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedFlavourIndex, setSelectedFlavourIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedVarietyIndex, setSelectedVarietyIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedDeliveryCostIndex, setSelectedDeliveryCostIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
 
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
@@ -75,8 +80,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     const response = await getAllChow();
     setChow(response);
   };
-
-  // TODO: sanitize our inputs
 
   const selectedBrand = () => {
     const filteredChow = chow
@@ -93,7 +96,9 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const selectedFlavour = () => {
     const chow = selectedBrand();
     const filteredFlavour = chow?.flavours.filter((flavour) => {
-      return flavour.flavour_id === orderPayload.flavours.details.flavour_id;
+      return orderPayload.flavours.details
+        ? flavour.flavour_id === orderPayload.flavours.details.flavour_id
+        : [];
     });
 
     if (filteredFlavour) {
@@ -112,11 +117,59 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             setOrderPayload({
               ...orderPayload,
               flavours: {
-                ...orderPayload.flavours,
                 brand_details: {
                   id: brand.id,
                   name: brand.brand_name,
                 },
+              },
+              variety: undefined,
+            })
+          }
+        />
+      );
+    });
+  };
+
+  const renderFlavourDropdown = () => {
+    const chow = selectedBrand();
+    return chow?.flavours.map((flavour, index) => (
+      <SelectItem
+        key={index}
+        title={flavour.flavour_name}
+        onPressIn={() =>
+          setOrderPayload({
+            ...orderPayload,
+            flavours: {
+              ...orderPayload.flavours,
+              details: {
+                flavour_id: flavour.flavour_id,
+                flavour_name: flavour.flavour_name,
+              },
+            },
+            variety: undefined,
+          })
+        }
+      />
+    ));
+  };
+
+  const renderVarietyDropdown = () => {
+    const flavour = selectedFlavour();
+    return flavour?.varieties.map((variety, index) => {
+      return (
+        <SelectItem
+          key={index}
+          title={`${variety.size} ${variety.unit}`}
+          onPressIn={() =>
+            setOrderPayload({
+              ...orderPayload,
+              variety: {
+                id: variety.id,
+                size: variety.size,
+                unit: variety.unit,
+                chow_id: variety.chow_id,
+                retail_price: variety.retail_price,
+                wholesale_price: variety.wholesale_price,
               },
             })
           }
@@ -125,42 +178,21 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     });
   };
 
-  console.log({ orderPayload });
+  const renderDeliveryCost = () => {
+    const DELIVERY_COSTS = [0, 20, 45, 60, 100];
 
-  const renderFlavourDropdown = () => {
-    const chow = selectedBrand();
-    return chow?.flavours.map((flavour, index) => (
+    return DELIVERY_COSTS.map((delivery_cost, index) => (
       <SelectItem
         key={index}
-        title={flavour.flavour_name}
-        key={flavour.flavour_id}
-      />
-    ));
-  };
-
-  const renderVarieties = () => {
-    const flavour = selectedFlavour();
-    return flavour?.varieties.map((variety) => {
-      return (
-        <Select.Item
-          label={`${variety.size} ${variety.unit}`}
-          value={variety.id ? variety.id : "Variety ID not found"}
-          key={variety.id}
-        />
-      );
-    });
-  };
-
-  const renderDeliveryCost = () => {
-    const TEST_DELIVERY_COSTS = [0, 20, 45, 60, 100];
-
-    return TEST_DELIVERY_COSTS.map((price, index) => (
-      <Select.Item
-        key={`${price}+${index}`}
-        value={price}
-        label={Dinero({
-          amount: Math.round(price * 100 || 0),
+        title={Dinero({
+          amount: Math.round(delivery_cost * 100 || 0),
         }).toFormat("$0,0.00")}
+        onPressIn={() => {
+          setOrderPayload({
+            ...orderPayload,
+            delivery_cost: delivery_cost,
+          });
+        }}
       />
     ));
   };
@@ -210,10 +242,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     populateChowList();
   }, []);
 
-  useEffect(() => {
-    console.log({ chosenFlavour, chosenVariety, orderPayload });
-  }, [chosenFlavour, chosenVariety, orderPayload]);
-
   const isPayloadMissingDetails =
     !orderPayload.flavours.brand_details.name ||
     !orderPayload.flavours ||
@@ -228,117 +256,34 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
       <View key={order.id}>
         <View style={styles.container}>
-          {/* Checkmarks like Driver Paid, etc */}
           <Text
             style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
           >
             {order.customers.name}
           </Text>
-          <TouchableWithoutFeedback onPress={renderBrandDropdown}>
-            <Layout>
-              <Select
-                selectedIndex={selectedIndex}
-                value={orderPayload.flavours.brand_details.name}
-                onSelect={(index) => setSelectedIndex(index)}
-              >
-                {chow && renderBrandDropdown()}
-              </Select>
-            </Layout>
-            {/* <Select
-              minWidth="200"
-              selectedValue={
-                orderPayload.flavours.brand_details.id
-                  ? orderPayload.flavours.brand_details.id
-                  : undefined
-              }
-              defaultValue=""
-              accessibilityLabel="Choose Brand"
-              placeholder="Choose Brand *"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              mt="1"
-              onValueChange={(itemValue) => {
-                const filteredChow = chow
-                  ?.map((brand) => brand)
-                  .filter((item) => {
-                    return item.id === Number(itemValue);
-                  });
-
-                // let data = orderPayload;
-                // data.flavours.brand_details.id = parseInt(itemValue);
-                // setOrderPayload({
-                //   ...orderPayload,
-                //   flavours: {
-                //     ...orderPayload.flavours,
-                //     brand_details: {
-                //       id: parseInt(itemValue),
-                //       name: filteredChow[0].brand_name,
-                //     },
-                //   },
-                // });
-                setOrderPayload({
-                  flavours: {
-                    brand_details: {
-                      id: parseInt(itemValue),
-                      name: filteredChow[0].brand_name,
-                    },
-                    details: {},
-                  },
-                });
-                setChosenFlavour(undefined);
-                setChosenVariety(undefined);
-              }}
-              key={order.flavours.brand_details.id}
+          <Layout>
+            <Select
+              selectedIndex={selectedBrandIndex}
+              value={orderPayload.flavours.brand_details.name}
+              onSelect={(index) => setSelectedBrandIndex(index)}
             >
               {chow && renderBrandDropdown()}
-            </Select> */}
-          </TouchableWithoutFeedback>
+            </Select>
+          </Layout>
 
-          <TouchableWithoutFeedback onPress={() => {}}>
+          <TouchableWithoutFeedback>
             <Select
-              minWidth="200"
-              selectedValue={chosenFlavour?.flavour_id}
-              // selectedValue={
-              //   orderPayload.flavours.details.flavour_id
-              //     ? orderPayload.flavours.details.flavour_id
-              //     : undefined
-              // }
-              defaultValue=""
+              selectedIndex={selectedFlavourIndex}
+              value={
+                orderPayload.flavours.details?.flavour_name
+                  ? orderPayload.flavours.details.flavour_name
+                  : "Choose Flavour"
+              }
+              onSelect={(index) => setSelectedFlavourIndex(index)} //
               accessibilityLabel="Choose Flavour"
               placeholder="Choose Flavour *"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              mt="1"
-              onValueChange={(itemValue) => {
-                console.log("updating Flavour");
-                const filteredChow = selectedBrand();
-                const filteredFlavour = filteredChow
-                  ? filteredChow.flavours.filter(
-                      (flavour) => flavour.flavour_id === parseInt(itemValue)
-                    )
-                  : [];
-
-                const data = {
-                  details: {
-                    flavour_id: filteredFlavour[0].flavour_id,
-                    flavour_name: filteredFlavour[0].flavour_name,
-                  },
-                  brand_details: orderPayload.flavours.brand_details,
-                };
-                setOrderPayload({
-                  ...orderPayload,
-                  flavours: data,
-                  variety: {},
-                });
-                setChosenFlavour(filteredFlavour[0]);
-                setChosenVariety(undefined);
-              }}
             >
-              {/* {renderFlavourDropdown()} */}
+              {selectedBrand() && renderFlavourDropdown()}
             </Select>
           </TouchableWithoutFeedback>
 
@@ -349,61 +294,17 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             }
           >
             <Select
-              minWidth="200"
-              selectedValue={chosenVariety ? chosenVariety.id : null}
-              accessibilityLabel="Choose Size"
-              placeholder="Choose Size *"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              mt="1"
-              // onValueChange={(itemValue) => {
-              //   const filteredChow = chow
-              //     ?.map((brand) => brand)
-              //     .filter((item) => {
-              //       return item.id === orderPayload.flavours.brand_details.id;
-              //     });
-
-              //   const filteredFlavour = filteredChow?.length
-              //     ? filteredChow[0].flavours.filter(
-              //         (flavour) => flavour.flavour_id === parseInt(itemValue)
-              //       )
-              //     : [];
-              //   setChosenFlavour(filteredFlavour[0]);
-
-              //   const data = {
-              //     details: {
-              //       flavour_id: filteredFlavour[0].flavour_id,
-              //       flavour_name: filteredFlavour[0].flavour_name,
-              //     },
-              //     brand_details: orderPayload.flavours.brand_details,
-              //   };
-              //   setOrderPayload({ ...orderPayload, flavours: data });
-              // }}
-              onValueChange={(itemValue) => {
-                // const flavour = selectedFlavour();
-                const chow = selectedBrand();
-                const filteredFlavour = chow?.flavours.filter((flavour) => {
-                  return (
-                    flavour.flavour_id ===
-                    orderPayload.flavours.details.flavour_id
-                  );
-                });
-
-                const filteredVariety = filteredFlavour[0]!.varieties.filter(
-                  (variety) => {
-                    return variety.id === Number(itemValue);
-                  }
-                );
-                setChosenVariety(filteredVariety[0]);
-                setOrderPayload({
-                  ...orderPayload,
-                  variety: filteredVariety[0]!,
-                });
-              }}
+              selectedIndex={selectedVarietyIndex}
+              value={
+                orderPayload.variety
+                  ? `${orderPayload.variety.size} ${orderPayload.variety.unit}`
+                  : "Choose Variety"
+              }
+              onSelect={(index) => setSelectedVarietyIndex(index)} //
+              accessibilityLabel="Choose Variety"
+              placeholder="Choose Variety *"
             >
-              {/* {renderVarieties()} */}
+              {renderVarietyDropdown()}
             </Select>
           </TouchableWithoutFeedback>
 
@@ -429,22 +330,11 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
             <Header>Delivery Cost</Header>
             <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
               <Select
-                minWidth="200"
-                selectedValue={orderPayload.delivery_cost}
+                selectedIndex={selectedVarietyIndex}
+                value={orderPayload.delivery_cost}
+                onSelect={(index) => setSelectedDeliveryCostIndex(index)} //
                 accessibilityLabel="Delivery Cost"
-                placeholder="Delivery Cost"
-                _selectedItem={{
-                  bg: "teal.600",
-                  endIcon: <CheckIcon size={5} />,
-                }}
-                mt="1"
-                onValueChange={(itemValue) =>
-                  setOrderPayload({
-                    ...orderPayload,
-                    delivery_cost: parseInt(itemValue),
-                  })
-                }
-                key={orderPayload.id}
+                placeholder="Delivery Cost *"
               >
                 {renderDeliveryCost()}
               </Select>
@@ -476,6 +366,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           <Header>Costs</Header>
           <Text>Retail Price</Text>
           <TextInput
+            style={[styles.customInput, { fontSize: 18 }]}
             onChangeText={(value) =>
               setOrderPayload({
                 ...orderPayload,
@@ -483,7 +374,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               })
             }
             selectTextOnFocus
-            style={{ fontSize: 20 }}
             keyboardType="numeric"
           >
             {Dinero({
@@ -492,6 +382,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           </TextInput>
           <Text>Total</Text>
           <TextInput
+            style={{ fontSize: 20, paddingBottom: 18 }}
             onChangeText={(value) =>
               setOrderPayload({
                 ...orderPayload,
@@ -499,7 +390,6 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               })
             }
             selectTextOnFocus
-            style={{ fontSize: 28, paddingBottom: 18 }}
             keyboardType="numeric"
           >
             {Dinero({
