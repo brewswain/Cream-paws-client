@@ -1,9 +1,9 @@
 import axios from "axios";
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { Customer, CustomerPayload } from "../models/customer";
 import { supabase } from "../utils/supabase";
+import { persist, createJSONStorage, PersistOptions } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 type UseCustomerStore = {
   customers: Customer[];
   isFetching: boolean;
@@ -11,36 +11,50 @@ type UseCustomerStore = {
   fetchCustomers: () => Promise<void>;
   addCustomer: (customerPayload: CustomerPayload) => Promise<void>;
 };
-const useCustomerStore = create<UseCustomerStore>((set) => ({
-  customers: [],
-  isFetching: false,
-  error: null,
 
-  fetchCustomers: async () => {
-    set({ isFetching: true });
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .returns<Customer[]>()
-      .order("name");
+type CustomerPersist = (
+  config: StateCreator<UseCustomerStore>,
+  options: PersistOptions<UseCustomerStore>
+) => StateCreator<UseCustomerStore>;
+const useCustomerStore = create<UseCustomerStore>(
+  (persist as CustomerPersist)(
+    (set, get) => ({
+      customers: [],
+      isFetching: false,
+      error: null,
 
-    if (error) {
-      set({ isFetching: false, error: error.message });
+      fetchCustomers: async () => {
+        set({ isFetching: true });
+        const { data, error } = await supabase
+          .from("customers")
+          .select("*")
+          .returns<Customer[]>()
+          .order("name");
+
+        if (error) {
+          set({ isFetching: false, error: error.message });
+        }
+
+        data && set({ customers: data, isFetching: false, error: null });
+      },
+
+      // Customise this after
+      addCustomer: async (newCustomer: CustomerPayload) => {
+        try {
+          const response = await axios.post("/customer", newCustomer);
+          set((state: any) => ({
+            customers: [...state.customers, response.data],
+          }));
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    }),
+    {
+      name: "customer-storage",
+      storage: createJSONStorage(() => AsyncStorage),
     }
-
-    data && set({ customers: data, isFetching: false, error: null });
-    await AsyncStorage.setItem("customers", JSON.stringify(data));
-  },
-
-  // Customise this after
-  addCustomer: async (newCustomer: CustomerPayload) => {
-    try {
-      const response = await axios.post("/customer", newCustomer);
-      set((state: any) => ({ customers: [...state.customers, response.data] }));
-    } catch (error) {
-      console.error(error);
-    }
-  },
-}));
+  )
+);
 
 export { useCustomerStore };

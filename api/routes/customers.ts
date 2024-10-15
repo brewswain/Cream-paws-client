@@ -1,8 +1,6 @@
-import axios from "axios";
 import { axiosInstance } from "../api";
 import { Customer, CustomerPayload } from "../../models/customer";
 import { supabase } from "../../utils/supabase";
-import { err } from "react-native-svg/lib/typescript/xml";
 
 // Creating default param in case we don't have any pets added
 export const createCustomer = async (customer: CustomerPayload) => {
