@@ -1,21 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import {
-  Button,
-  CheckIcon,
-  ScrollView,
-  //  Select`
-} from "native-base";
+import { Button, ScrollView } from "native-base";
 import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -24,18 +18,12 @@ import { getAllChow, updateOrder } from "../api";
 import { Header } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import {
-  ChowDetails,
   OrderFromSupabase,
   OrderFromSupabasePayload,
   OrderWithChowDetails,
 } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
-import {
-  ChosenFlavour,
-  ChosenVariety,
-  Chow,
-  ChowFromSupabase,
-} from "../models/chow";
+import { ChosenFlavour, ChowFromSupabase } from "../models/chow";
 
 import Dinero from "dinero.js";
 
