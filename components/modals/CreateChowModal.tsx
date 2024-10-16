@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { createRef, useContext, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -57,10 +57,10 @@ const CreateChowModal = ({
 
   const navigation = useNavigation();
 
-  const inputRef2 = useRef();
-  const inputRef3 = useRef();
-  const inputRef4 = useRef();
-  const inputRef5 = useRef();
+  const inputRef2 = createRef<TextInput>();
+  const inputRef3 = createRef<TextInput>();
+  const inputRef4 = createRef<TextInput>();
+  const inputRef5 = createRef<TextInput>();
 
   const {
     input,
@@ -178,15 +178,14 @@ const CreateChowModal = ({
 
   // TODO: check stock.ts -- functionality not yet implemented
   const handleChowCreation = async () => {
-    // Heavyhanded use of !, but we should never have undefined here
-    await createChow(chowPayload!);
+    await createChow(chowPayload);
     populateChowList();
   };
 
   const handleFlavourCreation = async () => {
     const flavourPayload = chowPayload.flavours;
     // ! used here since we're only going to run this method if we have  our brand_id
-    await createChowFlavour(chowPayload.id!, flavourPayload);
+    chowPayload.id && (await createChowFlavour(chowPayload.id, flavourPayload));
     const data = await findChow(brand_id!);
 
     data &&
@@ -210,15 +209,17 @@ const CreateChowModal = ({
       <>
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
-            console.log({ variety });
             return (
               <View key={varietyIndex}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
+                    ref={inputRef3}
                     value={variety.size.toString()}
                     selectTextOnFocus
+                    returnKeyType="next"
+                    onSubmitEditing={() => inputRef4.current?.focus()}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -287,7 +288,7 @@ const CreateChowModal = ({
                       )
                     }
                     returnKeyType="next"
-                    onSubmitEditing={() => inputRef5.current.focus()}
+                    onSubmitEditing={() => inputRef5.current?.focus()}
                     blurOnSubmit={false}
                     ref={inputRef4}
                   />
@@ -370,7 +371,7 @@ const CreateChowModal = ({
                 selectTextOnFocus
                 style={input}
                 returnKeyType="next"
-                onSubmitEditing={() => inputRef2.current.focus()}
+                onSubmitEditing={() => inputRef2.current?.focus()}
                 blurOnSubmit={false}
                 onChange={(event) => handleChowChange(event, "brand")}
               />
@@ -390,7 +391,7 @@ const CreateChowModal = ({
                     handleChowFlavourChange(event, "flavour_name", index)
                   }
                   returnKeyType="next"
-                  onSubmitEditing={() => inputRef3.current.focus()}
+                  onSubmitEditing={() => inputRef3.current?.focus()}
                   blurOnSubmit={false}
                   ref={inputRef2}
                 />
