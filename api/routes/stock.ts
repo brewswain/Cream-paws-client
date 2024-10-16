@@ -7,7 +7,7 @@ import {
 } from "../../models/chow";
 import { axiosInstance } from "../api";
 import { supabase } from "../../utils/supabase";
-import { handleSupabaseError } from "../error";
+import { logNewSupabaseError } from "../error";
 
 //TODO: Allow us to add multiple flavours and varieties--should be simple, just remove the index part here or check our promise.all logic to see what the shape of our payload looks like
 export const createChow = async (chow: ChowFromSupabasePayload) => {
@@ -21,8 +21,8 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
     .single();
 
   if (brandError) {
-    console.error("Error creating brand", brandError);
-    handleSupabaseError(brandError);
+    logNewSupabaseError("Error creating brand", brandError);
+    throw new Error(brandError.message);
   }
 
   const { data: chowsTableData, error: chowsTableError } = await supabase
@@ -34,7 +34,8 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
     .single();
 
   if (chowsTableError) {
-    handleSupabaseError(chowsTableError);
+    logNewSupabaseError("Error adding data to chows table: ", chowsTableError);
+    throw new Error(chowsTableError.message);
   }
 
   const { data: chowVarietyData, error: chowVarietyError } = await supabase
@@ -50,7 +51,11 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
     .single();
 
   if (chowVarietyError) {
-    handleSupabaseError(chowVarietyError);
+    logNewSupabaseError(
+      "Error adding data to chow_varieties table: ",
+      chowVarietyError
+    );
+    throw new Error(chowVarietyError.message);
   }
 
   const { error: chowIntermediaryError } = await supabase
@@ -64,7 +69,11 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
     .single();
 
   if (chowIntermediaryError) {
-    handleSupabaseError(chowIntermediaryError);
+    logNewSupabaseError(
+      "Error adding data to chow_intermediary table: ",
+      chowIntermediaryError
+    );
+    throw new Error(chowIntermediaryError.message);
   }
 
   const { error: chowDetailsError } = await supabase
@@ -72,7 +81,8 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
     .insert({ target_group: "", brand_id: brandData.id });
 
   if (chowDetailsError) {
-    handleSupabaseError(chowDetailsError);
+    logNewSupabaseError("Error Adding Brand details: ", chowDetailsError);
+    throw new Error(chowDetailsError.message);
   }
 
   console.log("Chow created successfully");
@@ -151,7 +161,8 @@ export const getAllChow = async () => {
     .returns<ChowFromSupabase[]>();
 
   if (error) {
-    handleSupabaseError(error);
+    logNewSupabaseError("Error retrieving brands", error);
+    throw new Error(error.message);
   }
   return data;
 };
@@ -297,7 +308,8 @@ export const findChow = async (id: number) => {
     .returns<ChowFromSupabase>();
 
   if (error) {
-    handleSupabaseError(error);
+    logNewSupabaseError("Error finding chow: ", error);
+    throw new Error(error.message);
   }
 
   return data;

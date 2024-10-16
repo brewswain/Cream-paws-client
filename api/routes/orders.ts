@@ -6,6 +6,7 @@ import {
 } from "../../models/order";
 import { supabase } from "../../utils/supabase";
 import { axiosInstance } from "../api";
+import { logNewSupabaseError } from "../error";
 
 const orderQuery = `
 id,
@@ -33,10 +34,11 @@ export const createOrder = async (orderPayload: OrderPayload) => {
       .eq("id", orderPayload.variety_id);
 
   if (varietyRetailPriceError) {
-    console.error(
+    logNewSupabaseError(
       "Error retrieving intermediary Id: ",
       varietyRetailPriceError
     );
+
     throw new Error(varietyRetailPriceError.message);
   }
   const { data: chowIntermediaryData, error: chowIntermediaryError } =
@@ -48,7 +50,10 @@ export const createOrder = async (orderPayload: OrderPayload) => {
       .eq("variety_id", orderPayload.variety_id);
 
   if (chowIntermediaryError) {
-    console.error("Error retrieving intermediary Id: ", chowIntermediaryError);
+    logNewSupabaseError(
+      "Error retrieving intermediary Id: ",
+      chowIntermediaryError
+    );
     throw new Error(chowIntermediaryError.message);
   }
 
@@ -68,7 +73,7 @@ export const createOrder = async (orderPayload: OrderPayload) => {
   });
 
   if (error) {
-    console.error("Error creating new order: ", error);
+    logNewSupabaseError("Error creating new order: ", error);
     throw new Error(error.message);
   }
 
@@ -117,7 +122,7 @@ export const getAllOrders = async () => {
     .order("customers (name)");
 
   if (error) {
-    console.error("Error retrieving all Orders: ", error);
+    logNewSupabaseError("Error retrieving all Orders: ", error);
     throw new Error(error.message);
   }
 
@@ -133,7 +138,7 @@ export const getCustomersOrders = async (customerId: number) => {
     .order("customers (name)");
 
   if (error) {
-    console.error("Error retrieving customer's orders: ", error);
+    logNewSupabaseError("Error retrieving customer's orders: ", error);
     throw new Error(error.message);
   }
 
@@ -158,7 +163,7 @@ export const updateOrder = async (order: OrderFromSupabasePayload) => {
     .single();
 
   if (intermediaryError) {
-    console.error("Error upserting intermediary ID: ", intermediaryError);
+    logNewSupabaseError("Error upserting intermediary ID: ", intermediaryError);
     throw new Error(intermediaryError.message);
   }
 
@@ -178,7 +183,7 @@ export const updateOrder = async (order: OrderFromSupabasePayload) => {
     .single();
 
   if (error) {
-    console.error("Error updating customer's orders: ", error);
+    logNewSupabaseError("Error updating customer's orders: ", error);
     throw new Error(error.message);
   }
 
