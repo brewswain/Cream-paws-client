@@ -24,12 +24,6 @@ const StockScreen = () => {
     setShowModal(true);
   };
 
-  //   useFocusEffect(
-  //     useCallback(() => {
-  //       populateChowList();
-  //     }, [isDeleted])
-  //   );
-
   useEffect(() => {
     populateChowList();
   }, []);
@@ -58,11 +52,7 @@ const StockScreen = () => {
       <Pressable style={buttonContainer} onPress={openModal}>
         <Icon name="plus" size={20} />
       </Pressable>
-      <CreateChowModal
-        isOpen={showModal}
-        setShowModal={setShowModal}
-        //   populateChowList={() => {}}
-      />
+      <CreateChowModal isOpen={showModal} setShowModal={setShowModal} />
     </View>
   );
 };

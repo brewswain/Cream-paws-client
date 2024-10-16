@@ -10,7 +10,7 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Chow, ChowFlavour, ChowFromSupabase } from "./models/chow";
+import { Chow, ChowFlavour, ChowFlavourFromSupabase, ChowFromSupabase } from "./models/chow";
 import { Customer } from "./models/customer";
 import { OrderFromSupabase } from "./models/order";
 
@@ -40,8 +40,7 @@ export type RootStackParamList = {
     chow: ChowFromSupabase;
   };
   EditChow: {
-    brand_id: string;
-    flavour_id?: string;
+   flavour: ChowFlavourFromSupabase
   };
   EditCustomer: Customer;
 };

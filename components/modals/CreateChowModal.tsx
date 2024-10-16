@@ -15,7 +15,11 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 import { createChow } from "../../api";
 import { createChowFlavour, findChow } from "../../api/routes/stock";
-import { Chow } from "../../models/chow";
+import {
+  Chow,
+  ChowFromSupabase,
+  ChowFromSupabasePayload,
+} from "../../models/chow";
 import { StockContext } from "../../context/StockContext";
 
 interface CreateChowProps {
@@ -29,11 +33,10 @@ const CreateChowModal = ({
   setShowModal,
   brand_id,
 }: CreateChowProps) => {
-  const [chowPayload, setChowPayload] = useState<Chow>({
-    brand: "",
+  const [chowPayload, setChowPayload] = useState<ChowFromSupabasePayload>({
+    brand_name: "",
     flavours: [
       {
-        flavour_name: "",
         varieties: [
           {
             size: 0,
@@ -42,6 +45,7 @@ const CreateChowModal = ({
             retail_price: 0,
           },
         ],
+        flavour_name: "",
       },
     ],
   });
@@ -69,11 +73,10 @@ const CreateChowModal = ({
 
   const addNewFlavourField = () => {
     setChowPayload({
-      brand: chowPayload?.brand || "",
+      brand_name: chowPayload?.brand_name || "",
       flavours: [
-        ...chowPayload.flavours,
+        ...chowPayload!.flavours,
         {
-          flavour_name: "",
           varieties: [
             {
               size: 0,
@@ -82,6 +85,7 @@ const CreateChowModal = ({
               retail_price: 0,
             },
           ],
+          flavour_name: "",
         },
       ],
     });
@@ -164,7 +168,7 @@ const CreateChowModal = ({
   };
 
   const validateFormEntry = () => {
-    if (chowPayload?.brand === undefined) {
+    if (chowPayload?.brand_name === undefined) {
       setErrors({ ...errors, message: "Brand info is required" });
       return false;
     }
@@ -172,6 +176,7 @@ const CreateChowModal = ({
     return true;
   };
 
+  // TODO: check stock.ts -- functionality not yet implemented
   const handleChowCreation = async () => {
     // Heavyhanded use of !, but we should never have undefined here
     await createChow(chowPayload!);
@@ -181,14 +186,13 @@ const CreateChowModal = ({
   const handleFlavourCreation = async () => {
     const flavourPayload = chowPayload.flavours;
     // ! used here since we're only going to run this method if we have  our brand_id
-    await createChowFlavour(brand_id!, flavourPayload);
-    const data: Chow = await findChow(brand_id!);
+    await createChowFlavour(chowPayload.id!, flavourPayload);
+    const data = await findChow(brand_id!);
 
-    navigation.navigate("ChowFlavour", {
-      flavours: data.flavours,
-      brand: data.brand,
-      brand_id: data.brand_id!,
-    });
+    data &&
+      navigation.navigate("ChowFlavour", {
+        chow: data,
+      });
   };
 
   const handleSubmit = () => {
@@ -206,8 +210,9 @@ const CreateChowModal = ({
       <>
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
+            console.log({ variety });
             return (
-              <View key={`${variety.chow_id} ${variety.unit}`}>
+              <View key={varietyIndex}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
@@ -222,7 +227,6 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
-                    ref={inputRef3}
                   />
                 </FormControl>
                 <FormControl isRequired>
@@ -247,12 +251,10 @@ const CreateChowModal = ({
                             ]}
                             onPress={() => {
                               setUnitIndex(index);
-
                               const data = { ...chowPayload };
-
                               data.flavours[flavourIndex].varieties[
                                 varietyIndex
-                              ].unit = unit;
+                              ].unit = unit as "lb" | "kg" | "oz";
 
                               setChowPayload(data);
                             }}
