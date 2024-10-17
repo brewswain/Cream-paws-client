@@ -5,7 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { Chow, ChowFlavour } from "../../models/chow";
+import {
+  Chow,
+  ChowFlavour,
+  ChowFlavourFromSupabase,
+  ChowFromSupabase,
+} from "../../models/chow";
 import { useState } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Collapsible from "react-native-collapsible";
@@ -21,8 +26,8 @@ import {
 } from "../../api/routes/stock";
 
 interface ChowFlavourDetailsProps {
-  flavour: ChowFlavour;
-  brand_id: string;
+  flavour: ChowFlavourFromSupabase;
+  brand_id: number;
 }
 
 const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
@@ -38,19 +43,16 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
   const handleEdit = () => {
     setShowModal(false);
     navigation.navigate("EditChow", {
-      brand_id: brand_id,
-      flavour_id: flavour.flavour_id,
+      flavour,
     });
   };
 
-  const handleDelete = async (flavour_id: string) => {
+  const handleDelete = async (flavour_id: number) => {
     await deleteChowFlavour(flavour_id);
-    const data: Chow = await findChow(brand_id);
+    const data: ChowFromSupabase = await findChow(brand_id);
 
     navigation.navigate("ChowFlavour", {
-      flavours: data.flavours,
-      brand: data.brand,
-      brand_id: data.brand_id!,
+      chow: data,
     });
   };
 
@@ -74,7 +76,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
           style={dropdownIcon}
         />
       </TouchableOpacity>
-
       <Collapsible collapsed={varietyCollapsible}>
         <View
           style={[
@@ -124,7 +125,6 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
         </View>
       </Collapsible>
       <Divider />
-
       <SettingsModal
         showModal={showModal}
         setShowModal={setShowModal}

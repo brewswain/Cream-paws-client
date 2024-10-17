@@ -23,59 +23,30 @@ import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
-import { CombinedOrder, OrderWithChowDetails } from "../models/order";
+import {
+  CombinedOrder,
+  OrderFromSupabase,
+  OrderWithChowDetails,
+} from "../models/order";
 import { Chow } from "../models/chow";
 import { Customer } from "../models/customer";
+import { useCustomerStore } from "../store/customerStore";
+import { supabase } from "../utils/supabase";
+import { useOrderStore } from "../store/orderStore";
+import { useChowStore } from "../store/chowStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [chow, setChow] = useState<Chow[]>();
-  const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [data, setData] = useState<CombinedOrder[]>();
+  const [data, setData] = useState<OrderFromSupabase[]>();
+  const { customers, fetchCustomers } = useCustomerStore();
+  const { orders, fetchOrders, isFetching } = useOrderStore();
+  const { fetchChows, chows } = useChowStore();
 
   const populateAllData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getUnpaidCustomerOrders();
-      populateCustomersList();
-      populateChowList();
-      const formattedOrders = response && (await combineOrders(response));
-
-      // Sort the orders first by delivery_date in ascending order, then by name
-      formattedOrders.sort((a, b) => {
-        // Compare delivery_date
-        const dateA = new Date(a.delivery_date);
-        const dateB = new Date(b.delivery_date);
-        const dateComparison = dateA - dateB;
-
-        // If delivery_date is the same, compare by name
-        if (dateComparison === 0) {
-          const nameA = a.name.toLowerCase(); // assuming case-insensitive comparison
-          const nameB = b.name.toLowerCase();
-          return nameA.localeCompare(nameB);
-        }
-
-        return dateComparison;
-      });
-
-      setData(formattedOrders);
-
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.error(error);
-    }
-  };
-
-  const populateCustomersList = async () => {
-    const response = await getAllCustomers();
-    setCustomers(response);
-  };
-  const populateChowList = async () => {
-    const response = await getAllChow();
-    setChow(response);
+    fetchOrders();
+    fetchChows();
   };
 
   const populateData = async () => {
@@ -87,32 +58,45 @@ const OrdersScreen = () => {
     setShowModal(true);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      populateData();
-    }, [isDeleted])
-  );
+  useEffect(() => {
+    populateData();
+  }, []);
+
+  const getCustomerName = async (customerId: number) => {
+    const { data, error } = await supabase
+      .from("customers")
+      .select("name")
+      .eq("id", customerId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching customer's name: ", error);
+    }
+
+    return data;
+  };
 
   const deliveryDates = data?.map((order) =>
     new Date(order.delivery_date).toDateString()
   );
   const today = new Date().toDateString();
+
   return (
     <View style={styles.container}>
       <ScrollView>
-        {isLoading ? (
+        {isFetching ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
           <View>
-            {data?.map((order, index) => {
+            {orders?.map((order, index) => {
               return (
-                <View key={order.customer_id + index.toString()}>
+                <View key={index}>
                   <OrderCard
-                    key={`${order.orders[0].order_id} ${order.orders.length} - ${index}`}
+                    key={order.id}
                     isDeleted={isDeleted}
                     setIsDeleted={setIsDeleted}
                     populateData={populateData}
-                    client_name={order.name}
+                    client_name={order.customers.name}
                     customerId={order.customer_id}
                     data={order}
                   />
@@ -126,7 +110,7 @@ const OrdersScreen = () => {
           isOpen={showModal}
           setShowModal={setShowModal}
           populateCustomersList={populateData}
-          chow={chow}
+          chow={chows}
           customers={customers}
         />
       </ScrollView>

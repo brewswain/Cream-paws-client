@@ -1,7 +1,7 @@
 import moment from "moment";
 
 import { findCustomer, getAllCustomers, updateOrder } from "../api";
-import { OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
 import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
 
@@ -88,22 +88,17 @@ export const getTodaysOrders = async () => {
 };
 
 export const getUnpaidCustomerOrders = async () => {
-  const customerResponse: Customer[] = await getAllCustomers();
+  const orders = await getAllOrders();
 
-  const filteredOutstandingOrders = customerResponse
-    .flatMap(
-      (customer) =>
-        customer.orders?.filter(
-          (order: OrderWithChowDetails) => order.payment_made === false
-        ) ?? []
-    )
-    .filter((order) => order !== undefined);
+  const filteredOutstandingOrders = orders.filter(
+    (order) => order.payment_made === false
+  );
 
   return filteredOutstandingOrders;
 };
 
 export const getUnpaidCourierFees = async () => {
-  const response: OrderWithChowDetails[] = await getAllOrders();
+  const response: OrderFromSupabase[] = await getAllOrders();
 
   const filteredUnpaidCourierFees =
     response.filter((order) => order.driver_paid === false) ??
@@ -113,7 +108,7 @@ export const getUnpaidCourierFees = async () => {
 };
 
 export const getUnpaidWarehouseOrders = async () => {
-  const orderResponse: OrderWithChowDetails[] = await getAllOrders();
+  const orderResponse: OrderFromSupabase[] = await getAllOrders();
 
   const filteredOutstandingOrders =
     orderResponse.filter((order) => order.warehouse_paid === false) ??
@@ -174,21 +169,42 @@ export const combineOrders = async (orders: OrderWithChowDetails[]) => {
   return Object.values(combinedOrders);
 };
 
-export const concatFinanceQuantities = async (
-  orders: OrderWithChowDetails[]
-) => {
-  const updatedOrders = {};
-  for (const order of orders) {
-    const existingOrder = updatedOrders[order.chow_id];
+export const concatFinanceQuantities = async (orders: OrderFromSupabase[]) => {
+  // const updatedOrders = {};
+  // for (const order of orders) {
+  //   const existingOrder = updatedOrders[order.chow_id];
 
-    if (existingOrder) {
-      // Update quantity for the existing order
-      existingOrder.quantity += order.quantity;
-    } else {
-      // Add a new order if chow_id is not present
-      updatedOrders[order.chow_id] = { ...order };
-    }
-  }
+  //   if (existingOrder) {
+  //     // Update quantity for the existing order
+  //     existingOrder.quantity += order.quantity;
+  //   } else {
+  //     // Add a new order if chow_id is not present
+  //     updatedOrders[order.chow_id] = { ...order };
+  //   }
+  // }
 
-  return Object.values(updatedOrders);
+  // return Object.values(updatedOrders);
+  const itemizedBill = orders.reduce(
+    (accumulator: OrderFromSupabase[] | [], currentOrder) => {
+      const varietyId = currentOrder.variety.id;
+      const existingOrderIndex = accumulator.findIndex(
+        (order) => order.variety.id === varietyId
+      );
+
+      if (existingOrderIndex !== -1) {
+        // Update quantity of existing order
+        accumulator[existingOrderIndex].quantity += currentOrder.quantity;
+      } else {
+        // Add new order to array
+        return [
+          ...accumulator,
+          { ...currentOrder, quantity: currentOrder.quantity },
+        ];
+      }
+
+      return accumulator;
+    },
+    []
+  );
+  return itemizedBill;
 };

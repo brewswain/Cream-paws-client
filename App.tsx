@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-
+import * as eva from "@eva-design/eva";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider } from "native-base";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ApplicationProvider } from "@ui-kitten/components";
 
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
@@ -36,15 +37,17 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NativeBaseProvider>
-        <CustomerDetailsProvider>
-          <StockContextProvider>
-            <Navigation colorScheme={colorScheme} />
-            <StatusBar />
-          </StockContextProvider>
-        </CustomerDetailsProvider>
-      </NativeBaseProvider>
-    </SafeAreaProvider>
+    <ApplicationProvider {...eva} theme={eva.light}>
+      <SafeAreaProvider>
+        <NativeBaseProvider>
+          <CustomerDetailsProvider>
+            <StockContextProvider>
+              <Navigation colorScheme={colorScheme} />
+              <StatusBar />
+            </StockContextProvider>
+          </CustomerDetailsProvider>
+        </NativeBaseProvider>
+      </SafeAreaProvider>
+    </ApplicationProvider>
   );
 }

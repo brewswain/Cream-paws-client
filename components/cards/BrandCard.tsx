@@ -2,12 +2,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { deleteChow } from "../../api";
-import { Chow } from "../../models/chow";
+import { Chow, ChowFromSupabase } from "../../models/chow";
 import SettingsModal from "../modals/SettingsModal";
 import { StockContext } from "../../context/StockContext";
 
 interface BrandCardProps {
-  chow: Chow;
+  chow: ChowFromSupabase;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
 }
 
@@ -21,24 +21,24 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
 
   const handleNavigation = () => {
     navigation.navigate("ChowFlavour", {
-      flavours: chow.flavours,
-      brand: chow.brand,
-      brand_id: chow.brand_id!,
+      chow,
     });
   };
 
   const handleEdit = () => {
     setShowModal(false);
-    navigation.navigate("EditChow", {
-      brand_id: chow.brand_id!,
-    });
+    // navigation.navigate("EditChow", {
+    //   brand_id: chow.id,
+    // });
+
+    console.log("Temporarily disabled till we allow users to edit brands");
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
-      setIsDeleted(false);
+      // setIsDeleted(false);
       await deleteChow(id);
-      setIsDeleted(true);
+      // setIsDeleted(true);
       populateChowList();
     } catch (error) {
       console.error(error);
@@ -52,7 +52,7 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
       onLongPress={() => setShowModal(true)}
     >
       <View>
-        <Text style={styles.header}>{chow.brand}</Text>
+        <Text style={styles.header}>{chow.brand_name}</Text>
         {chow.flavours.length > 0 ? (
           <Text style={styles.flavourDetails}>{`${chow.flavours.length} ${
             chow.flavours.length > 1 ? "flavours" : "flavour"
@@ -66,7 +66,7 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
         setShowModal={setShowModal}
         handleDeletion={handleDelete}
         handleEdit={handleEdit}
-        deletionId={chow.brand_id}
+        deletionId={chow.id}
       />
     </TouchableOpacity>
   );

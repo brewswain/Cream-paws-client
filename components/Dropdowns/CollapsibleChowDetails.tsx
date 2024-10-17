@@ -7,23 +7,22 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import DetailsText from "../DetailsText";
 import { Divider } from "native-base";
+import { OrderFromSupabase } from "../../models/order";
 
 interface CollapsibleChowDetailsProps {
-  chowDetails: Chow;
+  order: OrderFromSupabase;
   index: number;
   color?: string;
   paddingLeft: number;
 }
 
 const CollapsibleChowDetails = ({
-  chowDetails,
+  order,
   index,
   color,
   paddingLeft,
 }: CollapsibleChowDetailsProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-  const { brand } = chowDetails;
-  const { size, unit, retail_price } = chowDetails.flavours.varieties;
   const { dropdownContainer, dropdownIcon, dropdownText } = styles;
 
   return (
@@ -51,7 +50,7 @@ const CollapsibleChowDetails = ({
         <View>
           <DetailsText
             header={"Brand"}
-            details={brand}
+            details={order.flavours.brand_details.name}
             paddingLeft={paddingLeft}
             color={color}
           />
@@ -59,11 +58,11 @@ const CollapsibleChowDetails = ({
             header={"Flavour"}
             paddingLeft={paddingLeft}
             color={color}
-            details={chowDetails.flavours.flavour_name}
+            details={order.flavours.details.flavour_name}
           />
           <DetailsText
             header={"Size"}
-            details={`${size} ${unit}`}
+            details={`${order.flavours.details.varieties[0].size} ${order.flavours.details.varieties[0].size}`}
             paddingLeft={paddingLeft}
             color={color}
           />
@@ -73,7 +72,7 @@ const CollapsibleChowDetails = ({
             paddingLeft={paddingLeft}
             color={color}
             details={Dinero({
-              amount: Math.round(retail_price * 100),
+              amount: Math.round(order.retail_price * 100),
             }).toFormat("$0,0.00")}
           />
         </View>

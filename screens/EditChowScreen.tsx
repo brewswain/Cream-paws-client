@@ -17,35 +17,25 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
-import { Chow } from "../models/chow";
+import {
+  Chow,
+  ChowFlavourFromSupabase,
+  ChowFromSupabase,
+} from "../models/chow";
 import { RootTabScreenProps } from "../types";
 interface EditChowScreenProps {
   navigation: RootTabScreenProps<"EditChow">;
   route: {
     params: {
-      brand_id: string;
-      flavour_id?: string;
+      flavour: ChowFlavourFromSupabase;
     };
   };
 }
 
 const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
-  const [chowPayload, setChowPayload] = useState<Chow>({
-    brand: "",
-    flavours: [
-      {
-        flavour_name: "",
-        varieties: [
-          {
-            size: 0,
-            unit: "lb",
-            wholesale_price: 0,
-            retail_price: 0,
-          },
-        ],
-      },
-    ],
-  });
+  const [chowPayload, setChowPayload] = useState<ChowFlavourFromSupabase>(
+    route.params.flavour
+  );
   const [unitIndex, setUnitIndex] = useState(0);
   const [specifiedFlavourIndex, setSpecifiedFlavourIndex] = useState(0);
 
@@ -60,262 +50,165 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
     header,
   } = styles;
 
-  const { brand_id, flavour_id } = route.params;
-  const isEmpty = !Object.values(chowPayload).some(
-    (x) => x !== null && x !== ""
-  );
+  const { flavour } = route.params;
 
-  const handleChowChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string
-  ) => {
-    const data: any = { ...chowPayload };
-
-    data[name] = event.nativeEvent.text;
-
-    setChowPayload(data);
-  };
-
-  const addNewVarietyField = (flavourIndex: number, varietyIndex: number) => {
+  const addNewVarietyField = (varietyIndex: number) => {
     const data = { ...chowPayload };
     const newField = {
       size: 0,
-      unit:
-        varietyIndex > 0
-          ? data.flavours[flavourIndex].varieties[0].unit
-          : ("lb" as const),
+      unit: varietyIndex > 0 ? data.varieties[0].unit : ("lb" as const),
       wholesale_price: 0,
+      chow_id: data.varieties[0].chow_id,
       retail_price: 0,
     };
 
-    data.flavours[flavourIndex].varieties.push(newField);
+    data.varieties.push(newField);
     setChowPayload(data);
   };
 
-  const removeVarietyField = (flavourIndex: number, varietyIndex: number) => {
+  const removeVarietyField = (varietyIndex: number) => {
     const data = { ...chowPayload };
-    const targetFlavour = data.flavours[flavourIndex];
 
-    targetFlavour.varieties.splice(varietyIndex, 1);
+    data.varieties.splice(varietyIndex, 1);
     setChowPayload(data);
   };
 
-  const handleChowFlavourChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string,
-    index: number
-  ) => {
-    const data: any = { ...chowPayload };
-    data.flavours[index][name] = event.nativeEvent.text;
-
-    setChowPayload(data);
-  };
-
-  const handleChowVarietyChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    name: string,
-    flavourIndex: number,
-    varietyIndex: number
-  ) => {
-    const data: any = { ...chowPayload };
-    data.flavours[flavourIndex].varieties[varietyIndex][name] =
-      event.nativeEvent.text.trim();
-
-    setChowPayload(data);
-  };
-
-  const getChow = async () => {
-    const data = await findChow(brand_id);
-    const flavourIndex = data.flavours.findIndex(
-      (flavour: any) => flavour.flavour_id === flavour_id
-    );
-    setChowPayload(data);
-    setSpecifiedFlavourIndex(flavourIndex);
-  };
-
-  const handleUpdate = async () => {
-    if (flavour_id) {
-      await updateChowFlavour(chowPayload.flavours[specifiedFlavourIndex]);
-      navigate.navigate("ChowFlavour", {
-        flavours: chowPayload.flavours,
-        brand: chowPayload.brand,
-        brand_id: route.params.brand_id,
-      });
-    } else {
-      await updateChow(brand_id, chowPayload);
-      navigate.navigate("Stock");
-    }
-
-    getChow();
-  };
-
-  useEffect(() => {
-    getChow();
-  }, []);
-
-  const renderVarietyForm = (flavourIndex: number) => {
+  const renderVarietyForm = () => {
     return (
       <>
-        {chowPayload.flavours[flavourIndex].varieties.map(
-          (variety, varietyIndex) => {
-            return (
-              <View key={`${varietyIndex} ${variety.unit}`}>
-                <FormControl isRequired>
-                  <FormControl.Label>Size</FormControl.Label>
-                  <TextInput
-                    selectTextOnFocus
-                    style={input}
-                    value={variety.size ? variety.size.toString() : "0"}
-                    onChange={(event) =>
-                      handleChowVarietyChange(
-                        event,
-                        "size",
-                        flavourIndex,
-                        varietyIndex
-                      )
-                    }
-                  />
-                </FormControl>
+        {chowPayload.varieties.map((variety, varietyIndex) => {
+          return (
+            <View key={`${varietyIndex} ${variety.unit}`}>
+              <FormControl isRequired>
+                <FormControl.Label>Size</FormControl.Label>
+                <TextInput
+                  selectTextOnFocus
+                  style={input}
+                  value={variety.size ? variety.size.toString() : "0"}
+                  onChange={(event) => {
+                    const data = { ...chowPayload };
+                    data.varieties[varietyIndex].size = Number(
+                      event.nativeEvent.text
+                    );
+                    setChowPayload(data);
+                  }}
+                />
+              </FormControl>
 
-                <FormControl isRequired>
-                  <FormControl.Label>Unit</FormControl.Label>
+              <FormControl isRequired>
+                <FormControl.Label>Unit</FormControl.Label>
 
-                  <View style={styles.unitButtonContainer}>
-                    {["lb", "kg", "oz"].map((unit, index) => {
-                      const isActiveButton =
-                        unit ===
-                        chowPayload.flavours[flavourIndex].varieties[
-                          varietyIndex
-                        ].unit;
+                <View style={styles.unitButtonContainer}>
+                  {["lb", "kg", "oz"].map((unit, index) => {
+                    const isActiveButton =
+                      unit === chowPayload.varieties[varietyIndex].unit;
 
-                      return (
-                        <View key={unit}>
-                          <Pressable
-                            style={[
-                              styles.unitButton,
-                              isActiveButton
-                                ? styles.activeButton
-                                : styles.inactiveButton,
-                            ]}
-                            onPress={() => {
-                              setUnitIndex(index);
+                    return (
+                      <View key={unit}>
+                        <Pressable
+                          style={[
+                            styles.unitButton,
+                            isActiveButton
+                              ? styles.activeButton
+                              : styles.inactiveButton,
+                          ]}
+                          onPress={() => {
+                            setUnitIndex(index);
 
-                              const data = { ...chowPayload };
+                            const data = { ...chowPayload };
 
-                              data.flavours[flavourIndex].varieties[
-                                varietyIndex
-                              ].unit = unit;
+                            data.varieties[varietyIndex].unit = unit as
+                              | "lb"
+                              | "kg"
+                              | "oz";
 
-                              setChowPayload(data);
+                            setChowPayload(data);
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: isActiveButton ? "white" : "black",
                             }}
                           >
-                            <Text
-                              style={{
-                                color: isActiveButton ? "white" : "black",
-                              }}
-                            >
-                              {unit}
-                            </Text>
-                          </Pressable>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormControl.Label>Wholesale Price</FormControl.Label>
-                  <TextInput
-                    selectTextOnFocus
-                    style={input}
-                    defaultValue={
-                      variety.wholesale_price
-                        ? variety.wholesale_price.toString()
-                        : "0"
-                    }
-                    onChange={(event) =>
-                      handleChowVarietyChange(
-                        event,
-                        "wholesale_price",
-                        flavourIndex,
-                        varietyIndex
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormControl isRequired>
-                  <FormControl.Label>Retail Price</FormControl.Label>
-                  <TextInput
-                    selectTextOnFocus
-                    style={input}
-                    defaultValue={
-                      variety.retail_price
-                        ? variety.retail_price.toString()
-                        : "0"
-                    }
-                    onChange={(event) =>
-                      handleChowVarietyChange(
-                        event,
-                        "retail_price",
-                        flavourIndex,
-                        varietyIndex
-                      )
-                    }
-                  />
-                </FormControl>
-                <View style={buttonContainer}>
-                  <Button
-                    style={button}
-                    onPress={() =>
-                      addNewVarietyField(flavourIndex, varietyIndex)
-                    }
-                    key={`flavourIndex: ${varietyIndex} AddField `}
-                  >
-                    <Icon
-                      name="plus"
-                      size={10}
-                      key={`flavourIndex: ${varietyIndex} PlusIcon `}
-                    />
-                  </Button>
-                  <Button
-                    isDisabled={
-                      chowPayload.flavours[flavourIndex].varieties.length <= 1
-                    }
-                    onPress={() =>
-                      removeVarietyField(flavourIndex, varietyIndex)
-                    }
-                    key={`flavourIndex: ${varietyIndex} RemoveField `}
-                  >
-                    <Icon
-                      name="minus"
-                      size={10}
-                      key={`flavourIndex: ${varietyIndex} MinusIcon `}
-                    />
-                  </Button>
+                            {unit}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    );
+                  })}
                 </View>
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormControl.Label>Wholesale Price</FormControl.Label>
+                <TextInput
+                  selectTextOnFocus
+                  style={input}
+                  defaultValue={
+                    variety.wholesale_price
+                      ? variety.wholesale_price.toString()
+                      : "0"
+                  }
+                  onChange={(event) => {
+                    const data = { ...chowPayload };
+                    data.varieties[varietyIndex].wholesale_price = Number(
+                      event.nativeEvent.text
+                    );
+                    setChowPayload(data);
+                  }}
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormControl.Label>Retail Price</FormControl.Label>
+                <TextInput
+                  selectTextOnFocus
+                  style={input}
+                  defaultValue={
+                    variety.retail_price ? variety.retail_price.toString() : "0"
+                  }
+                  onChange={(event) => {
+                    const data = { ...chowPayload };
+                    data.varieties[varietyIndex].retail_price = Number(
+                      event.nativeEvent.text
+                    );
+                    setChowPayload(data);
+                  }}
+                />
+              </FormControl>
+              <View style={buttonContainer}>
+                <Button
+                  style={button}
+                  onPress={() => addNewVarietyField(varietyIndex)}
+                  key={`flavourIndex: ${varietyIndex} AddField `}
+                >
+                  <Icon
+                    name="plus"
+                    size={10}
+                    key={`flavourIndex: ${varietyIndex} PlusIcon `}
+                  />
+                </Button>
+                <Button
+                  isDisabled={chowPayload.varieties.length <= 1}
+                  onPress={() => removeVarietyField(varietyIndex)}
+                  key={`flavourIndex: ${varietyIndex} RemoveField `}
+                >
+                  <Icon
+                    name="minus"
+                    size={10}
+                    key={`flavourIndex: ${varietyIndex} MinusIcon `}
+                  />
+                </Button>
               </View>
-            );
-          }
-        )}
+            </View>
+          );
+        })}
       </>
     );
   };
 
   return (
     <ScrollView contentContainerStyle={{ alignItems: "center" }}>
-      <FormControl>
-        <View style={{ alignItems: "center" }}>
-          <FormControl.Label>Brand</FormControl.Label>
-          <TextInput
-            selectTextOnFocus
-            style={input}
-            defaultValue={chowPayload.brand}
-            onChange={(event) => handleChowChange(event, "brand")}
-          />
-        </View>
-      </FormControl>
-
-      {flavour_id && chowPayload.flavours.length > 0 ? (
+      {chowPayload.flavour_id ? (
         <>
           <Text style={header}>Flavour</Text>
           <View>
@@ -323,55 +216,29 @@ const EditChowScreen = ({ navigation, route }: EditChowScreenProps) => {
             <TextInput
               selectTextOnFocus
               style={input}
-              defaultValue={
-                chowPayload.flavours[specifiedFlavourIndex].flavour_name
-              }
-              onChange={(event) =>
-                handleChowFlavourChange(
-                  event,
-                  "flavour_name",
-                  specifiedFlavourIndex
-                )
-              }
+              defaultValue={chowPayload.flavour_name}
+              onChange={(event) => {
+                const data = { ...chowPayload };
+                data.flavour_name = event.nativeEvent.text;
+                setChowPayload(data);
+              }}
             />
             <Text style={header}>Sizes</Text>
-            {renderVarietyForm(specifiedFlavourIndex)}
+            {renderVarietyForm()}
           </View>
         </>
       ) : (
-        <>
-          <Text style={header}>Flavours</Text>
-          {chowPayload.flavours.map((_, index) => {
-            const currentFlavour = chowPayload.flavours[index];
-            return (
-              <View key={index}>
-                <FormControl.Label mt={4}>Name</FormControl.Label>
-                <TextInput
-                  selectTextOnFocus
-                  style={input}
-                  returnKeyType="next"
-                  defaultValue={currentFlavour.flavour_name}
-                  onChange={(event) =>
-                    handleChowFlavourChange(event, "flavour_name", index)
-                  }
-                />
-                <Text
-                  style={header}
-                >{`${currentFlavour.flavour_name} Size Variations`}</Text>
-                {renderVarietyForm(index)}
-              </View>
-            );
-          })}
-        </>
+        <Text>Something went wrong, can't detect flavour.</Text>
       )}
+
       <Button.Group space={2} style={confirmationButtonContainer}>
         <Button variant="ghost" onPress={() => navigate.navigate("Stock")}>
           Cancel
         </Button>
         <Button
           style={confirmationButton}
-          onPress={() => handleUpdate()}
-          isDisabled={isEmpty}
+          // onPress={() => handleUpdate()}
+          // isDisabled={isEmpty}
         >
           Save
         </Button>

@@ -80,3 +80,81 @@ export interface CombinedOrder {
     version?: number;
   }[];
 }
+
+export interface OrderPayload {
+  brand_id: number;
+  flavour_id: number;
+  variety_id: number;
+  quantity: number;
+  customer_id: number;
+  delivery_date: string;
+  delivery_cost: number;
+  payment_date: number;
+  payment_made: boolean;
+  is_delivery: boolean;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+}
+
+export interface OrderFromSupabase {
+  id: number;
+  is_delivery: boolean;
+  delivery_date: string;
+  delivery_cost: number;
+  payment_made: boolean;
+  payment_date: string;
+  retail_price: number;
+  wholesale_price: number;
+  quantity: number;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+  customer_id: number;
+  flavours: {
+    details: {
+      flavour_id: number;
+      flavour_name: string;
+    };
+    brand_details: { id: number; name: string };
+  };
+  variety: {
+    id: number;
+    size: number;
+    unit: "lb" | "kg" | "oz";
+    chow_id: number;
+    retail_price: number;
+    wholesale_price: number;
+  };
+
+  customers: { name: string };
+}
+export interface OrderFromSupabasePayload {
+  id: number;
+  is_delivery: boolean;
+  delivery_date: string;
+  delivery_cost: number;
+  payment_made: boolean;
+  payment_date: string;
+  retail_price: number;
+  wholesale_price: number;
+  quantity: number;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+  customer_id: number;
+  flavours: {
+    details?: {
+      flavour_id: number;
+      flavour_name: string;
+    };
+    brand_details: { id: number; name: string };
+  };
+  variety?: {
+    id: number;
+    size: number;
+    unit: "lb" | "kg" | "oz";
+    chow_id: number;
+    retail_price: number;
+    wholesale_price: number;
+  };
+
+  customers: { name: string };
+}
