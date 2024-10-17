@@ -67,7 +67,7 @@ const CustomerCard = ({
     navigation.navigate("EditCustomer", customer);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       setIsDeleted(false);
       await deleteCustomer(id);

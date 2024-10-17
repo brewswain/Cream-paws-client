@@ -8,7 +8,7 @@ export interface ChowInfo {
     flavour: string;
     size: number;
     unit: string;
-    order_id: string;
+    order_id: number;
   };
 }
 

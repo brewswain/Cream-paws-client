@@ -36,6 +36,7 @@ const CollapsibleOrder = ({
       </TouchableOpacity>
 
       <Collapsible collapsed={outstandingCollapsible}>
+        {/* Actual order list */}
         <FilteredOrderDetails
           color="black"
           paddingLeft={0}

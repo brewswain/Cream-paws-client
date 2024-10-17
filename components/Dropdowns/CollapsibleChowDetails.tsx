@@ -62,7 +62,7 @@ const CollapsibleChowDetails = ({
           />
           <DetailsText
             header={"Size"}
-            details={`${order.flavours.details.varieties[0].size} ${order.flavours.details.varieties[0].size}`}
+            details={`${order.variety.size} ${order.variety.size}`}
             paddingLeft={paddingLeft}
             color={color}
           />

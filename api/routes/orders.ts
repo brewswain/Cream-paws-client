@@ -118,13 +118,27 @@ export const getAllOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
     .select(orderQuery)
-    // .filter("chow_intermediary.chows.varieties.id", "eq", "variety_id")
     .returns<OrderFromSupabase[]>()
 
     .order("customers (name)");
 
   if (error) {
     logNewSupabaseError("Error retrieving all Orders: ", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const getTodaysOrders = async () => {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(orderQuery)
+    .eq("delivery_date", new Date().toISOString().split("T")[0])
+    .returns<OrderFromSupabase[]>();
+
+  if (error) {
+    logNewSupabaseError("Error retrieving today's orders: ", error);
     throw new Error(error.message);
   }
 

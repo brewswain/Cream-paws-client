@@ -255,6 +255,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         >
           Outstanding Orders
         </CollapsibleOrder>
+
         <CollapsibleOrder
           outstandingCollapsible={completedCollapsible}
           setOutstandingCollapsible={setCompletedCollapsible}
@@ -363,6 +364,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       contentContainerStyle={{ alignItems: "center" }}
     >
       <Text style={header}>{capitalizedName(customer.name)}</Text>
+
       {outstandingOrders.length > 0 ? (
         <View style={card}>
           <Text style={outstandingCosts}>
@@ -381,7 +383,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         {contactNumberExist && renderContactNumber()}
         {petsExist && renderPets()}
         */}
-        {customerOrders && renderOrders()}
+        {customerOrders.length && renderOrders()}
       </View>
     </ScrollView>
   );

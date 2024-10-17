@@ -11,9 +11,12 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import Dinero from "dinero.js";
 import { Divider } from "native-base";
-import { findCustomer, getAllOrders } from "../../api";
-import { getTodaysOrders } from "../../utils";
-import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
+import { findCustomer } from "../../api";
+import {
+  CombinedOrder,
+  OrderFromSupabase,
+  OrderWithChowDetails,
+} from "../../models/order";
 import { Customer } from "../../models/customer";
 import moment from "moment";
 import {
@@ -28,6 +31,7 @@ import {
   CustomersMap,
   OrdersMap,
 } from "./TodayAtAGlanceCard.model";
+import { getTodaysOrders } from "../../api/routes/orders";
 
 const TodayAtaGlanceCard = () => {
   const [todaysOrders, dispatch] = useReducer(
@@ -76,10 +80,10 @@ const TodayAtaGlanceCard = () => {
     const response = await getTodaysOrders();
 
     const filteredOutstandingOrders = response.filter(
-      (order: OrderWithChowDetails) => order.payment_made === false
+      (order: OrderFromSupabase) => order.payment_made === false
     );
     const filteredCompletedOrders = response.filter(
-      (order: OrderWithChowDetails) => order.payment_made === true
+      (order: OrderFromSupabase) => order.payment_made === true
     );
 
     updateOrders("unpaidOrders", filteredOutstandingOrders);
@@ -87,9 +91,7 @@ const TodayAtaGlanceCard = () => {
 
     const [outstandingCustomerList, completedCustomerList] = await Promise.all([
       Promise.all(
-        filteredOutstandingOrders.map((order) =>
-          findCustomer(order?.customer_id)
-        )
+        filteredOutstandingOrders.map((order) => order.customers.name)
       ),
       Promise.all(
         filteredCompletedOrders.map((order) => findCustomer(order?.customer_id))
@@ -117,15 +119,15 @@ const TodayAtaGlanceCard = () => {
     updateCustomers("outstandingCustomers", outstandingFilteredCustomers);
     updateCustomers("completedCustomers", completedFilteredCustomers);
 
-    const mapOrderToChowInfo = (orders: OrderWithChowDetails[]): ChowInfo[] => {
-      return orders.map((order: OrderWithChowDetails) => ({
+    const mapOrderToChowInfo = (orders: OrderFromSupabase[]): ChowInfo[] => {
+      return orders.map((order: OrderFromSupabase) => ({
         quantity: order?.quantity ?? 0,
         details: {
-          brand: order?.chow_details?.brand ?? "",
-          flavour: order?.chow_details?.flavours.flavour_name ?? "",
-          size: order?.chow_details?.flavours.varieties.size ?? 0,
-          unit: order?.chow_details?.flavours.varieties.unit ?? "",
-          order_id: order?.order_id ?? "",
+          brand: order?.flavours?.brand_details.name ?? "",
+          flavour: order?.flavours.details.flavour_name ?? "",
+          size: order.variety.size ?? 0,
+          unit: order?.variety.unit ?? "",
+          order_id: order?.id ?? "",
         },
       }));
     };
@@ -172,8 +174,7 @@ const TodayAtaGlanceCard = () => {
   const mappedCostArray =
     todaysOrders.orders.unpaidOrders.map(
       (order: OrderWithChowDetails | CombinedOrder) =>
-        order.chow_details.flavours.varieties.retail_price * order.quantity +
-        order.delivery_cost
+        order.retail_price * order.quantity + order.delivery_cost
     ) || undefined;
 
   const subTotal = Math.round(
@@ -253,19 +254,21 @@ const TodayAtaGlanceCard = () => {
               {todaysOrders.customers.outstandingCustomers &&
                 todaysOrders.customers.outstandingCustomers.length > 0 &&
                 todaysOrders.customers.outstandingCustomers.map(
-                  (customer, index) => (
-                    <TouchableOpacity
-                      key={`${customer.id}, index: ${index}`}
-                      onPress={() => handleClick(customer)}
-                    >
-                      <Text style={deemphasis}>
-                        {customer.name}
-                        {customer.orders && customer.orders?.length > 1
-                          ? ` x ${customerOutstandingOrders(customer)}`
-                          : null}
-                      </Text>
-                    </TouchableOpacity>
-                  )
+                  (customer, index) => {
+                    return (
+                      <TouchableOpacity
+                        key={`${customer.id}, index: ${index}`}
+                        onPress={() => handleClick(customer)}
+                      >
+                        <Text style={deemphasis}>
+                          {customer}
+                          {customer.orders && customer.orders?.length > 1
+                            ? ` x ${customerOutstandingOrders(customer)}`
+                            : null}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }
                 )}
             </CustomCollapsible>
           </View>

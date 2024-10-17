@@ -86,11 +86,12 @@ const FilteredOrderDetails = ({
                 paddingLeft={paddingLeft}
                 header="Summary"
                 details={`${order.flavours.brand_details.name}-${
-                  order.flavours.details.varieties[0].size
-                } ${order.flavours.details.varieties[0].unit} (${Dinero({
+                  order.variety.size
+                } ${order.variety.unit} (${Dinero({
                   amount: Math.round(order.retail_price * 100),
                 }).toFormat("$0,0.00")})  x ${order.quantity}`}
               />
+
               {/* <DetailsText color={color}
             paddingLeft={paddingLeft}
                      header="Customer Paid for Chow"
@@ -164,6 +165,7 @@ const FilteredOrderDetails = ({
                   details={formattedDeliveryDate}
                 />
               ) : null}
+
               {/* Quantity Block */}
               {/* <DetailsText
               color={color}

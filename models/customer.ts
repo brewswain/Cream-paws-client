@@ -1,7 +1,7 @@
 import { OrderWithChowDetails } from "./order";
 
 export interface Customer {
-  id: string;
+  id: number;
   pets?: [
     {
       name: string;

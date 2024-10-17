@@ -170,7 +170,7 @@ const CreateOrderModal = ({
         <Select.Item
           label={`${item.brand_name}`}
           value={item.id ? item.id : "id not found"}
-          key={item.brand_id}
+          key={item.id}
         />
       );
     });
@@ -364,14 +364,12 @@ const CreateOrderModal = ({
         };
 
         await createOrder(newOrderPayload);
+        closeModal();
         populateCustomersList();
       })
-    ).then(() => {
-      closeModal();
-    });
+    );
   };
 
-  console.log({ orderPayload });
   return (
     <Modal
       isOpen={isOpen}
@@ -457,7 +455,7 @@ const CreateOrderModal = ({
           <FormControl.Label>Chow Details</FormControl.Label>
           {chowInputs.map((field, index) => {
             return (
-              <View key={`${field} + ${index}`}>
+              <View key={index}>
                 <TouchableWithoutFeedback onPress={renderBrandDropdown}>
                   <Select
                     minWidth="200"
@@ -473,7 +471,6 @@ const CreateOrderModal = ({
                     onValueChange={(itemValue) =>
                       handleChowSelected(itemValue, index, "brand_id")
                     }
-                    key={field.chow_id}
                   >
                     {chow && renderBrandDropdown()}
                   </Select>
@@ -496,7 +493,6 @@ const CreateOrderModal = ({
                       onValueChange={(itemValue) =>
                         handleChowSelected(itemValue, index, "flavour_id")
                       }
-                      key={field.chow_id}
                     >
                       {field.brand_id && renderFlavourDropdown(index)}
                     </Select>
@@ -520,7 +516,6 @@ const CreateOrderModal = ({
                       onValueChange={(itemValue) =>
                         handleChowSelected(itemValue, index, "variety_id")
                       }
-                      key={field.chow_id}
                     >
                       {chow && renderVarieties(index, field.flavour_id)}
                     </Select>
@@ -537,7 +532,6 @@ const CreateOrderModal = ({
                     handleQuantityChange(event, index, "quantity")
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
-                  key={`index: ${index} Quantity `}
                 />
                 {chowInputs[index].retail_price ? (
                   <>
@@ -551,33 +545,19 @@ const CreateOrderModal = ({
                         handlePriceChange(event, index, "retail_price")
                       }
                       defaultValue={chowInputs[index].retail_price.toString()}
-                      key={`index: ${index} retail_price `}
                     />
                   </>
                 ) : null}
                 <View style={buttonContainer}>
-                  <Button
-                    style={button}
-                    onPress={() => addField()}
-                    key={`index: ${index} AddField `}
-                  >
-                    <Icon
-                      name="plus"
-                      size={10}
-                      key={`index: ${index} PlusIcon `}
-                    />
+                  <Button style={button} onPress={() => addField()}>
+                    <Icon name="plus" size={10} />
                   </Button>
                   <Button
                     style={button}
                     isDisabled={chowInputs.length <= 1}
                     onPress={() => removeField(index)}
-                    key={`index: ${index} RemoveField `}
                   >
-                    <Icon
-                      name="minus"
-                      size={10}
-                      key={`index: ${index} MinusIcon `}
-                    />
+                    <Icon name="minus" size={10} />
                   </Button>
                 </View>
               </View>
