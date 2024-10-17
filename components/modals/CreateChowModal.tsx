@@ -13,7 +13,7 @@ import { Button, FormControl, Modal } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { useNavigation } from "@react-navigation/native";
-import { createChow } from "../../api";
+// import { createChow } from "../../api";
 import { createChowFlavour, findChow } from "../../api/routes/stock";
 import {
   Chow,
@@ -21,6 +21,7 @@ import {
   ChowFromSupabasePayload,
 } from "../../models/chow";
 import { StockContext } from "../../context/StockContext";
+import { useChowStore } from "../../store/chowStore";
 
 interface CreateChowProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ const CreateChowModal = ({
 
   const stockDetails = useContext(StockContext);
   const { populateChowList } = stockDetails;
+  const { fetchChows } = useChowStore();
 
   const navigation = useNavigation();
 
@@ -179,7 +181,7 @@ const CreateChowModal = ({
   // TODO: check stock.ts -- functionality not yet implemented
   const handleChowCreation = async () => {
     await createChow(chowPayload);
-    populateChowList();
+    fetchChows();
   };
 
   const handleFlavourCreation = async () => {
@@ -373,7 +375,7 @@ const CreateChowModal = ({
                 returnKeyType="next"
                 onSubmitEditing={() => inputRef2.current?.focus()}
                 blurOnSubmit={false}
-                onChange={(event) => handleChowChange(event, "brand")}
+                onChange={(event) => handleChowChange(event, "brand_name")}
               />
             </FormControl>
           )}
@@ -426,7 +428,7 @@ const CreateChowModal = ({
           <Button
             style={confirmationButton}
             onPress={() => handleSubmit()}
-            isDisabled={!validateFormEntry}
+            // isDisabled={!validateFormEntry}
           >
             Save
           </Button>
@@ -464,6 +466,7 @@ const styles = StyleSheet.create({
   confirmationButton: {
     backgroundColor: "hsl(213,74%,54%)",
   },
+
   dropdown: {
     height: 30,
     paddingLeft: 10,

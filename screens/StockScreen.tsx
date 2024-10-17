@@ -10,13 +10,15 @@ import BrandCard from "../components/cards/BrandCard";
 import CreateChowModal from "../components/modals/CreateChowModal";
 import { StockContext } from "../context/StockContext";
 import { createChow, getAllChow } from "../api";
+import { useChowStore } from "../store/chowStore";
 
 const StockScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
   const stockDetails = useContext(StockContext);
-  const { isLoading, chows, populateChowList } = stockDetails;
+  const { isLoading } = stockDetails;
+  const { chows, fetchChows } = useChowStore();
 
   const { container, buttonContainer } = styles;
 
@@ -25,7 +27,7 @@ const StockScreen = () => {
   };
 
   useEffect(() => {
-    populateChowList();
+    fetchChows();
   }, []);
 
   return (

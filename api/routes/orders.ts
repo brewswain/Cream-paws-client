@@ -80,13 +80,15 @@ export const createOrder = async (orderPayload: OrderPayload) => {
   console.log("Order created successfully");
 };
 
-export const deleteOrder = async (id: string) => {
-  try {
-    const response = await axiosInstance.delete(`/orders/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
+export const deleteOrder = async (id: number) => {
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+
+  if (error) {
+    logNewSupabaseError("Error deleting order: ", error);
+    throw new Error(error.message);
   }
+
+  console.log("Successfully deleted Order");
 };
 
 export const deleteCustomersOrder = async (
@@ -188,16 +190,6 @@ export const updateOrder = async (order: OrderFromSupabasePayload) => {
   }
 
   return data;
-  // try {
-  //   const response = await axiosInstance.put(
-  //     `/orders/${order.id}`,
-  //     order
-  //   );
-
-  //   return response.data;
-  // } catch (error) {
-  //   console.error({ error });
-  // }
 };
 
 export const payWarehouseOrders = async (orders: OrderWithChowDetails[]) => {};

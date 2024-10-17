@@ -95,8 +95,7 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-
-            <View key={data.id}>
+            <View>
               <Text
                 style={orderDetails}
               >{`${data.flavours.brand_details.name}  - ${data.flavours.details.flavour_name} x ${data.quantity}`}</Text>

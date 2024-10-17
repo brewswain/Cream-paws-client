@@ -36,9 +36,9 @@ const BrandCard = ({ chow, setIsDeleted }: BrandCardProps) => {
 
   const handleDelete = async (id: number) => {
     try {
-      setIsDeleted(false);
+      // setIsDeleted(false);
       await deleteChow(id);
-      setIsDeleted(true);
+      // setIsDeleted(true);
       populateChowList();
     } catch (error) {
       console.error(error);

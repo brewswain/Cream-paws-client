@@ -67,7 +67,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const getCustomerOrders = async () => {
     try {
       const filteredOutstandingOrders = await getUnpaidCustomerOrders();
-      console.log({ filteredOutstandingOrders });
       setOutstandingOrders(filteredOutstandingOrders);
       setIsLoading(false);
       setIsSuccess(true);
@@ -157,7 +156,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
   const formatOrders = async () => {
     const response = await concatFinanceQuantities(orders);
-    console.log({ response });
     // const response = await combineOrders(orders);
 
     //  setFormattedOrders(response);

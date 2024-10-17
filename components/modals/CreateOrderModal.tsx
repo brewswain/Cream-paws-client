@@ -18,16 +18,16 @@ import { Button, CheckIcon, FormControl, Modal, Select } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
-import { Chow } from "../../models/chow";
+import { ChowFromSupabase } from "../../models/chow";
 import { findChowVariety } from "../../api/routes/stock";
 import { Customer } from "../../models/customer";
-import { OrderPayload } from "../../models/order";
+import { OrderFromSupabasePayload, OrderPayload } from "../../models/order";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
   populateCustomersList(): void;
-  chow?: Chow[];
+  chow?: ChowFromSupabase[];
   customers?: Customer[];
 }
 
@@ -132,11 +132,11 @@ const CreateOrderModal = ({
     }
   };
 
-  const selectedFlavour = (chowInputIndex: number, flavour_id: string) => {
+  const selectedFlavour = (chowInputIndex: number, flavour_id: number) => {
     const chow = selectedBrand(chowInputIndex);
 
     const filteredFlavour = chow?.flavours.filter(
-      (flavour) => flavour.details.flavour_id === flavour_id
+      (flavour) => flavour.flavour_id === flavour_id
     );
 
     if (filteredFlavour) {
@@ -181,9 +181,9 @@ const CreateOrderModal = ({
 
     return chow?.flavours.map((flavour) => (
       <Select.Item
-        label={flavour.details.flavour_name}
-        value={flavour.details.flavour_id!}
-        key={flavour.details.flavour_id}
+        label={flavour.flavour_name}
+        value={flavour.flavour_id!}
+        key={flavour.flavour_id}
       />
     ));
   };
@@ -191,7 +191,7 @@ const CreateOrderModal = ({
   const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
     const flavour = selectedFlavour(chowInputIndex, flavour_id);
 
-    return flavour?.details.varieties.map((variety) => {
+    return flavour?.varieties.map((variety) => {
       return (
         <Select.Item
           label={`${variety.size} ${variety.unit}`}
@@ -229,10 +229,11 @@ const CreateOrderModal = ({
   // TODO: fix 'any' typing here, expect this to give problems--The problem is that if i were to pass an interface here, it'd need to iterate through each [value] and have its own unique type
   // Perhaps a for in loop?🤔
 
+  // const orderPayload: OrderFromSupabasePayload = {
   const orderPayload: { [value: string]: any } = {
     // For now. Let's use our state directly to make an API call, but constructing this
     // payload to act like a pseudo-singleton would be really nice.
-    customer_id: selectedCustomer,
+    customer_id: Number(selectedCustomer),
     chow_array: chowInputs,
     payment_made: orderInputs.payment_made,
     payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
@@ -370,6 +371,7 @@ const CreateOrderModal = ({
     });
   };
 
+  console.log({ orderPayload });
   return (
     <Modal
       isOpen={isOpen}
@@ -591,12 +593,9 @@ const CreateOrderModal = ({
             style={confirmationButton}
             onPress={() => handleOrderCreation()}
             isDisabled={
-              !orderInputs.customer_id ||
-              !orderInputs.delivery_date ||
-              chowInputs.some(
-                (chowInput) =>
-                  chowInput.chow_id === "" || chowInput.quantity === 0
-              )
+              !orderPayload.customer_id ||
+              !orderPayload.delivery_date ||
+              !orderPayload.chow_array
             }
           >
             Save

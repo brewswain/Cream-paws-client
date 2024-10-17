@@ -14,7 +14,7 @@ import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-import { getAllChow, updateOrder } from "../api";
+import { deleteOrder, getAllChow, updateOrder } from "../api";
 import { Header } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import {
@@ -26,6 +26,7 @@ import { clearCustomerOrders } from "../utils/orderUtils";
 import { ChosenFlavour, ChowFromSupabase } from "../models/chow";
 
 import Dinero from "dinero.js";
+import { useOrderStore } from "../store/orderStore";
 
 interface CustomerOrderDetails extends OrderWithChowDetails {
   client_name: string;
@@ -62,6 +63,8 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+
+  const { fetchOrders } = useOrderStore();
 
   const navigate = useNavigation();
   const populateChowList = async () => {
@@ -199,18 +202,13 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const handleUpdate = async () => {
     await updateOrder(orderPayload);
+    fetchOrders();
     navigate.goBack();
   };
 
-  const handleDelete = async (index: number) => {
-    const deleteCustomerOrderPayload = [
-      {
-        order_id: orderPayload.orders[index].order_id,
-        customer_id: orderPayload.customer_id,
-      },
-    ];
+  const handleDelete = async (id: number) => {
+    await deleteOrder(id);
 
-    await clearCustomerOrders(deleteCustomerOrderPayload);
     navigate.goBack();
   };
 
@@ -410,7 +408,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
               width: 150,
               alignSelf: "center",
             }}
-            // onPress={() => handleDelete(index)}
+            onPress={() => handleDelete(order.id)}
           >
             Delete Order
           </Button>

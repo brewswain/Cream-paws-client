@@ -33,6 +33,7 @@ import { Customer } from "../models/customer";
 import { useCustomerStore } from "../store/customerStore";
 import { supabase } from "../utils/supabase";
 import { useOrderStore } from "../store/orderStore";
+import { useChowStore } from "../store/chowStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -41,9 +42,11 @@ const OrdersScreen = () => {
   const [data, setData] = useState<OrderFromSupabase[]>();
   const { customers, fetchCustomers } = useCustomerStore();
   const { orders, fetchOrders, isFetching } = useOrderStore();
+  const { fetchChows, chows } = useChowStore();
 
   const populateAllData = async () => {
     fetchOrders();
+    fetchChows();
   };
 
   const populateData = async () => {
@@ -55,11 +58,9 @@ const OrdersScreen = () => {
     setShowModal(true);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      populateData();
-    }, [isDeleted])
-  );
+  useEffect(() => {
+    populateData();
+  }, []);
 
   const getCustomerName = async (customerId: number) => {
     const { data, error } = await supabase
@@ -89,7 +90,7 @@ const OrdersScreen = () => {
           <View>
             {orders?.map((order, index) => {
               return (
-                <View key={order.customer_id + index.toString()}>
+                <View key={index}>
                   <OrderCard
                     key={order.id}
                     isDeleted={isDeleted}
@@ -109,7 +110,7 @@ const OrdersScreen = () => {
           isOpen={showModal}
           setShowModal={setShowModal}
           populateCustomersList={populateData}
-          chow={chow}
+          chow={chows}
           customers={customers}
         />
       </ScrollView>
