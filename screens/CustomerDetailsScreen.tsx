@@ -106,7 +106,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
 
   const { height, width } = useWindowDimensions();
 
-  // const petsExist = pets.length > 0;
+  const petsExist = customerPayload.pets && customerPayload.pets.length > 0;
   const ordersExist = customerOrders && customerOrders.length > 0;
   // const locationExist = location !== undefined;
   // const contactNumberExist = contactNumber !== undefined;
@@ -215,30 +215,40 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   //     </>
   //   );
   // };
-  // const renderPets = () => (
-  //   <View>
-  //     <Text style={[subHeader]}>{pets?.length > 1 ? "Pets" : "Pet"}</Text>
+  const renderPets = () => (
+    <View>
+      <Text style={[subHeader]}>
+        {customerPayload.pets && customerPayload.pets?.length > 1
+          ? "Pets"
+          : "Pet"}
+      </Text>
 
-  //     {pets?.map((pet: { name: string; breed: string }, index: number) => (
-  //       <View key={`${index} Pet Container`}>
-  //         <DetailsText
-  //           header={"Name"}
-  //           details={pet.name}
-  //           color="black"
-  //           paddingLeft={0}
-  //         />
-  //         {pet.breed ? (
-  //           <DetailsText
-  //             header={"Breed"}
-  //             details={pet.breed}
-  //             color="black"
-  //             paddingLeft={0}
-  //           />
-  //         ) : null}
-  //       </View>
-  //     ))}
-  //   </View>
-  // );
+      {customerPayload.pets?.map(
+        (pet: { name: string; breed: string }, index: number) => (
+          <View key={`${index} Pet Container`}>
+            <DetailsText
+              header={"Name"}
+              details={pet.name}
+              color="black"
+              paddingLeft={0}
+            />
+
+            {/* temporary disabled  breed cause of db data issue*/}
+            {/* {pet.breed ? (
+              <DetailsText
+                header={"Breed"}
+                details={pet.breed}
+                color="black"
+                paddingLeft={0}
+              />
+            ) : null} */}
+          </View>
+        )
+      )}
+    </View>
+  );
+
+  console.log({ customerPayload });
 
   const renderOrders = () => {
     return (
@@ -381,8 +391,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       <View>
         {/* {locationExist && renderLocation()}
         {contactNumberExist && renderContactNumber()}
-        {petsExist && renderPets()}
         */}
+        {petsExist && renderPets()}
         {customerOrders.length && renderOrders()}
       </View>
     </ScrollView>

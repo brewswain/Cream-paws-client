@@ -1,4 +1,4 @@
-import { OrderWithChowDetails } from "./order";
+import { OrderFromSupabase, OrderWithChowDetails } from "./order";
 
 export interface Customer {
   id: number;
@@ -12,7 +12,7 @@ export interface Customer {
   location?: string;
   name?: string;
   city?: string;
-  orders?: OrderWithChowDetails[];
+  orders?: OrderFromSupabase[];
 }
 
 export interface CustomerPayload {

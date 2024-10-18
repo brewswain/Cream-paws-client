@@ -27,10 +27,19 @@ const useCustomerStore = create<UseCustomerStore>(
         set({ isFetching: true });
         const { data, error } = await supabase
           .from("customers")
-          .select("*")
+          .select(
+            `
+            id, 
+            name, 
+            contact_number, 
+            location, 
+            city, 
+            pets (name, breed)
+            `
+          )
           .returns<Customer[]>()
           .order("name");
-
+        console.log({ data });
         if (error) {
           set({ isFetching: false, error: error.message });
         }

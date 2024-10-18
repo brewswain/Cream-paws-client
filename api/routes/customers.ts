@@ -19,7 +19,7 @@ export const createCustomer = async (customer: CustomerPayload) => {
   }
 };
 
-export const deleteCustomer = async (id: string) => {
+export const deleteCustomer = async (id: number) => {
   try {
     await axiosInstance.delete(`/customer/${id}`);
   } catch (error) {
@@ -28,7 +28,7 @@ export const deleteCustomer = async (id: string) => {
   }
 };
 
-export const findCustomer = async (id: string) => {
+export const findCustomer = async (id: number) => {
   try {
     const response = await axiosInstance.get(`/customer/${id}`);
     return response.data;
@@ -40,7 +40,11 @@ export const findCustomer = async (id: string) => {
 export const getAllCustomers = async () => {
   const { data, error } = await supabase
     .from("customers")
-    .select("*")
+    .select(
+      `
+        id, name, contact_number, location, city, pets:pet_ids(name, breed)
+      `
+    )
     .returns<Customer[]>()
     .order("name");
 

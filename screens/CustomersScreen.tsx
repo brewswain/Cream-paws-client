@@ -16,13 +16,14 @@ import { useCustomerStore } from "../store/customerStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CustomersScreen = () => {
-  const { customers, error, isFetching, fetchCustomers } = useCustomerStore();
   const [customersWithOpenOrders, setCustomersWithOpenOrders] =
     useState<Customer[]>();
   const [customersWithoutOpenOrders, setCustomersWithoutOpenOrders] =
     useState<Customer[]>();
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
+
+  const { customers, error, isFetching, fetchCustomers } = useCustomerStore();
 
   const populateCustomersList = async () => {
     const filterOpenOrders = (customers: Customer[]) => {
@@ -44,6 +45,8 @@ const CustomersScreen = () => {
 
     fetchCustomers();
 
+    console.log({ customers });
+
     setCustomersWithOpenOrders(filterOpenOrders(customers));
     setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));
 
@@ -56,11 +59,14 @@ const CustomersScreen = () => {
     setShowModal(true);
   };
 
-  const renderCustomerCard = (customer: Customer) => {};
-
   useEffect(() => {
     populateCustomersList();
   }, []);
+
+  // console.log({
+  //   customersWithOpenOrders,
+  //   customersWithoutOpenOrders: customersWithoutOpenOrders[0],
+  // });
 
   return (
     <View style={styles.container}>
