@@ -269,6 +269,7 @@ const CreateOrderModal = ({
             currentVariety.variety_id = variety.id!;
             currentVariety.size = variety.size;
             currentVariety.unit = variety.unit;
+            currentVariety.retail_price = variety.retail_price;
 
             setChowInputs(data);
           }}
@@ -591,7 +592,7 @@ const CreateOrderModal = ({
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
                 />
-                {/* {chowInputs[index].retail_price ? (
+                {chowInputs[index].retail_price ? (
                   <>
                     <FormControl.Label>Retail Price</FormControl.Label>
                     <TextInput
@@ -605,7 +606,7 @@ const CreateOrderModal = ({
                       defaultValue={chowInputs[index].retail_price.toString()}
                     />
                   </>
-                ) : null} */}
+                ) : null}
                 <View style={buttonContainer}>
                   <Button style={button} onPress={() => addField()}>
                     <Icon name="plus" size={10} />
