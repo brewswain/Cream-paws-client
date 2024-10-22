@@ -69,7 +69,9 @@ export const createOrder = async (orderPayload: OrderPayload) => {
     driver_paid: orderPayload.driver_paid,
     warehouse_paid: orderPayload.warehouse_paid,
     variety_id: orderPayload.variety_id,
-    retail_price: varietyRetailPriceData[0].retail_price,
+    retail_price: orderPayload.retail_price
+      ? orderPayload.retail_price
+      : varietyRetailPriceData[0].retail_price,
   });
 
   if (error) {

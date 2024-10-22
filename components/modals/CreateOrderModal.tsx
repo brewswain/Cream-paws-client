@@ -48,7 +48,7 @@ interface ChowInput {
   flavour_name: string;
   size: number;
   unit: "lb" | "kg" | "oz";
-  retail_price?: number;
+  retail_price: number;
 }
 
 interface OrderInput {
@@ -78,6 +78,7 @@ const CreateOrderModal = ({
       quantity: 1,
       brand_name: "",
       flavour_name: "",
+      retail_price: 0,
       size: 0,
       unit: "lb",
     },
@@ -145,6 +146,7 @@ const CreateOrderModal = ({
         quantity: 1,
         brand_name: "",
         flavour_name: "",
+        retail_price: 0,
         size: 0,
         unit: "lb",
       },
@@ -203,6 +205,7 @@ const CreateOrderModal = ({
       flavour_name: "",
       size: 0,
       unit: "lb",
+      retail_price: 0,
     };
     setChowInputs([...chowInputs, newField]);
   };
@@ -426,12 +429,13 @@ const CreateOrderModal = ({
     const chowArray = orderPayload.chow_array;
 
     Promise.all(
-      chowArray.map(async (chowDetails: ChowDetails) => {
+      chowArray.map(async (chowDetails: ChowInput) => {
         const newOrderPayload: OrderPayload = {
           brand_id: chowDetails.brand_id,
           flavour_id: chowDetails.flavour_id,
           variety_id: chowDetails.variety_id,
           quantity: chowDetails.quantity,
+          retail_price: chowDetails.retail_price,
 
           customer_id: orderPayload.customer_id,
           delivery_date: orderPayload.delivery_date,

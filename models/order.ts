@@ -94,6 +94,7 @@ export interface OrderPayload {
   is_delivery: boolean;
   driver_paid: boolean;
   warehouse_paid: boolean;
+  retail_price: number;
 }
 
 export interface OrderFromSupabase {
