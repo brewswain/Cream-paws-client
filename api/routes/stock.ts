@@ -29,9 +29,9 @@ const TEST_PAYLOAD: ChowFromSupabasePayload = {
 };
 
 //TODO: Allow us to add multiple flavours and varieties--should be simple, just remove the index part here or check our promise.all logic to see what the shape of our payload looks like
-export const createChow = async () => {
-  // export const createChow = async (chow: ChowFromSupabasePayload) => {
-  const chow = TEST_PAYLOAD;
+// export const createChow = async () => {
+export const createChow = async (chow: ChowFromSupabasePayload) => {
+  // const chow = TEST_PAYLOAD;
   const { data: brandData, error: brandError } = await supabase
     .from("brands")
     .upsert(
@@ -222,6 +222,19 @@ export const deleteChowFlavour = async (flavour_id: number) => {
     console.error(error);
   }
 };
+export const deleteChowVariety = async (variety_id: number) => {
+  try {
+    const response = await axiosInstance.delete("/stock/flavour/variety", {
+      data: {
+        variety_id,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export const updateChow = async (id: number, chow: Chow) => {
   try {
@@ -388,7 +401,7 @@ export const getAllChow = async () => {
 //   return finalChows;
 // };
 
-const findChow = async (id: number) => {
+export const findChow = async (id: number) => {
   // needs to find our individual chow based on id
   const { data, error } = await supabase
     .from("brands")

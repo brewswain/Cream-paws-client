@@ -1,4 +1,4 @@
-import { OrderFromSupabase, OrderWithChowDetails } from "./order";
+import { OrderFromSupabase } from "./order";
 
 export interface Customer {
   id: number;

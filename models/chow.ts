@@ -42,7 +42,7 @@ export interface ChowFromSupabasePayload {
 export interface ChowFlavourFromSupabase {
   varieties: [
     {
-      id: number;
+      id?: number;
       size: number;
       unit: "lb" | "kg" | "oz";
       chow_id: number;

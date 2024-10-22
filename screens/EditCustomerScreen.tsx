@@ -1,29 +1,16 @@
-import { useState, useRef, createRef } from "react";
-import {
-  NativeSyntheticEvent,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputChangeEventData,
-  View,
-} from "react-native";
+import { useState, createRef } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 
-import { Button, FormControl } from "native-base";
+import { Button } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
-
-import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
 import { useNavigation } from "@react-navigation/native";
 
 import { RootTabScreenProps } from "../types";
-import { OrderWithChowDetails } from "../models/order";
-import { findCustomer, updateCustomer } from "../api";
-import { Customer } from "../models/customer";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
+import { updateCustomer } from "../api";
 import {
   Header,
-  SubFields,
   SubHeader,
 } from "../components/details/DetailScreenComponents";
 
@@ -34,9 +21,9 @@ interface EditCustomerScreenProps {
       name: string;
       location: string;
       city: string;
-      id: string;
+      id: number;
       contactNumber: string;
-      orders: OrderWithChowDetails[];
+      orders: OrderFromSupabase[];
       pets: [{ name: string; breed: string }];
     };
   };
@@ -78,7 +65,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
 
   const handlePetsChange = (
     text: string,
-    name: string,
+    name: "name" | "breed",
     specifiedPetIndex: number
   ) => {
     const data = { ...customerPayload };
@@ -94,8 +81,6 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
     });
     navigate.navigate("Customers");
   };
-
-  console.log({ customerPayload });
 
   return (
     <View

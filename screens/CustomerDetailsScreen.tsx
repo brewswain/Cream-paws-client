@@ -147,55 +147,67 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   //     customer_id: id,
   //   });
 
-  // const handleClearingSelectedOrders = async () => {
-  //   setButtonStateSelectedOrders("loading"); // Set loading state
+  const handleClearingSelectedOrders = async () => {
+    setButtonStateSelectedOrders("loading"); // Set loading state
 
-  //   try {
-  //     // await clearOrders(ordersChosenForClearing);
-  //     clearCustomerOrders(ordersChosenForClearing);
+    try {
+      // await clearOrders(ordersChosenForClearing);
+      await clearCustomerOrders(selectedOrderIds);
 
-  //     // On success, set success state
-  //     setButtonStateSelectedOrders("success");
-  //     setIsFetching(true);
+      // On success, set success state
+      setButtonStateSelectedOrders("success");
+      setOutstandingOrders(
+        outstandingOrders.filter(
+          (order: OrderFromSupabase) => !selectedOrderIds.includes(order.id)
+        )
+      );
 
-  //     // Revert to idle state after a delay
-  //     setTimeout(() => {
-  //       setButtonStateSelectedOrders("idle");
-  //     }, 1000);
-  //   } catch (error) {
-  //     // On error, set error state
-  //     setButtonStateSelectedOrders("error");
+      setIsFetching(true);
+      populateOrders();
 
-  //     // Revert to idle state after a delay
-  //     setTimeout(() => {
-  //       setButtonStateSelectedOrders("idle");
-  //     }, 1000);
-  //   }
-  // };
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateSelectedOrders("error");
 
-  // const handleClearingAllOrders = async () => {
-  //   setButtonStateClearAllOrders("loading"); // Set loading state
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateSelectedOrders("idle");
+      }, 1000);
+    }
+  };
 
-  //   try {
-  //     clearCustomerOrders(orders);
-  //     // On success, set success state
-  //     setButtonStateClearAllOrders("success");
-  //     setIsFetching(true);
+  const handleClearingAllOrders = async () => {
+    setButtonStateClearAllOrders("loading"); // Set loading state
 
-  //     // Revert to idle state after a delay
-  //     setTimeout(() => {
-  //       setButtonStateClearAllOrders("idle");
-  //     }, 1000);
-  //   } catch (error) {
-  //     // On error, set error state
-  //     setButtonStateClearAllOrders("error");
+    try {
+      const allOrderIds = outstandingOrders.map(
+        (order: OrderFromSupabase) => order.id
+      );
+      clearCustomerOrders(allOrderIds);
+      // On success, set success state
+      setOutstandingOrders([]);
+      setButtonStateClearAllOrders("success");
+      populateOrders();
+      setIsFetching(true);
 
-  //     // Revert to idle state after a delay
-  //     setTimeout(() => {
-  //       setButtonStateClearAllOrders("idle");
-  //     }, 1000);
-  //   }
-  // };
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    } catch (error) {
+      // On error, set error state
+      setButtonStateClearAllOrders("error");
+
+      // Revert to idle state after a delay
+      setTimeout(() => {
+        setButtonStateClearAllOrders("idle");
+      }, 1000);
+    }
+  };
 
   // const renderContactNumber = () => {
   //   return (
@@ -248,8 +260,6 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     </View>
   );
 
-  console.log({ customerPayload });
-
   const renderOrders = () => {
     return (
       <View style={container}>
@@ -285,25 +295,14 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
           <View style={buttonContainer}>
             <Button
               onPress={async () => {
-                if (
-                  buttonStateSelectedOrders === "idle" &&
-                  selectedIndicesArray.length >= 1
-                ) {
-                  setButtonStateSelectedOrders("loading");
-                  try {
-                    // await handleClearingSelectedOrders();
-                    setButtonStateSelectedOrders("success");
-                    setTimeout(
-                      () => setButtonStateSelectedOrders("idle"),
-                      1000
-                    );
-                  } catch (error) {
-                    setButtonStateSelectedOrders("error");
-                    setTimeout(
-                      () => setButtonStateSelectedOrders("idle"),
-                      1000
-                    );
-                  }
+                setButtonStateSelectedOrders("loading");
+                try {
+                  await handleClearingSelectedOrders();
+                  setButtonStateSelectedOrders("success");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
+                } catch (error) {
+                  setButtonStateSelectedOrders("error");
+                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
                 }
               }}
               isDisabled={selectedOrderIds.length < 1}
@@ -331,7 +330,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
                 if (buttonStateClearAllOrders === "idle") {
                   setButtonStateClearAllOrders("loading");
                   try {
-                    // await handleClearingAllOrders();
+                    await handleClearingAllOrders();
                     setButtonStateClearAllOrders("success");
                     setTimeout(
                       () => setButtonStateClearAllOrders("idle"),

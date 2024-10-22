@@ -3,7 +3,11 @@ import moment from "moment";
 import { findCustomer, getAllCustomers, updateOrder } from "../api";
 import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
 import { Customer } from "../models/customer";
-import { deleteCustomersOrder, getAllOrders } from "../api/routes/orders";
+import {
+  deleteCustomersOrder,
+  getAllOrders,
+  setPaymentMade,
+} from "../api/routes/orders";
 
 export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
   try {
@@ -23,23 +27,11 @@ export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
   }
 };
 
-export const clearCustomerOrders = async (
-  orders: // | OrderWithChowDetails[]
-  // | {
-  //     order_id: string;
-  //     customer_id: string;
-  //   }[]
-  OrderWithChowDetails[]
-) => {
+export const clearCustomerOrders = async (order_ids: number[]) => {
   try {
     await Promise.all(
-      orders.map(async (order) => {
-        const updatedOrder = {
-          ...order,
-          payment_made: true,
-        };
-        // await deleteCustomersOrder(order.order_id!, order.customer_id);
-        await updateOrder(updatedOrder);
+      order_ids.map(async (id) => {
+        await setPaymentMade(id);
       })
     );
 

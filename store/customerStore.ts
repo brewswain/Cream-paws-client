@@ -34,7 +34,8 @@ const useCustomerStore = create<UseCustomerStore>(
             contact_number, 
             location, 
             city, 
-            pets (name, breed)
+            pets (name, breed),
+            orders("*")
             `
           )
           .returns<Customer[]>()

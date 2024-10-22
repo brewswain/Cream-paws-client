@@ -14,7 +14,11 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 import { useNavigation } from "@react-navigation/native";
 // import { createChow } from "../../api";
-import { createChowFlavour, findChow } from "../../api/routes/stock";
+import {
+  createChow,
+  createChowFlavour,
+  findChow,
+} from "../../api/routes/stock";
 import {
   Chow,
   ChowFromSupabase,

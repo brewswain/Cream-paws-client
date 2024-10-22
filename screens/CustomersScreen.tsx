@@ -45,8 +45,6 @@ const CustomersScreen = () => {
 
     fetchCustomers();
 
-    console.log({ customers });
-
     setCustomersWithOpenOrders(filterOpenOrders(customers));
     setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));
 
@@ -55,6 +53,7 @@ const CustomersScreen = () => {
     }
   };
 
+  console.log({ customersWithOpenOrders });
   const openModal = () => {
     setShowModal(true);
   };
@@ -62,11 +61,6 @@ const CustomersScreen = () => {
   useEffect(() => {
     populateCustomersList();
   }, []);
-
-  // console.log({
-  //   customersWithOpenOrders,
-  //   customersWithoutOpenOrders: customersWithoutOpenOrders[0],
-  // });
 
   return (
     <View style={styles.container}>

@@ -54,7 +54,7 @@ export const getAllCustomers = async () => {
   return data;
 };
 
-export const updateCustomer = async (id: string, customer: Customer) => {
+export const updateCustomer = async (id: number, customer: Customer) => {
   try {
     await axiosInstance.put(`/customer/${id}`, customer);
   } catch (error) {

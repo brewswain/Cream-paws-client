@@ -161,6 +161,20 @@ export const getCustomersOrders = async (customerId: number) => {
   return data;
 };
 
+export const setPaymentMade = async (orderId: number) => {
+  const { error } = await supabase
+    .from("orders")
+    .update({ payment_made: true })
+    .eq("id", orderId)
+    .select("payment_made")
+    .single();
+
+  if (error) {
+    logNewSupabaseError("Error updating payment_made: ", error);
+    throw new Error(error.message);
+  }
+};
+
 export const updateOrder = async (order: OrderFromSupabasePayload) => {
   const { data: intermediaryId, error: intermediaryError } = await supabase
     .from("chow_intermediary")
@@ -194,6 +208,7 @@ export const updateOrder = async (order: OrderFromSupabasePayload) => {
       wholesale_price: order.wholesale_price,
       quantity: order.quantity,
       variety_id: order.variety?.id,
+      payment_made: order.payment_made,
     })
     .eq("id", order.id)
     .single();

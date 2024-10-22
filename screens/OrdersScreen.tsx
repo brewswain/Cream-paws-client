@@ -41,12 +41,41 @@ const OrdersScreen = () => {
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
   const [data, setData] = useState<OrderFromSupabase[]>();
   const { customers, fetchCustomers } = useCustomerStore();
-  const { orders, fetchOrders, isFetching } = useOrderStore();
+  const {
+    orders,
+    fetchOrders,
+    isFetching,
+    setOutstandingOrders,
+    setCompletedOrders,
+    outstandingOrders,
+    completedOrders,
+  } = useOrderStore();
   const { fetchChows, chows } = useChowStore();
 
   const populateAllData = async () => {
     fetchOrders();
     fetchChows();
+
+    setOutstandingOrders(
+      orders
+        .filter((order) => order.payment_made === false)
+        .sort((a, b) => {
+          return (
+            new Date(a.delivery_date).getTime() -
+            new Date(b.delivery_date).getTime()
+          );
+        })
+    );
+    setCompletedOrders(
+      orders
+        .filter((order) => order.payment_made === true)
+        .sort((a, b) => {
+          return (
+            new Date(a.delivery_date).getTime() -
+            new Date(b.delivery_date).getTime()
+          );
+        })
+    );
   };
 
   const populateData = async () => {
@@ -87,23 +116,44 @@ const OrdersScreen = () => {
         {isFetching ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
-          <View>
-            {orders?.map((order, index) => {
-              return (
-                <View key={index}>
-                  <OrderCard
-                    key={order.id}
-                    isDeleted={isDeleted}
-                    setIsDeleted={setIsDeleted}
-                    populateData={populateData}
-                    client_name={order.customers.name}
-                    customerId={order.customer_id}
-                    data={order}
-                  />
-                </View>
-              );
-            })}
-          </View>
+          <>
+            <View>
+              <Text>Incomplete Orders</Text>
+              {outstandingOrders?.map((order, index) => {
+                return (
+                  <View key={index}>
+                    <OrderCard
+                      key={order.id}
+                      isDeleted={isDeleted}
+                      setIsDeleted={setIsDeleted}
+                      populateData={populateData}
+                      client_name={order.customers.name}
+                      customerId={order.customer_id}
+                      data={order}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            <View>
+              <Text>Completed Orders</Text>
+              {completedOrders?.map((order, index) => {
+                return (
+                  <View key={index}>
+                    <OrderCard
+                      key={order.id}
+                      isDeleted={isDeleted}
+                      setIsDeleted={setIsDeleted}
+                      populateData={populateData}
+                      client_name={order.customers.name}
+                      customerId={order.customer_id}
+                      data={order}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          </>
         )}
 
         <CreateOrderModal

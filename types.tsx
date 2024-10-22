@@ -10,7 +10,12 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Chow, ChowFlavour, ChowFlavourFromSupabase, ChowFromSupabase } from "./models/chow";
+import {
+  Chow,
+  ChowFlavour,
+  ChowFlavourFromSupabase,
+  ChowFromSupabase,
+} from "./models/chow";
 import { Customer } from "./models/customer";
 import { OrderFromSupabase } from "./models/order";
 
@@ -40,7 +45,7 @@ export type RootStackParamList = {
     chow: ChowFromSupabase;
   };
   EditChow: {
-   flavour: ChowFlavourFromSupabase
+    flavour: ChowFlavourFromSupabase;
   };
   EditCustomer: Customer;
 };
@@ -58,7 +63,7 @@ export type RootTabParamList = {
   Finance: undefined;
   Auth: undefined;
   CustomerDetails: Customer;
-  OrderDetails: OrderDetails;
+  OrderDetails: OrderFromSupabase;
   ChowDetails: Chow;
   ChowFlavour: {
     flavours: ChowFlavour[];
