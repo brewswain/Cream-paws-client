@@ -154,16 +154,16 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
                 >
                   {pet.name}
                 </TextInput>
-                <SubHeader>Breed</SubHeader>
-                {/* <TextInput
-                selectTextOnFocus
-                style={styles.input}
-                onChangeText={(text: string) =>
-                  handlePetsChange(text, "breed", petIndex)
-                }
-              >
-                {pet.breed}
-              </TextInput> */}
+                {/* <SubHeader>Breed</SubHeader>
+                <TextInput
+                  selectTextOnFocus
+                  style={styles.input}
+                  onChangeText={(text: string) =>
+                    handlePetsChange(text, "breed", petIndex)
+                  }
+                >
+                  {pet.breed}
+                </TextInput> */}
                 <View style={styles.buttonContainer}>
                   <Button
                     style={styles.button}
