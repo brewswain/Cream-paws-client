@@ -13,18 +13,13 @@ import {
   Header,
   SubHeader,
 } from "../components/details/DetailScreenComponents";
+import { Customer } from "../models/customer";
 
 interface EditCustomerScreenProps {
   navigation: RootTabScreenProps<"EditCustomer">;
   route: {
     params: {
-      name: string;
-      location: string;
-      city: string;
-      id: number;
-      contactNumber: string;
-      orders: OrderFromSupabase[];
-      pets: [{ name: string; breed: string }];
+      customer: Customer;
     };
   };
 }
@@ -32,7 +27,7 @@ interface EditCustomerScreenProps {
 const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   // Orders left off of this payload since we're gonna add that unedited to our updateCustomer call
   const [customerPayload, setCustomerPayload] = useState({
-    ...route.params,
+    ...route.params.customer,
   });
 
   const navigate = useNavigation();
@@ -45,14 +40,14 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
     const data = { ...customerPayload };
     const newField = { name: "", breed: "" };
 
-    data.pets.push(newField);
+    data.pets ? data.pets.push(newField) : [newField];
     setCustomerPayload(data);
   };
 
   const removeField = (specifiedPetIndex: number) => {
     const data = { ...customerPayload };
 
-    data.pets.splice(specifiedPetIndex, 1);
+    data.pets ? data.pets.splice(specifiedPetIndex, 1) : [];
     setCustomerPayload(data);
   };
 
@@ -69,15 +64,15 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
     specifiedPetIndex: number
   ) => {
     const data = { ...customerPayload };
-    data.pets[specifiedPetIndex][name] = text;
-    2;
+    data.pets ? (data.pets[specifiedPetIndex][name] = text) : [];
+
     setCustomerPayload(data);
   };
 
   const handleUpdate = async () => {
-    await updateCustomer(route.params.id, {
+    await updateCustomer(route.params.customer.id, {
       ...customerPayload,
-      orders: route.params.orders,
+      orders: route.params.customer.orders,
     });
     navigate.navigate("Customers");
   };
@@ -145,12 +140,8 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
       </View>
       <Header>Pets</Header>
       {/* Pets block */}
-      {customerPayload.pets &&
-        customerPayload.pets.length &&
-        customerPayload.pets.map((pet, petIndex) => {
-          console.log({ pet });
-
-          if (!true)
+      {customerPayload.pets && customerPayload.pets.length
+        ? customerPayload.pets.map((pet, petIndex) => {
             return (
               <View style={{ paddingTop: 4 }}>
                 <SubHeader>Name</SubHeader>
@@ -165,14 +156,14 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
                 </TextInput>
                 <SubHeader>Breed</SubHeader>
                 {/* <TextInput
-      selectTextOnFocus
-      style={styles.input}
-      onChangeText={(text: string) =>
-        handlePetsChange(text, "breed", petIndex)
-      }
-    >
-      {pet.breed}
-    </TextInput> */}
+                selectTextOnFocus
+                style={styles.input}
+                onChangeText={(text: string) =>
+                  handlePetsChange(text, "breed", petIndex)
+                }
+              >
+                {pet.breed}
+              </TextInput> */}
                 <View style={styles.buttonContainer}>
                   <Button
                     style={styles.button}
@@ -186,7 +177,9 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
                     />
                   </Button>
                   <Button
-                    isDisabled={customerPayload.pets.length <= 1}
+                    isDisabled={
+                      !customerPayload.pets || customerPayload.pets.length <= 1
+                    }
                     onPress={() => removeField(petIndex)}
                     key={`petIndex: ${petIndex} RemoveField `}
                   >
@@ -199,8 +192,8 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
                 </View>
               </View>
             );
-        })}
-      ;
+          })
+        : null}
       <Button.Group space={2} style={styles.confirmationButtonContainer}>
         <Button variant="ghost" onPress={() => navigate.navigate("Customers")}>
           Cancel

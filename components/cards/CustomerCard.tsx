@@ -64,7 +64,7 @@ const CustomerCard = ({
 
   const handleEdit = () => {
     setShowModal(false);
-    navigation.navigate("EditCustomer", customer);
+    navigation.navigate("EditCustomer", { customer });
   };
 
   const handleDelete = async (id: number) => {

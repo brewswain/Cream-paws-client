@@ -47,7 +47,7 @@ export type RootStackParamList = {
   EditChow: {
     flavour: ChowFlavourFromSupabase;
   };
-  EditCustomer: Customer;
+  EditCustomer: { customer: Customer };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =

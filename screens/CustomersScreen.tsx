@@ -53,7 +53,6 @@ const CustomersScreen = () => {
     }
   };
 
-  console.log({ customersWithOpenOrders });
   const openModal = () => {
     setShowModal(true);
   };

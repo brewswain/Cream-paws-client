@@ -40,7 +40,6 @@ const useCustomerStore = create<UseCustomerStore>(
           )
           .returns<Customer[]>()
           .order("name");
-        console.log({ data });
         if (error) {
           set({ isFetching: false, error: error.message });
         }

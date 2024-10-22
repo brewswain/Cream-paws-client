@@ -15,7 +15,7 @@ import {
 import { RootTabScreenProps } from "../types";
 
 interface ChowFlavourProps {
-  navigation: RootTabScreenProps<"ChowDetails">;
+  navigation: RootTabScreenProps<"ChowFlavour">;
   route: {
     params: {
       chow: ChowFromSupabase;

@@ -20,7 +20,6 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import OrdersScreen from "../screens/OrdersScreen";
 import StockScreen from "../screens/StockScreen";
 
-import ChowDetailsScreen from "../screens/ChowDetailsScreen";
 import ChowFlavourScreen from "../screens/ChowFlavourScreen";
 import EditChowScreen from "../screens/EditChowScreen";
 import OrderDetailsScreen from "../screens/OrderDetailsScreen";
@@ -105,11 +104,6 @@ function RootNavigator() {
         name="CustomerDetails"
         component={CustomerDetailsScreen}
         options={{ title: "Customer Details" }}
-      />
-      <Stack.Screen
-        name="ChowDetails"
-        component={ChowDetailsScreen}
-        options={{ title: "Chow Details" }}
       />
       <Stack.Screen
         name="ChowFlavour"
