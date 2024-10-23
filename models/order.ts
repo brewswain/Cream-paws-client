@@ -161,7 +161,7 @@ export interface OrderFromSupabasePayload {
   customers: { name: string };
 }
 
-interface TodaysOrder {
+export interface TodaysOrder {
   id: number;
   is_delivery: boolean;
   delivery_date: string;
