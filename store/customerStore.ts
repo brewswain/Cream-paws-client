@@ -22,7 +22,6 @@ const useCustomerStore = create<UseCustomerStore>(
       customers: [],
       isFetching: false,
       error: null,
-
       fetchCustomers: async () => {
         set({ isFetching: true });
         const { data, error } = await supabase
@@ -43,11 +42,9 @@ const useCustomerStore = create<UseCustomerStore>(
         if (error) {
           set({ isFetching: false, error: error.message });
         }
-
         data && set({ customers: data, isFetching: false, error: null });
       },
 
-      // Customise this after
       addCustomer: async (newCustomer: CustomerPayload) => {
         try {
           const response = await axios.post("/customer", newCustomer);

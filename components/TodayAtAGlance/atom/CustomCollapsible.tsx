@@ -1,21 +1,28 @@
 import { ReactNode } from "react";
-import { TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Text, ViewStyle, StyleProp } from "react-native";
 import Collapsible from "react-native-collapsible";
 import {
   CollapsibleTargets,
   TodaysOrderState,
 } from "../TodayAtAGlanceCard.model";
 
-interface CustomCollapsibleProps {
+type CustomCollapsibleProps = {
   children: ReactNode;
   isCollapsed: boolean;
-}
+} & StyleProp<ViewStyle>;
 
 const CustomCollapsible = ({
   children,
   isCollapsed,
 }: CustomCollapsibleProps) => {
-  return <Collapsible collapsed={isCollapsed}>{children}</Collapsible>;
+  return (
+    <Collapsible
+      style={{ display: "flex", flexDirection: "column" }}
+      collapsed={isCollapsed}
+    >
+      {children}
+    </Collapsible>
+  );
 };
 
 export default CustomCollapsible;

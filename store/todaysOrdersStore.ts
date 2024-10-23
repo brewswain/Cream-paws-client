@@ -1,4 +1,8 @@
-import { OrderFromSupabase, OrdersByCustomer } from "../models/order";
+import {
+  OrderFromSupabase,
+  OrdersByCustomer,
+  TodaysOrder,
+} from "../models/order";
 import { create, StateCreator } from "zustand";
 
 import { createJSONStorage, persist, PersistOptions } from "zustand/middleware";
@@ -7,8 +11,8 @@ import { getTodaysOrders } from "../api/routes/orders";
 
 type UseTodaysOrdersStore = {
   todaysOrders: OrdersByCustomer;
-  outstandingOrders: OrderFromSupabase[];
-  completedOrders: OrderFromSupabase[];
+  outstandingOrders: TodaysOrder[];
+  completedOrders: TodaysOrder[];
   isFetching: boolean;
   error: string | null;
   fetchTodaysOrders: () => Promise<void>;
@@ -37,8 +41,8 @@ const useTodaysOrdersStore = create<UseTodaysOrdersStore>(
         set({ isFetching: true });
         try {
           const data = await getTodaysOrders();
-          let outstandingOrdersData: OrderFromSupabase[] = [];
-          let completedOrdersData: OrderFromSupabase[] = [];
+          let outstandingOrdersData: TodaysOrder[] = [];
+          let completedOrdersData: TodaysOrder[] = [];
           for (const customerName in data) {
             const customerOrders = data[customerName];
 

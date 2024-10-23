@@ -177,8 +177,6 @@ customers (*)
     {}
   );
 
-  console.log({ ordersByCustomer });
-
   return ordersByCustomer;
 };
 
