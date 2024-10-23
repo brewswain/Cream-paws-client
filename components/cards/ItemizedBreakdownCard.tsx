@@ -11,7 +11,6 @@ import {
   clearCourierFees,
   clearCustomerOrders,
   clearWarehouseOrders,
-  combineOrders,
   concatFinanceQuantities,
   getUnpaidCourierFees,
   getUnpaidCustomerOrders,
@@ -103,7 +102,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       getCustomerOrders();
     } else if (isCourierFees) {
       setIsLoading(true);
-      getDeliveryCosts();
+      // getDeliveryCosts();
     }
   };
 
@@ -161,21 +160,21 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     //  setFormattedOrders(response);
   };
 
-  const getDeliveryCosts = async () => {
-    // TODO: change this entire flow--unpaidCustomerOrders and unpaidWarehouseOrders shouldn't share the same state
-    const courierFees = await getUnpaidCourierFees();
+  // const getDeliveryCosts = async () => {
+  //   // TODO: change this entire flow--unpaidCustomerOrders and unpaidWarehouseOrders shouldn't share the same state
+  //   const courierFees = await getUnpaidCourierFees();
 
-    try {
-      const response = await combineOrders(courierFees);
-      setCourierOrders(response);
-      setIsLoading(false);
-      setIsSuccess(true);
-    } catch (error) {
-      setIsLoading(false);
-      setIsError(true);
-      console.error("Error fetching data:", error);
-    }
-  };
+  //   try {
+  //     const response = await combineOrders(courierFees);
+  //     setCourierOrders(response);
+  //     setIsLoading(false);
+  //     setIsSuccess(true);
+  //   } catch (error) {
+  //     setIsLoading(false);
+  //     setIsError(true);
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
 
   const mappedCourierProfits = courierOrders.map((order) =>
     order.orders

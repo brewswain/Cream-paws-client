@@ -285,7 +285,16 @@ const CreateOrderModal = ({
     const TEST_DELIVERY_COSTS = ["0", 20, 45, 60, 100];
 
     return TEST_DELIVERY_COSTS.map((price, index) => (
-      <SelectItem key={index} title={price} onPressIn={() => {}} />
+      <SelectItem
+        key={index}
+        title={price}
+        onPressIn={() => {
+          let data = { ...orderInputs };
+          data.delivery_cost = Number(price);
+
+          setOrderInputs(data);
+        }}
+      />
     ));
   };
 
@@ -368,7 +377,7 @@ const CreateOrderModal = ({
 
   const handleDateChange = (date: Date) => {
     const data = { ...orderInputs };
-    data.delivery_date = date.toString();
+    data.delivery_date = date.toISOString();
     setOrderInputs(data);
   };
   const handleDateConfirm = (date: Date) => {
@@ -510,9 +519,7 @@ const CreateOrderModal = ({
             <Select
               selectedIndex={selectedDeliveryCostIndex}
               value={
-                orderInputs.delivery_cost
-                  ? orderInputs.delivery_cost
-                  : "Choose Delivery Cost *"
+                orderInputs.delivery_cost ? orderInputs.delivery_cost : "0"
               }
               accessibilityLabel="Choose Delivery Cost"
               onSelect={(index) => setSelectedDeliveryCostIndex(index)}

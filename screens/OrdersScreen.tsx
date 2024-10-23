@@ -1,35 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Dinero from "dinero.js";
 import "react-native-get-random-values";
-import { v4 as uuid } from "uuid";
 
 import Icon from "@expo/vector-icons/AntDesign";
 
-import {
-  createOrder,
-  deleteOrder,
-  getAllChow,
-  getAllCustomers,
-  getAllOrders,
-  updateOrder,
-} from "../api";
-
-import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView } from "native-base";
-import React from "react";
 import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
-import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
-import {
-  CombinedOrder,
-  OrderFromSupabase,
-  OrderWithChowDetails,
-} from "../models/order";
+import { OrderFromSupabase } from "../models/order";
 import { Chow } from "../models/chow";
-import { Customer } from "../models/customer";
 import { useCustomerStore } from "../store/customerStore";
 import { supabase } from "../utils/supabase";
 import { useOrderStore } from "../store/orderStore";
@@ -37,10 +18,8 @@ import { useChowStore } from "../store/chowStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [chow, setChow] = useState<Chow[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [data, setData] = useState<OrderFromSupabase[]>();
-  const { customers, fetchCustomers } = useCustomerStore();
+  const { customers } = useCustomerStore();
   const {
     orders,
     fetchOrders,
@@ -104,11 +83,6 @@ const OrdersScreen = () => {
 
     return data;
   };
-
-  const deliveryDates = data?.map((order) =>
-    new Date(order.delivery_date).toDateString()
-  );
-  const today = new Date().toDateString();
 
   return (
     <View style={styles.container}>

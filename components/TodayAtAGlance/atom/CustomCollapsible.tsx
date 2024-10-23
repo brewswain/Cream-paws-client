@@ -8,24 +8,14 @@ import {
 
 interface CustomCollapsibleProps {
   children: ReactNode;
-  target: CollapsibleTargets;
-  todaysOrders: TodaysOrderState;
+  isCollapsed: boolean;
 }
 
 const CustomCollapsible = ({
   children,
-  target,
-  todaysOrders,
+  isCollapsed,
 }: CustomCollapsibleProps) => {
-  const targetIndex = todaysOrders.collapsed.findIndex(
-    (item) => item.title === target
-  );
-
-  const currentTarget = todaysOrders.collapsed[targetIndex];
-
-  return (
-    <Collapsible collapsed={currentTarget.isCollapsed}>{children}</Collapsible>
-  );
+  return <Collapsible collapsed={isCollapsed}>{children}</Collapsible>;
 };
 
 export default CustomCollapsible;

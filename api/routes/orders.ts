@@ -2,6 +2,7 @@ import {
   OrderFromSupabase,
   OrderFromSupabasePayload,
   OrderPayload,
+  OrdersByCustomer,
   OrderWithChowDetails,
 } from "../../models/order";
 import { supabase } from "../../utils/supabase";
@@ -135,7 +136,26 @@ export const getAllOrders = async () => {
 export const getTodaysOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
-    .select(orderQuery)
+    .select(
+      `
+id,
+is_delivery,
+delivery_date,
+delivery_cost,
+payment_made,
+payment_date,
+retail_price,
+wholesale_price,
+quantity,
+variety_id,
+driver_paid,
+warehouse_paid,
+customer_id,
+flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
+variety:chow_varieties(*),
+customers (*)
+`
+    )
     .eq("delivery_date", new Date().toISOString().split("T")[0])
     .returns<OrderFromSupabase[]>();
 
@@ -144,7 +164,22 @@ export const getTodaysOrders = async () => {
     throw new Error(error.message);
   }
 
-  return data;
+  // separate our orders by unique customer
+  const ordersByCustomer: OrdersByCustomer = data.reduce(
+    (acc: { [key: string]: any }, order) => {
+      const customerName = order.customers.name;
+      if (!acc[customerName]) {
+        acc[customerName] = [];
+      }
+      acc[customerName].push(order);
+      return acc;
+    },
+    {}
+  );
+
+  console.log({ ordersByCustomer });
+
+  return ordersByCustomer;
 };
 
 export const getCustomersOrders = async (customerId: number) => {

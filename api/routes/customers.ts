@@ -1,6 +1,7 @@
 import { axiosInstance } from "../api";
 import { Customer, CustomerPayload } from "../../models/customer";
 import { supabase } from "../../utils/supabase";
+import { logNewSupabaseError } from "../error";
 
 // Creating default param in case we don't have any pets added
 export const createCustomer = async (customer: CustomerPayload) => {
@@ -29,12 +30,19 @@ export const deleteCustomer = async (id: number) => {
 };
 
 export const findCustomer = async (id: number) => {
-  try {
-    const response = await axiosInstance.get(`/customer/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("id", id)
+    .returns<Customer>()
+    .single();
+
+  if (error) {
+    logNewSupabaseError("Error finding Customer: ", error);
+    throw new Error(error.message);
   }
+
+  return data;
 };
 
 export const getAllCustomers = async () => {
@@ -42,7 +50,7 @@ export const getAllCustomers = async () => {
     .from("customers")
     .select(
       `
-        id, name, contact_number, location, city, pets:pet_ids(name, breed)
+        id, name, contact_number, location, city, pets(name, breed)
       `
     )
     .returns<Customer[]>()

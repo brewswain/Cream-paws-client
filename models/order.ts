@@ -1,4 +1,5 @@
 import { ChowFlavour, FilteredChowFlavour } from "./chow";
+import { Customer } from "./customer";
 
 interface Order {
   delivery_date: string;
@@ -158,4 +159,40 @@ export interface OrderFromSupabasePayload {
   };
 
   customers: { name: string };
+}
+
+interface TodaysOrder {
+  id: number;
+  is_delivery: boolean;
+  delivery_date: string;
+  delivery_cost: number;
+  payment_made: boolean;
+  payment_date: string;
+  retail_price: number;
+  wholesale_price: number;
+  quantity: number;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+  customer_id: number;
+  flavours: {
+    details: {
+      flavour_id: number;
+      flavour_name: string;
+    };
+    brand_details: { id: number; name: string };
+  };
+  variety: {
+    id: number;
+    size: number;
+    unit: "lb" | "kg" | "oz";
+    chow_id: number;
+    retail_price: number;
+    wholesale_price: number;
+  };
+
+  customers: Customer;
+}
+
+export interface OrdersByCustomer {
+  [key: string]: TodaysOrder[];
 }

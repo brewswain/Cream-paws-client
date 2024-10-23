@@ -1,7 +1,7 @@
 import moment from "moment";
 
 import { findCustomer, getAllCustomers, updateOrder } from "../api";
-import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase } from "../models/order";
 import { Customer } from "../models/customer";
 import {
   deleteCustomersOrder,
@@ -9,7 +9,7 @@ import {
   setPaymentMade,
 } from "../api/routes/orders";
 
-export const clearWarehouseOrders = async (orders: OrderWithChowDetails[]) => {
+export const clearWarehouseOrders = async (orders: OrderFromSupabase[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
@@ -41,7 +41,7 @@ export const clearCustomerOrders = async (order_ids: number[]) => {
   }
 };
 
-export const clearCourierFees = async (orders: OrderWithChowDetails[]) => {
+export const clearCourierFees = async (orders: OrderFromSupabase[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
@@ -56,27 +56,6 @@ export const clearCourierFees = async (orders: OrderWithChowDetails[]) => {
   } catch (error) {
     console.error(error);
   }
-};
-
-export const getTodaysOrders = async () => {
-  // export const getTodaysOrders = async (getCompletedOrders: boolean) => {
-  const customerResponse: Customer[] = await getAllCustomers();
-
-  const filteredOutstandingOrders = customerResponse
-    .flatMap(
-      (customer) =>
-        customer.orders?.filter((order: OrderWithChowDetails) => {
-          const parsedPaymentDate = moment(order.delivery_date).format(
-            "YYYY-MM-DD"
-          );
-          const today = moment().format("YYYY-MM-DD");
-
-          return parsedPaymentDate === today;
-        }) ?? []
-    )
-    .filter((order) => order !== undefined);
-
-  return filteredOutstandingOrders;
 };
 
 export const getUnpaidCustomerOrders = async () => {
@@ -109,57 +88,59 @@ export const getUnpaidWarehouseOrders = async () => {
   return filteredOutstandingOrders;
 };
 
-export const combineOrders = async (orders: OrderWithChowDetails[]) => {
-  const combinedOrders: Record<string, any[]> = {};
+// export const combineOrders = async (orders: OrderFromSupabase[]) => {
+//   const combinedOrders: Record<string, any[]> = {};
 
-  for (const order of orders) {
-    const customer = await findCustomer(order.customer_id);
+//   for (const order of orders) {
+//     const customer = await findCustomer(order.customer_id);
 
-    const {
-      delivery_date,
-      delivery_cost,
-      driver_paid,
-      quantity,
-      chow_id,
-      customer_id,
-      ...restOrderDetails
-    } = order;
+//     const {
+//       delivery_date,
+//       delivery_cost,
+//       driver_paid,
+//       quantity,
+//       chow_id,
+//       customer_id,
+//       ...restOrderDetails
+//     } = order;
 
-    const orderKey = `${customer.name}-${delivery_date}`;
+//     order.flavours.brand_details.
 
-    if (!combinedOrders[orderKey]) {
-      combinedOrders[orderKey] = {
-        name: customer.name,
-        delivery_date,
-        delivery_cost,
-        driver_paid,
-        customer_id,
-        orders: [],
-      };
-    }
+//     const orderKey = `${customer.name}-${delivery_date}`;
 
-    const existingOrderIndex = combinedOrders[orderKey].orders.findIndex(
-      (existingOrder) => existingOrder.chow_id === chow_id
-    );
+//     if (!combinedOrders[orderKey]) {
+//       combinedOrders[orderKey] = {
+//         name: customer.name,
+//         delivery_date,
+//         delivery_cost,
+//         driver_paid,
+//         customer_id,
+//         orders: [],
+//       };
+//     }
 
-    if (existingOrderIndex !== -1) {
-      // Update quantity if the same chow_id is detected
-      combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
-    } else {
-      // Add a new order if chow_id is not present
-      combinedOrders[orderKey].orders.push({
-        chow_id,
-        quantity,
-        delivery_date,
-        delivery_cost,
-        driver_paid,
-        ...restOrderDetails,
-      });
-    }
-  }
+//     const existingOrderIndex = combinedOrders[orderKey].orders.findIndex(
+//       (existingOrder) => existingOrder.chow_id === chow_id
+//     );
 
-  return Object.values(combinedOrders);
-};
+//     if (existingOrderIndex !== -1) {
+//       // Update quantity if the same chow_id is detected
+//       combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
+//     } else {
+//       // Add a new order if chow_id is not present
+//       combinedOrders[orderKey].orders.push({
+//         chow_id,
+//         quantity,
+//         delivery_date,
+//         delivery_cost,
+//         driver_paid,
+//         ...restOrderDetails,
+//       });
+//     }
+//   }
+
+//   return Object.values(combinedOrders);
+// };
 
 export const concatFinanceQuantities = async (orders: OrderFromSupabase[]) => {
   // const updatedOrders = {};
