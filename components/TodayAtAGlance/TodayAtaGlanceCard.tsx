@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -31,17 +31,15 @@ const TodayAtaGlanceCard = () => {
     toggleCustomersCollapsed,
   } = useTodaysOrdersStore();
 
-  const [outstandingCustomers, setOutstandingCustomers] = useState();
-
   const {
     container,
     highlight,
-    completedHighlight,
     header,
     subHeader,
     deemphasis,
     totalCostContainer,
   } = styles;
+
   const navigation = useNavigation();
 
   const handleClick = (customer: Customer) => {

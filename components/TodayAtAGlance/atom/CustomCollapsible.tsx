@@ -1,10 +1,6 @@
 import { ReactNode } from "react";
-import { TouchableOpacity, Text, ViewStyle, StyleProp } from "react-native";
+import { ViewStyle, StyleProp } from "react-native";
 import Collapsible from "react-native-collapsible";
-import {
-  CollapsibleTargets,
-  TodaysOrderState,
-} from "../TodayAtAGlanceCard.model";
 
 type CustomCollapsibleProps = {
   children: ReactNode;
