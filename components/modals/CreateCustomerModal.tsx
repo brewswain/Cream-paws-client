@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createRef, useEffect, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   StyleSheet,
@@ -31,9 +31,9 @@ const CreateCustomerModal = ({
   const [city, setCity] = useState("");
   const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
 
-  const inputRef2 = useRef();
-  const inputRef3 = useRef();
-  const inputRef4 = useRef();
+  const inputRef2 = createRef<TextInput>();
+  const inputRef3 = createRef<TextInput>();
+  const inputRef4 = createRef<TextInput>();
 
   const {
     input,
@@ -128,7 +128,7 @@ const CreateCustomerModal = ({
               onChange={(event) => handleNameChange(event)}
               value={name}
               returnKeyType="next"
-              onSubmitEditing={() => inputRef2.current.focus()}
+              onSubmitEditing={() => inputRef2.current?.focus()}
               blurOnSubmit={false}
             />
           </FormControl>
@@ -141,7 +141,7 @@ const CreateCustomerModal = ({
               value={contactNumber}
               keyboardType="numeric"
               returnKeyType="next"
-              onSubmitEditing={() => inputRef3.current.focus()}
+              onSubmitEditing={() => inputRef3.current?.focus()}
               blurOnSubmit={false}
               ref={inputRef2}
             />
@@ -154,7 +154,7 @@ const CreateCustomerModal = ({
               onChange={(event) => handleLocationChange(event)}
               value={location}
               returnKeyType="next"
-              onSubmitEditing={() => inputRef4.current.focus()}
+              onSubmitEditing={() => inputRef4.current?.focus()}
               blurOnSubmit={false}
               ref={inputRef3}
             />

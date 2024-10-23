@@ -38,8 +38,6 @@ const FinanceScreen = () => {
       </Text>
 
       <ItemizedBreakdownCard mode={mode} />
-
-      {/* New Card Block */}
     </ScrollView>
   );
 };

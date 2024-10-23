@@ -10,12 +10,18 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Chow, ChowFlavour } from "./models/chow";
+import {
+  Chow,
+  ChowFlavour,
+  ChowFlavourFromSupabase,
+  ChowFromSupabase,
+} from "./models/chow";
 import { Customer } from "./models/customer";
+import { OrderFromSupabase } from "./models/order";
 
 declare global {
   namespace ReactNavigation {
-    type RootParamList = RootStackParamList;
+    interface RootParamList extends RootStackParamList {}
   }
 }
 
@@ -29,23 +35,19 @@ export type RootStackParamList = {
   Stock: undefined;
   Finance: undefined;
   Auth: undefined;
-  CustomerDetails: Customer;
-  OrderDetails: OrderDetails;
+  CustomerDetails: { customer: Customer };
+  OrderDetails: { order: OrderFromSupabase };
   ChowDetails: {
     chow: Chow;
     populateChowList: () => void;
   };
   ChowFlavour: {
-    flavours: ChowFlavour[];
-    brand: string;
-    brand_id: string;
-    populateChowList?: () => void;
+    chow: ChowFromSupabase;
   };
   EditChow: {
-    brand_id: string;
-    flavour_id?: string;
+    flavour: ChowFlavourFromSupabase;
   };
-  EditCustomer: Customer;
+  EditCustomer: { customer: Customer };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -61,7 +63,7 @@ export type RootTabParamList = {
   Finance: undefined;
   Auth: undefined;
   CustomerDetails: Customer;
-  OrderDetails: OrderDetails;
+  OrderDetails: OrderFromSupabase;
   ChowDetails: Chow;
   ChowFlavour: {
     flavours: ChowFlavour[];

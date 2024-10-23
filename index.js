@@ -1,4 +1,5 @@
 import { registerRootComponent } from "expo";
+import { supabase } from "./utils/supabase";
 
 import App from "./App";
 
