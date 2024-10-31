@@ -85,7 +85,13 @@ export const createOrder = async (orderPayload: OrderPayload) => {
 };
 
 export const deleteOrder = async (id: number) => {
-  const { error } = await supabase.from("orders").delete().eq("id", id);
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      payment_made: true,
+      payment_date: new Date().toISOString().split("T")[0],
+    })
+    .eq("id", id);
 
   if (error) {
     logNewSupabaseError("Error deleting order: ", error);

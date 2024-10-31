@@ -70,20 +70,6 @@ const OrdersScreen = () => {
     populateData();
   }, []);
 
-  const getCustomerName = async (customerId: number) => {
-    const { data, error } = await supabase
-      .from("customers")
-      .select("name")
-      .eq("id", customerId)
-      .single();
-
-    if (error) {
-      console.error("Error fetching customer's name: ", error);
-    }
-
-    return data;
-  };
-
   return (
     <View style={styles.container}>
       <ScrollView>

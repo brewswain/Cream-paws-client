@@ -208,8 +208,9 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const handleDelete = async (id: number) => {
     await deleteOrder(id);
+    fetchOrders();
 
-    navigate.goBack();
+    navigate.navigate("Orders");
   };
 
   const formatDate = (date: string) => {

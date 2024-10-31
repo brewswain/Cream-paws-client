@@ -60,7 +60,22 @@ const useOrderStore = create<UseOrderStore>(
         try {
           const data = await getAllOrders();
 
-          data && set({ orders: data, isFetching: false, error: null });
+          const outstandingOrders = data.filter(
+            (order) => order.payment_made === false
+          );
+
+          const completedOrders = data.filter(
+            (order) => order.payment_made === true
+          );
+
+          data &&
+            set({
+              orders: data,
+              outstandingOrders: outstandingOrders,
+              completedOrders: completedOrders,
+              isFetching: false,
+              error: null,
+            });
         } catch (error) {
           set({ isFetching: false, error: `Failed to fetch orders: ${error}` });
           console.error(error);
