@@ -210,7 +210,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
     await deleteOrder(id);
     fetchOrders();
 
-    navigate.navigate("Orders");
+    navigate.goBack();
   };
 
   const formatDate = (date: string) => {
