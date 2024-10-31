@@ -16,6 +16,7 @@ type CustomerPersist = (
   config: StateCreator<UseCustomerStore>,
   options: PersistOptions<UseCustomerStore>
 ) => StateCreator<UseCustomerStore>;
+
 const useCustomerStore = create<UseCustomerStore>(
   (persist as CustomerPersist)(
     (set, get) => ({

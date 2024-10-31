@@ -106,17 +106,6 @@ export const deleteCustomersOrder = async (
   } catch (error) {}
 };
 
-// export const getAllOrders = async () => {
-//   try {
-//     const response = await axiosInstance.get("/orders");
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-// flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name, varieties:chow_varieties(id, size, unit, wholesale_price, retail_price, chow_id))),
-
 export const getAllOrders = async () => {
   const { data, error } = await supabase
     .from("orders")
@@ -138,23 +127,23 @@ export const getTodaysOrders = async () => {
     .from("orders")
     .select(
       `
-id,
-is_delivery,
-delivery_date,
-delivery_cost,
-payment_made,
-payment_date,
-retail_price,
-wholesale_price,
-quantity,
-variety_id,
-driver_paid,
-warehouse_paid,
-customer_id,
-flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
-variety:chow_varieties(*),
-customers (*)
-`
+          id,
+          is_delivery,
+          delivery_date,
+          delivery_cost,
+          payment_made,
+          payment_date,
+          retail_price,
+          wholesale_price,
+          quantity,
+          variety_id,
+          driver_paid,
+          warehouse_paid,
+          customer_id,
+          flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
+          variety:chow_varieties(*),
+          customers (*)
+          `
     )
     .eq("delivery_date", new Date().toISOString().split("T")[0])
     .returns<OrderFromSupabase[]>();
