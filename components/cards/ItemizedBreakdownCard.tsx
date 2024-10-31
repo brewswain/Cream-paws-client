@@ -5,7 +5,7 @@ import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, Checkbox } from "native-base";
-import { CheckBox } from "@rneui/themed";
+import { CheckBox } from "@ui-kitten/components";
 
 import {
   clearCourierFees,
@@ -22,6 +22,7 @@ import {
   OrderWithChowDetails,
 } from "../../models/order";
 import { useFinanceStore } from "../../store/financeStore";
+import { payDeliveryFees, payWarehouseOrders } from "../../api/routes/orders";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -32,6 +33,100 @@ interface GroupValue {
   selected: boolean;
   order_id: string | string[];
 }
+
+interface CheckBoxState {
+  isChecked: boolean;
+  id: number;
+}
+interface ItemizedListProps {
+  targetOrders: OrderFromSupabase[];
+  checkBoxState: CheckBoxState[];
+  setCheckBoxState: (checkBoxes: CheckBoxState[]) => void;
+  fetchData: () => void;
+  handlePayment: (orderIds: number[]) => void;
+  isCourierFees: boolean;
+}
+const ItemizedList = ({
+  targetOrders,
+  checkBoxState,
+  setCheckBoxState,
+  fetchData,
+  isCourierFees,
+  handlePayment,
+}: ItemizedListProps) => {
+  const [buttonStateSelectedOrders, setButtonStateSelectedOrders] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
+  const checkedOrderIds = checkBoxState
+    .filter((order) => order.isChecked)
+    .map((order) => order.id);
+
+  const resetCheckboxes = () => {
+    setCheckBoxState(
+      targetOrders.map((order) => ({ isChecked: false, id: order.id }))
+    );
+  };
+
+  return (
+    <View>
+      {targetOrders.length
+        ? targetOrders.map((order, index) => {
+            return (
+              <View key={index} style={styles.orderContainer}>
+                <View style={styles.orderCard}>
+                  <CheckBox
+                    checked={checkBoxState[index].isChecked}
+                    onChange={(nextChecked) => {
+                      let data = [...checkBoxState];
+                      data[index].isChecked = nextChecked;
+
+                      setCheckBoxState(data);
+                    }}
+                  />
+                  <View style={styles.textContainer}>
+                    <Text
+                      style={styles.tableChowDescription}
+                    >{`${order.flavours.details.flavour_name} - ${order.variety.size} ${order.variety.unit}`}</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })
+        : null}
+
+      {targetOrders.length ? (
+        <View style={styles.buttonContainer}>
+          <Button
+            onPress={async () => {
+              await handlePayment(checkedOrderIds);
+              fetchData();
+              resetCheckboxes();
+            }}
+            isDisabled={checkedOrderIds.length < 1}
+            style={styles.button}
+          >
+            {buttonStateSelectedOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateSelectedOrders === "success" ? (
+              <>
+                <Text style={styles.buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateSelectedOrders === "error" ? (
+              <>
+                <Text style={styles.buttonText}>Error!</Text>
+              </>
+            ) : !isCourierFees ? (
+              "Pay selected orders"
+            ) : (
+              "Pay selected deliveries"
+            )}
+          </Button>
+        </View>
+      ) : null}
+    </View>
+  );
+};
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
@@ -52,21 +147,28 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   >([]);
   const [formattedOrders, setFormattedOrders] = useState<CombinedOrder[]>([]);
 
-  const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
-
-  const { fetchFinanceData, warehouseOrders, courierOrders } =
-    useFinanceStore();
 
   const isCustomerOrders = mode === "customers";
   const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
 
-  useEffect(() => {
-    fetchFinanceData();
-  }, []);
+  const {
+    fetchFinanceData,
+    warehouseOrders,
+    courierOrders,
+    isFetching,
+    error,
+  } = useFinanceStore();
+
+  const [courierChecked, setCourierChecked] = useState<CheckBoxState[]>(
+    courierOrders.map((order) => ({ isChecked: false, id: order.id }))
+  );
+  const [warehouseOrdersChecked, setWarehouseOrdersChecked] = useState<
+    CheckBoxState[]
+  >(warehouseOrders.map((order) => ({ isChecked: false, id: order.id })));
 
   // TODO: Put the heavy logic into our backend once this approach is verified
 
@@ -95,21 +197,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       setIsLoading(false);
       setIsError(true);
       console.error("Error fetching data:", error);
-    }
-  };
-
-  const populateData = async () => {
-    if (isWarehouseOrders) {
-      setIsLoading(true);
-      setOutstandingOrders([]);
-
-      getWarehouseOwedCost();
-    } else if (isCustomerOrders) {
-      setIsLoading(true);
-      getCustomerOrders();
-    } else if (isCourierFees) {
-      setIsLoading(true);
-      // getDeliveryCosts();
     }
   };
 
@@ -375,250 +462,27 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           {!isCourierFees ? "Itemized Breakdown" : "Calculated Courier Fees"}
         </Text>
       </View>
-      {isSuccess ? (
+      {!isFetching ? (
         <View style={tableContainer}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="white" />
-          ) : isCourierFees ? (
-            <Checkbox.Group onChange={setGroupValues} value={groupValues}>
-              {courierOrders.length > 0
-                ? courierOrders.map((order, index) => {
-                    const safeDeliveryCost = order.delivery_cost
-                      ? order.delivery_cost
-                      : 0;
-
-                    const orderIdArray = order.orders.map((o) => o.order_id);
-
-                    const calculatedFees = order.orders
-                      .map(
-                        (o) =>
-                          (o.chow_details.flavours.varieties.retail_price -
-                            o.chow_details.flavours.varieties.wholesale_price) *
-                          0.5 *
-                          o.quantity
-                      )
-                      .reduce(
-                        (accumulator, currentValue) =>
-                          accumulator + currentValue
-                      );
-
-                    return !order.driver_paid ? (
-                      <View
-                        key={`${order.name}-${order.delivery_date}-${index}`}
-                        style={orderContainer}
-                      >
-                        <View style={orderCard}>
-                          <CheckBox
-                            containerStyle={{
-                              backgroundColor: "transparent",
-                              paddingLeft: 0,
-                              marginLeft: 0,
-                            }}
-                            checked={
-                              groupValues[index]
-                                ? groupValues[index].selected
-                                : false
-                            }
-                            onPress={() =>
-                              handleCheckBoxChange(index, orderIdArray)
-                            }
-                          />
-                          <View style={textContainer}>
-                            <Text style={tableChowDescription}>
-                              {`Delivery to: ${order.name} - ${new Date(
-                                order.delivery_date
-                              ).toDateString()}`}
-                              :
-                            </Text>
-                            <Text
-                              style={[
-                                tableQuantity,
-                                {
-                                  paddingLeft: 0,
-
-                                  flexDirection: "row",
-                                  justifyContent: "flex-end",
-                                },
-                              ]}
-                            >
-                              <Text>
-                                {Dinero({
-                                  amount: Math.round(
-                                    (calculatedFees + safeDeliveryCost) * 100
-                                  ),
-                                }).toFormat("$0,0.00")}
-                              </Text>
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    ) : null;
-                  })
-                : null}
-            </Checkbox.Group>
+          {isCourierFees ? (
+            <ItemizedList
+              targetOrders={courierOrders}
+              checkBoxState={courierChecked}
+              setCheckBoxState={setCourierChecked}
+              fetchData={fetchFinanceData}
+              isCourierFees={isCourierFees}
+              handlePayment={payDeliveryFees}
+            />
           ) : isWarehouseOrders ? (
-            <Checkbox.Group onChange={setGroupValues} value={groupValues}>
-              {formattedOrders.length > 0 ? (
-                formattedOrders.map((order, index) => {
-                  const chosenPrice = isWarehouseOrders
-                    ? order.chow_details.flavours.varieties.wholesale_price
-                    : order.chow_details.flavours.varieties.retail_price;
-                  const vatExclusivePrice: string = Dinero({
-                    amount: Math.round(chosenPrice * order.quantity * 100),
-                  }).toFormat("$0,0.00");
-
-                  const description = (() => {
-                    const fullDescription = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
-                    const index = fullDescription.indexOf("(");
-                    const shortenedDescription =
-                      index !== -1
-                        ? fullDescription.substring(0, index).trim() +
-                          ` ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`
-                        : fullDescription;
-
-                    return shortenedDescription;
-                  })();
-
-                  return (
-                    <View key={order.order_id} style={orderContainer}>
-                      <View style={orderCard}>
-                        <CheckBox
-                          containerStyle={{
-                            backgroundColor: "transparent",
-                            paddingLeft: 0,
-                            marginLeft: 0,
-                          }}
-                          checked={
-                            groupValues[index]
-                              ? groupValues[index].selected
-                              : false
-                          }
-                          onPress={() =>
-                            handleCheckBoxChange(index, order.order_id!)
-                          }
-                        />
-                        <View style={textContainer}>
-                          <Text style={tableChowDescription}>
-                            {description} :
-                          </Text>
-                          <Text style={tableQuantity}>
-                            {order.quantity}
-                            <Text style={deEmphasis}>x </Text>
-                            <Text>
-                              {isWarehouseOrders
-                                ? order.chow_details.flavours.varieties
-                                    .wholesale_price
-                                : order.chow_details.flavours.varieties
-                                    .retail_price}
-                            </Text>
-                          </Text>
-                        </View>
-                        <Text style={tablePrice}>{vatExclusivePrice}</Text>
-                        {/* </Checkbox> */}
-                      </View>
-                    </View>
-                  );
-                })
-              ) : (
-                <View style={orderContainer}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={tableQuantity}>No unpaid orders!</Text>
-                  </View>
-                </View>
-              )}
-            </Checkbox.Group>
-          ) : (
-            <>
-              {formattedOrders.length > 0 ? (
-                formattedOrders.map((order, index) => {
-                  const chosenPrice = isWarehouseOrders
-                    ? order.chow_details.flavours.varieties.wholesale_price
-                    : order.chow_details.flavours.varieties.retail_price;
-
-                  const profit =
-                    (order.chow_details.flavours.varieties.retail_price -
-                      order.chow_details.flavours.varieties.wholesale_price) /
-                    2;
-                  const calculatedProfit = order.delivery_cost
-                    ? profit + order.delivery_cost
-                    : profit;
-
-                  const parsedProfit = Dinero({
-                    amount: Math.round(profit * 100),
-                  }).toFormat("$0,0.00");
-
-                  const description = (() => {
-                    const fullDescription = `${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`;
-                    const index = fullDescription.indexOf("(");
-                    const shortenedDescription =
-                      index !== -1
-                        ? fullDescription.substring(0, index).trim() +
-                          ` ${order.chow_details.flavours.varieties.size}${order.chow_details.flavours.varieties.unit}`
-                        : fullDescription;
-
-                    return shortenedDescription;
-                  })();
-
-                  return (
-                    <View key={order.order_id} style={orderContainer}>
-                      <View style={orderCard}>
-                        <CheckBox
-                          containerStyle={{
-                            backgroundColor: "transparent",
-                            paddingLeft: 0,
-                            marginLeft: 0,
-                          }}
-                          checked={
-                            groupValues[index]
-                              ? groupValues[index].selected
-                              : false
-                          }
-                          onPress={() =>
-                            handleCheckBoxChange(index, order.order_id!)
-                          }
-                        />
-                        <View style={textContainer}>
-                          <Text style={tableChowDescription}>
-                            {description} :
-                          </Text>
-                          <View style={textContainer}>
-                            <Text style={tableQuantity}>
-                              {order.quantity}
-                              <Text style={deEmphasis}>x </Text>
-                              <Text>{chosenPrice}</Text>
-                            </Text>
-                          </View>
-                        </View>
-                        <Text style={tablePrice}>
-                          {Dinero({
-                            amount:
-                              Math.round(chosenPrice * 100) * order.quantity,
-                          }).toFormat("$0,0.00")}
-                        </Text>
-                        {/* </Checkbox> */}
-                      </View>
-                    </View>
-                  );
-                })
-              ) : (
-                <View style={orderContainer}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={tableQuantity}>No unpaid orders!</Text>
-                  </View>
-                </View>
-              )}
-            </>
-          )}
+            <ItemizedList
+              targetOrders={warehouseOrders}
+              checkBoxState={warehouseOrdersChecked}
+              setCheckBoxState={setWarehouseOrdersChecked}
+              fetchData={fetchFinanceData}
+              isCourierFees={isCourierFees}
+              handlePayment={payWarehouseOrders}
+            />
+          ) : null}
         </View>
       ) : isError ? (
         <View style={statusContainer}>
@@ -629,48 +493,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           <Text style={status}>Loading data...</Text>
         </View>
       )}
-      {orders.length > 0 ? (
-        <View style={buttonContainer}>
-          <Button
-            onPress={async () => {
-              if (
-                buttonStateSelectedOrders === "idle" &&
-                groupValues.length >= 1
-              ) {
-                setButtonStateSelectedOrders("loading");
-                try {
-                  //handle method
-                  await handleClearingSelectedPayments();
 
-                  setButtonStateSelectedOrders("success");
-                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
-                } catch (error) {
-                  setButtonStateSelectedOrders("error");
-                  setTimeout(() => setButtonStateSelectedOrders("idle"), 1000);
-                }
-              }
-            }}
-            isDisabled={groupValues.length < 1}
-            style={button}
-          >
-            {buttonStateSelectedOrders === "loading" ? (
-              <ActivityIndicator color="white" />
-            ) : buttonStateSelectedOrders === "success" ? (
-              <>
-                <Text style={buttonText}>Paid!</Text>
-              </>
-            ) : buttonStateSelectedOrders === "error" ? (
-              <>
-                <Text style={buttonText}>Error!</Text>
-              </>
-            ) : !isCourierFees ? (
-              "Pay selected orders"
-            ) : (
-              "Pay selected deliveries"
-            )}
-          </Button>
-        </View>
-      ) : null}
       <View style={totalsContainer}>
         {isWarehouseOrders ? (
           <View style={totalWrapper}>
@@ -703,40 +526,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             </View>
           </View>
         ) : null}
-        {isCustomerOrders ? (
-          <View style={totalWrapper}>
-            <View style={priceWrapper}>
-              <Text style={subTotalCost}>
-                {totalDeliveryCost ? "Subtotal" : "Total"}:
-              </Text>
-              <Text style={subTotalCost}>
-                {subTotal
-                  ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
-                  : null}
-              </Text>
-            </View>
-            {totalDeliveryCost ? (
-              <View style={priceWrapper}>
-                <Text style={subTotalCost}>Delivery costs:</Text>
-                <Text style={subTotalCost}>
-                  {Dinero({ amount: totalDeliveryCost || 0 }).toFormat(
-                    "$0,0.00"
-                  )}
-                </Text>
-              </View>
-            ) : null}
-            {totalDeliveryCost ? (
-              <View style={priceWrapper}>
-                <Text style={subTotalCost}>Total:</Text>
-                <Text style={subTotalCost}>
-                  {Dinero({
-                    amount: totalDeliveryCost + subTotal || 0,
-                  }).toFormat("$0,0.00")}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        ) : null}
+
         {isCourierFees ? (
           <View style={totalWrapper}>
             {mappedCourierProfits ? (
@@ -905,6 +695,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginVertical: 8,
   },
   textContainer: {
     flexDirection: "column",

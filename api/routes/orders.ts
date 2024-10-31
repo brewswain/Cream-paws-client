@@ -202,6 +202,41 @@ export const getFinanceScreenOrders = async () => {
   return { unpaidWarehouseOrders, unpaidCourierFees };
 };
 
+export const payDeliveryFees = async (orderIds: number[]) => {
+  await Promise.all(
+    orderIds.map(async (orderId) => {
+      const { data, error } = await supabase
+        .from("orders")
+        .update({ driver_paid: true })
+        .eq("id", orderId);
+
+      if (error) {
+        logNewSupabaseError("Error updating driver_paid: ", error);
+        throw new Error(error.message);
+      }
+
+      return data;
+    })
+  );
+};
+export const payWarehouseOrders = async (orderIds: number[]) => {
+  await Promise.all(
+    orderIds.map(async (orderId) => {
+      const { data, error } = await supabase
+        .from("orders")
+        .update({ warehouse_paid: true })
+        .eq("id", orderId);
+
+      if (error) {
+        logNewSupabaseError("Error updating warehouse_paid: ", error);
+        throw new Error(error.message);
+      }
+
+      return data;
+    })
+  );
+};
+
 export const getCustomersOrders = async (customerId: number) => {
   const { data, error } = await supabase
     .from("orders")
@@ -277,5 +312,3 @@ export const updateOrder = async (order: OrderFromSupabasePayload) => {
 
   return data;
 };
-
-export const payWarehouseOrders = async (orders: OrderWithChowDetails[]) => {};
