@@ -37,7 +37,6 @@ const useChowStore = create<UseChowStore>(
         set({ isFetching: true });
 
         const response = await getAllChow();
-        console.log({ response });
         set({ chows: response, isFetching: false, error: null });
       },
       // Leave these in for optimistic updates
