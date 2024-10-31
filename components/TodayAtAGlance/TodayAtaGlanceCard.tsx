@@ -48,14 +48,6 @@ const TodayAtaGlanceCard = () => {
 
   const populateData = async () => {
     fetchTodaysOrders();
-
-    const todaysOutstandingCustomers = new Set(
-      outstandingOrders.map((order) => order.customers.name)
-    );
-
-    const todaysCompletedCustomers = new Set(
-      completedOrders.map((order) => order.customers.name)
-    );
   };
 
   const totalOutstandingStock = () => {

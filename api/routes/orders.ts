@@ -27,6 +27,7 @@ flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:ch
 variety:chow_varieties(*),
 customers (name)
 `;
+
 export const createOrder = async (orderPayload: OrderPayload) => {
   const { data: varietyRetailPriceData, error: varietyRetailPriceError } =
     await supabase
@@ -167,6 +168,38 @@ export const getTodaysOrders = async () => {
   );
 
   return ordersByCustomer;
+};
+
+// Fetch our data and format it in a way for ease of making itemized lists:
+// {
+//    unpaidWarehouseOrders: OrderFromSupabase[];
+//    unpaidCourierFees: OrderFromSupabase[];
+// }
+
+// TODO: put error handling into our state -- so for this case, we want to set our error to warehouseOrdersError. However, for now, the current approach is workable
+export const getFinanceScreenOrders = async () => {
+  const { data: orders, error: warehouseOrdersError } = await supabase
+    .from("orders")
+    .select(orderQuery)
+    .returns<OrderFromSupabase[]>()
+    .order("delivery_date");
+
+  if (warehouseOrdersError) {
+    logNewSupabaseError(
+      "Error retrieving unpaid warehouse orders: ",
+      warehouseOrdersError
+    );
+    throw new Error(warehouseOrdersError.message);
+  }
+
+  const unpaidWarehouseOrders = orders.filter(
+    (order) => order.warehouse_paid === false
+  );
+  const unpaidCourierFees = orders.filter(
+    (order) => order.driver_paid === false
+  );
+
+  return { unpaidWarehouseOrders, unpaidCourierFees };
 };
 
 export const getCustomersOrders = async (customerId: number) => {

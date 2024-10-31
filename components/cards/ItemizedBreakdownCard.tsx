@@ -21,6 +21,7 @@ import {
   OrderFromSupabase,
   OrderWithChowDetails,
 } from "../../models/order";
+import { useFinanceStore } from "../../store/financeStore";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -50,16 +51,22 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     OrderFromSupabase[]
   >([]);
   const [formattedOrders, setFormattedOrders] = useState<CombinedOrder[]>([]);
-  const [courierOrders, setCourierOrders] = useState<CombinedOrder[]>([]);
 
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const { fetchFinanceData, warehouseOrders, courierOrders } =
+    useFinanceStore();
+
   const isCustomerOrders = mode === "customers";
   const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
+
+  useEffect(() => {
+    fetchFinanceData();
+  }, []);
 
   // TODO: Put the heavy logic into our backend once this approach is verified
 
@@ -176,30 +183,18 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   //   }
   // };
 
-  const mappedCourierProfits = courierOrders.map((order) =>
-    order.orders
-      .map(
-        (o) =>
-          (o.chow_details.flavours.varieties.retail_price -
-            o.chow_details.flavours.varieties.wholesale_price) *
-          0.5 *
-          o.quantity
-      )
-      .reduce((accumulator, currentValue) => accumulator + currentValue)
-  );
+  const mappedCourierProfits = courierOrders
+    .map(
+      (order) =>
+        (order.retail_price - order.wholesale_price) * 0.5 * order.quantity
+    )
+    .reduce((accumulator, currentValue) => accumulator + currentValue);
 
   const mappedCourierDeliveryCosts = courierOrders.map((order) => {
     const safeDeliveryCost = order.delivery_cost ? order.delivery_cost : 0;
 
     return safeDeliveryCost;
   });
-
-  const totalCourierProfits = Math.round(
-    mappedCourierProfits.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    ) * 100
-  );
 
   const totalCourierDeliveryFees = Math.round(
     mappedCourierDeliveryCosts.reduce(
@@ -279,7 +274,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       setGroupValues(data);
       setIsFetching(true);
 
-      populateData(); // Revert to idle state after a delay
+      fetchFinanceData(); // Revert to idle state after a delay
       setTimeout(() => {
         setButtonStateSelectedOrders("idle");
       }, 1000);
@@ -307,7 +302,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       setButtonStateClearAllOrders("success");
       setIsFetching(true);
 
-      populateData(); // Revert to idle state after a delay
+      fetchFinanceData(); // Revert to idle state after a delay
       setTimeout(() => {
         setButtonStateClearAllOrders("idle");
       }, 1000);
@@ -325,7 +320,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   useFocusEffect(
     useCallback(() => {
       // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
-      populateData();
+      fetchFinanceData();
 
       return () => {
         setGroupValues([]);
@@ -744,12 +739,12 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         ) : null}
         {isCourierFees ? (
           <View style={totalWrapper}>
-            {totalCourierProfits ? (
+            {mappedCourierProfits ? (
               <View style={priceWrapper}>
                 <Text style={deliveryCost}>Total Commission:</Text>
                 <Text style={deliveryCost}>
                   {Dinero({
-                    amount: totalCourierProfits || 0,
+                    amount: mappedCourierProfits * 100 || 0,
                   }).toFormat("$0,0.00")}
                 </Text>
               </View>
@@ -764,12 +759,13 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
                 </Text>
               </View>
             ) : null}
-            {totalCourierDeliveryFees || totalCourierProfits ? (
+            {totalCourierDeliveryFees || mappedCourierProfits ? (
               <View style={priceWrapper}>
                 <Text style={deliveryCost}>Total:</Text>
                 <Text style={deliveryCost}>
                   {Dinero({
-                    amount: totalCourierDeliveryFees + totalCourierProfits,
+                    amount:
+                      totalCourierDeliveryFees + mappedCourierProfits * 100,
                   }).toFormat("$0,0.00")}
                 </Text>
               </View>

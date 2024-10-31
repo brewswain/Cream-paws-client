@@ -49,6 +49,7 @@ interface ChowInput {
   size: number;
   unit: "lb" | "kg" | "oz";
   retail_price: number;
+  wholesale_price: number;
 }
 
 interface OrderInput {
@@ -79,6 +80,7 @@ const CreateOrderModal = ({
       brand_name: "",
       flavour_name: "",
       retail_price: 0,
+      wholesale_price: 0,
       size: 0,
       unit: "lb",
     },
@@ -147,6 +149,7 @@ const CreateOrderModal = ({
         brand_name: "",
         flavour_name: "",
         retail_price: 0,
+        wholesale_price: 0,
         size: 0,
         unit: "lb",
       },
@@ -206,6 +209,7 @@ const CreateOrderModal = ({
       size: 0,
       unit: "lb",
       retail_price: 0,
+      wholesale_price: 0,
     };
     setChowInputs([...chowInputs, newField]);
   };
@@ -273,6 +277,7 @@ const CreateOrderModal = ({
             currentVariety.size = variety.size;
             currentVariety.unit = variety.unit;
             currentVariety.retail_price = variety.retail_price;
+            currentVariety.wholesale_price = variety.wholesale_price;
 
             setChowInputs(data);
           }}
@@ -445,7 +450,7 @@ const CreateOrderModal = ({
           variety_id: chowDetails.variety_id,
           quantity: chowDetails.quantity,
           retail_price: chowDetails.retail_price,
-
+          wholesale_price: chowDetails.wholesale_price,
           customer_id: orderPayload.customer_id,
           delivery_date: orderPayload.delivery_date,
           delivery_cost: orderPayload.delivery_cost,
