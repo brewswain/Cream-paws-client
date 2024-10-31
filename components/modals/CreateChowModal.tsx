@@ -182,10 +182,8 @@ const CreateChowModal = ({
     return true;
   };
 
-  // TODO: check stock.ts -- functionality not yet implemented
   const handleChowCreation = async () => {
     await createChow(chowPayload);
-    fetchChows();
   };
 
   const handleFlavourCreation = async () => {
@@ -206,6 +204,8 @@ const CreateChowModal = ({
     } else {
       handleChowCreation();
     }
+
+    fetchChows();
 
     closeModal();
   };

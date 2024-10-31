@@ -63,6 +63,7 @@ export const createChow = async (chow: ChowFromSupabasePayload) => {
       );
       throw new Error(chowsTableError.message);
     }
+
     flavour.varieties.map(async (variety) => {
       const { data: chowVarietyData, error: chowVarietyError } = await supabase
         .from("chow_varieties")
@@ -199,14 +200,6 @@ export const deleteChow = async (id: number) => {
 
     console.log("successfully deleted brand with attached flavours/varieties.");
   });
-
-  // try {
-  //   const response = await axiosInstance.delete(`/stock/${id}`);
-
-  //   return response.data;
-  // } catch (error) {
-  //   console.error(error);
-  // }
 };
 
 export const deleteChowFlavour = async (flavour_id: number) => {
@@ -274,132 +267,6 @@ export const getAllChow = async () => {
   }
   return data;
 };
-
-// export const getAllChow = async () => {
-//   // Retrieve brands data
-//   const { data: brandData, error: brandError } = await supabase
-//     .from("brands")
-//     .select(
-//       `id,
-//       brand_name
-//       `
-//     )
-//     .order("brand_name");
-
-//   if (brandError) {
-//     console.error("Error retrieving brand", brandError);
-//     throw new Error(brandError.message);
-//   }
-
-//   // Retrieve chows data with corresponding flavor IDs and variety IDs
-//   const { data: chowsData, error: chowsError } = await supabase
-//     .from("chows")
-//     .select(
-//       `
-//       id,
-//       flavour_name`
-//     )
-//     .order("flavour_name");
-
-//   if (chowsError) {
-//     console.error("Error retrieving chows", chowsError);
-//     throw new Error(chowsError.message);
-//   }
-
-//   const { data: chowVarietyData, error: chowVarietyError } = await supabase
-//     .from("chow_varieties")
-//     .select(
-//       `      id,
-//       size,
-//       unit,
-//       wholesale_price,
-//       retail_price,
-//       chow_id`
-//     )
-//     .order("size");
-
-//   if (chowVarietyError) {
-//     console.error("Error retrieving chow Varieties", chowVarietyError);
-//     throw new Error(chowVarietyError.message);
-//   }
-
-//   const { data: brandChowDetailData, error: brandChowDetailError } =
-//     await supabase
-//       .from("chow_details")
-//       .select(`id, target_group, brand_id`)
-//       .order("brand_id");
-
-//   if (brandChowDetailError) {
-//     console.error("Error retrieving chow details", brandChowDetailError);
-//     throw new Error(brandChowDetailError.message);
-//   }
-
-//   const { data: chowFlavourVarietyData, error: chowFlavourVarietyError } =
-//     await supabase
-//       .from("chow_intermediary")
-//       .select(`id, flavour_id, variety_id`)
-//       .order("flavour_id");
-
-//   if (chowFlavourVarietyError) {
-//     console.error("Error retrieving chow Varieties", chowFlavourVarietyError);
-//     throw new Error(chowFlavourVarietyError.message);
-//   }
-
-//   // Create an array of complete Chow objects
-//   const chows = chowsData.map((chow) => ({
-//     id: chow.id,
-//     brand_id: null, // Set to null for now
-//     flavours: [
-//       {
-//         flavour_name: chow.flavour_name,
-//         flavour_id: chow.id,
-//         varieties: chowVarietyData
-//           .filter((variety) => variety.chow_id === chow.id)
-//           .map((variety) => ({
-//             id: variety.id,
-//             size: variety.size,
-//             unit: variety.unit,
-//             wholesale_price: variety.wholesale_price,
-//             retail_price: variety.retail_price,
-//           })),
-//       },
-//     ],
-//   }));
-
-//   // // Add brand ID and target group details to each Chow object
-//   const mergedChows = chows.map((chow) => {
-//     const brandDetail = brandChowDetailData.find(
-//       (detail) => detail.brand_id === brandData[0].id
-//     );
-//     return {
-//       ...chow,
-//       flavour_id: brandDetail ? brandDetail.id : null,
-//     };
-//   });
-
-//   // // Add chow variety IDs to each Chow object
-//   const updatedChows = mergedChows.map((chow) => ({
-//     ...chow,
-//     flavours: [
-//       {
-//         flavour_id: chow.flavours[0].flavour_id,
-//         flavour_name: chow.flavours[0].flavour_name,
-//         varieties: [
-//           chowVarietyData.find((variety) => variety.chow_id === chow.id),
-//         ],
-//       },
-//     ],
-//   }));
-
-//   // // Add brand ID to each Chow object
-//   const finalChows = updatedChows.map((chow) => ({
-//     ...chow,
-//     brand: brandData[0].brand_name,
-//     brand_id: brandData[0].id,
-//   }));
-
-//   return finalChows;
-// };
 
 export const findChow = async (id: number) => {
   // needs to find our individual chow based on id

@@ -108,20 +108,30 @@ const ChowFlavourDetails = ({ flavour, brand_id }: ChowFlavourDetailsProps) => {
           })}
         </View>
         <View style={{ paddingBottom: 12 }}>
-          <DetailsText
-            header="Wholesale Price"
-            details={Dinero({
-              amount: Math.round(varieties[varietyIndex].wholesale_price * 100),
-            }).toFormat("$0,0.00")}
-            color="black"
-          />
-          <DetailsText
-            header="Retail Price"
-            details={Dinero({
-              amount: Math.round(varieties[varietyIndex].retail_price * 100),
-            }).toFormat("$0,0.00")}
-            color="black"
-          />
+          {varieties[varietyIndex].wholesale_price ? (
+            <DetailsText
+              header="Wholesale Price"
+              details={Dinero({
+                amount: Math.round(
+                  varieties[varietyIndex].wholesale_price * 100
+                ),
+              }).toFormat("$0,0.00")}
+              color="black"
+            />
+          ) : (
+            0
+          )}
+          {varieties[varietyIndex].retail_price ? (
+            <DetailsText
+              header="Retail Price"
+              details={Dinero({
+                amount: Math.round(varieties[varietyIndex].retail_price * 100),
+              }).toFormat("$0,0.00")}
+              color="black"
+            />
+          ) : (
+            0
+          )}
         </View>
       </Collapsible>
       <Divider />
