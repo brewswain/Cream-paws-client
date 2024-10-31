@@ -5,6 +5,7 @@ import { CheckBox } from "@ui-kitten/components";
 
 import { OrderFromSupabase } from "../../../models/order";
 import { CheckBoxState } from "../../cards/ItemizedBreakdownCard";
+import { useFinanceStore } from "../../../store/financeStore";
 
 interface ItemizedListProps {
   targetOrders: OrderFromSupabase[];
@@ -25,15 +26,27 @@ const ItemizedList = ({
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+  const [buttonStateClearAllOrders, setButtonStateClearAllOrders] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
+  const { setTargetIds, setShowModal } = useFinanceStore();
 
   const checkedOrderIds = checkBoxState
     .filter((order) => order.isChecked)
     .map((order) => order.id);
 
+  const allOrderIds = checkBoxState.map((order) => order.id);
+
   const resetCheckboxes = () => {
     setCheckBoxState(
       targetOrders.map((order) => ({ isChecked: false, id: order.id }))
     );
+  };
+
+  const showModal = () => {
+    setTargetIds(allOrderIds);
+    setShowModal(true);
   };
 
   return (
@@ -90,6 +103,24 @@ const ItemizedList = ({
               "Pay selected deliveries"
             )}
           </Button>
+
+          <Button onPress={() => showModal()} style={styles.button}>
+            {buttonStateClearAllOrders === "loading" ? (
+              <ActivityIndicator color="white" />
+            ) : buttonStateClearAllOrders === "success" ? (
+              <>
+                <Text style={styles.buttonText}>Paid!</Text>
+              </>
+            ) : buttonStateClearAllOrders === "error" ? (
+              <>
+                <Text style={styles.buttonText}>Error!</Text>
+              </>
+            ) : !isCourierFees ? (
+              "Pay all outstanding orders"
+            ) : (
+              "Pay all courier fees"
+            )}
+          </Button>
         </View>
       ) : null}
     </View>
@@ -133,6 +164,7 @@ const styles = StyleSheet.create({
 
   button: {
     width: "60%",
+    marginVertical: 8,
   },
 
   buttonText: {

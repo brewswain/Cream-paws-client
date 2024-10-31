@@ -109,9 +109,6 @@ const OrderCard = ({
                     100 || 0
                 ),
               }).toFormat("$0,0.00")}
-              {/* {Dinero({
-                amount: Math.round(totalWithDeliveryCost || 0),
-              }).toFormat("$0,0.00")} */}
             </Text>
           </View>
         </View>

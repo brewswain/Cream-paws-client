@@ -12,6 +12,10 @@ type UseFinanceStore = {
   fetchFinanceData: () => void;
   warehouseOrders: OrderFromSupabase[];
   courierOrders: OrderFromSupabase[];
+  showModal: boolean;
+  setShowModal: (show: boolean) => void;
+  targetIds: number[];
+  setTargetIds: (ids: number[]) => void;
 };
 
 type FinancePersist = (
@@ -26,6 +30,10 @@ const useFinanceStore = create<UseFinanceStore>(
       error: null,
       warehouseOrders: [],
       courierOrders: [],
+      showModal: false,
+      setShowModal: (show: boolean) => set({ showModal: show }),
+      targetIds: [],
+      setTargetIds: (ids: number[]) => set({ targetIds: ids }),
       fetchFinanceData: async () => {
         set({ isFetching: true });
         const { unpaidWarehouseOrders, unpaidCourierFees } =

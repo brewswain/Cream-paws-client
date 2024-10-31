@@ -1,29 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useCallback, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
-import { Button } from "native-base";
-import { CheckBox } from "@ui-kitten/components";
 
-import {
-  clearCourierFees,
-  clearCustomerOrders,
-  clearWarehouseOrders,
-  concatFinanceQuantities,
-  getUnpaidCourierFees,
-  getUnpaidCustomerOrders,
-  getUnpaidWarehouseOrders,
-} from "../../utils/orderUtils";
-import {
-  CombinedOrder,
-  OrderFromSupabase,
-  OrderWithChowDetails,
-} from "../../models/order";
+import { concatFinanceQuantities } from "../../utils/orderUtils";
+import { OrderFromSupabase } from "../../models/order";
 import { useFinanceStore } from "../../store/financeStore";
 import { payDeliveryFees, payWarehouseOrders } from "../../api/routes/orders";
 import ItemizedList from "../TodayAtAGlance/atom/ItemizedList";
+import ConfirmMassPaymentModal from "../modals/ConfirmMassPaymentModal";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -41,29 +28,8 @@ export interface CheckBoxState {
 }
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
-  const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
-    useState("idle");
-  const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
-    useState("idle");
-  const [groupValues, setGroupValues] = useState<GroupValue[]>([
-    {
-      index: 0,
-      selected: false,
-      order_id: "",
-    },
-  ]);
-
-  const [selectedOrders, setSelectedOrders] = useState([]);
-  const [outstandingOrders, setOutstandingOrders] = useState<
-    OrderFromSupabase[]
-  >([]);
-  const [formattedOrders, setFormattedOrders] = useState<CombinedOrder[]>([]);
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const isCustomerOrders = mode === "customers";
   const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
 
@@ -72,6 +38,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     warehouseOrders,
     courierOrders,
     isFetching,
+    showModal,
     error,
   } = useFinanceStore();
 
@@ -82,47 +49,11 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     CheckBoxState[]
   >(warehouseOrders.map((order) => ({ isChecked: false, id: order.id })));
 
-  // TODO: Put the heavy logic into our backend once this approach is verified
-
-  const getCustomerOrders = async () => {
-    try {
-      const filteredOutstandingOrders = await getUnpaidCustomerOrders();
-      setOutstandingOrders(filteredOutstandingOrders);
-      setIsLoading(false);
-      setIsSuccess(true);
-    } catch (error) {
-      setIsLoading(false);
-      setIsError(true);
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const getWarehouseOwedCost = async (): Promise<void> => {
-    try {
-      setOutstandingOrders([]);
-      const outstandingWarehouseOrders = await getUnpaidWarehouseOrders();
-      setOutstandingOrders(outstandingWarehouseOrders);
-
-      setIsLoading(false);
-      setIsSuccess(true);
-    } catch (error) {
-      setIsLoading(false);
-      setIsError(true);
-      console.error("Error fetching data:", error);
-    }
-  };
-
   const {
     container,
     header,
     headerWrapper,
     tableContainer,
-    tableQuantity,
-    deEmphasis,
-    tablePrice,
-    buttonContainer,
-    payAllOrderButton,
-    button,
     totalsContainer,
     totalWrapper,
     priceWrapper,
@@ -132,59 +63,22 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     vatCost,
     totalCost,
     deliveryCost,
-
-    buttonText,
   } = styles;
 
-  const orders: OrderFromSupabase[] = outstandingOrders;
-  const mappedCostArray = orders
-    .filter((order) => order.payment_made === false)
-    .map((order) =>
-      isWarehouseOrders
-        ? order.wholesale_price * order.quantity
-        : order.retail_price * order.quantity
-    );
+  const mappedWarehouseCosts = warehouseOrders
+    .map((order) => order.wholesale_price)
+    .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
-  const mappedVatArray = orders
-    .filter((order) => order.payment_made === false)
-    .map((order) => order.wholesale_price * 0.125);
-
-  const subTotal = Math.round(
-    mappedCostArray.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    ) * 100
+  const mappedVatArray = warehouseOrders.map(
+    (order) => order.wholesale_price * 0.125
   );
-
-  const formatOrders = async () => {
-    const response = await concatFinanceQuantities(orders);
-    // const response = await combineOrders(orders);
-
-    //  setFormattedOrders(response);
-  };
-
-  // const getDeliveryCosts = async () => {
-  //   // TODO: change this entire flow--unpaidCustomerOrders and unpaidWarehouseOrders shouldn't share the same state
-  //   const courierFees = await getUnpaidCourierFees();
-
-  //   try {
-  //     const response = await combineOrders(courierFees);
-  //     setCourierOrders(response);
-  //     setIsLoading(false);
-  //     setIsSuccess(true);
-  //   } catch (error) {
-  //     setIsLoading(false);
-  //     setIsError(true);
-  //     console.error("Error fetching data:", error);
-  //   }
-  // };
 
   const mappedCourierProfits = courierOrders
     .map(
       (order) =>
         (order.retail_price - order.wholesale_price) * 0.5 * order.quantity
     )
-    .reduce((accumulator, currentValue) => accumulator + currentValue);
+    .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
   const mappedCourierDeliveryCosts = courierOrders.map((order) => {
     const safeDeliveryCost = order.delivery_cost ? order.delivery_cost : 0;
@@ -199,18 +93,6 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
-  const ordersNestedArray = formattedOrders.flatMap((order) => order.orders);
-  const mappedDeliveryCostArray = formattedOrders.map(
-    (order) => order.delivery_cost
-  );
-
-  const totalDeliveryCost = Math.round(
-    mappedDeliveryCostArray.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    ) * 100
-  );
-
   const totalVat = Math.round(
     mappedVatArray.reduce(
       (accumulator, currentValue) => accumulator + currentValue,
@@ -218,154 +100,15 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
-  const selectedOrdersArray = groupValues
-    .flatMap((selectedOrder) => {
-      if (selectedOrder.selected === true) {
-        if (!isCourierFees) {
-          return orders.filter(
-            (order) => order.order_id === selectedOrder.order_id
-          );
-        }
-
-        if (Array.isArray(selectedOrder.order_id)) {
-          return selectedOrder.order_id.flatMap((id) =>
-            orders.filter((order) => order.order_id === id)
-          );
-        }
-      }
-      return []; // Return an empty array for non-selected orders
-    })
-    .filter(Boolean); // Filter out undefined values
-
-  const handleCheckBoxChange = (
-    orderIndex: number,
-    order_id: string | string[]
-  ) => {
-    const data = [...groupValues];
-    if (!data[orderIndex]) {
-      setGroupValues([
-        ...groupValues,
-        { orderIndex, order_id, selected: true },
-      ]);
-    } else {
-      data[orderIndex].selected = !data[orderIndex].selected;
-      data[orderIndex].order_id = order_id;
-      setGroupValues(data);
-    }
-  };
-
-  const handleClearingSelectedPayments = async () => {
-    setButtonStateSelectedOrders("loading"); // Set loading state
-
-    try {
-      isCourierFees
-        ? await clearCourierFees(selectedOrdersArray)
-        : isWarehouseOrders
-        ? await clearWarehouseOrders(selectedOrdersArray)
-        : await clearCustomerOrders(selectedOrdersArray);
-      // On success, set success state
-      setButtonStateSelectedOrders("success");
-      const data = [...groupValues];
-      data.map((order) => (order.selected = false));
-      setGroupValues(data);
-      setIsFetching(true);
-
-      fetchFinanceData(); // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateSelectedOrders("idle");
-      }, 1000);
-    } catch (error) {
-      // On error, set error state
-      setButtonStateSelectedOrders("error");
-
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateSelectedOrders("idle");
-      }, 1000);
-    }
-  };
-
-  const handleClearingAllPayments = async () => {
-    setButtonStateClearAllOrders("loading"); // Set loading state
-
-    try {
-      isCourierFees
-        ? await clearCourierFees(orders)
-        : isWarehouseOrders
-        ? await clearWarehouseOrders(orders)
-        : await clearCustomerOrders(orders);
-      // On success, set success state
-      setButtonStateClearAllOrders("success");
-      setIsFetching(true);
-
-      fetchFinanceData(); // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateClearAllOrders("idle");
-      }, 1000);
-    } catch (error) {
-      // On error, set error state
-      setButtonStateClearAllOrders("error");
-
-      // Revert to idle state after a delay
-      setTimeout(() => {
-        setButtonStateClearAllOrders("idle");
-      }, 1000);
-    }
-  };
-
   useFocusEffect(
     useCallback(() => {
       // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
       fetchFinanceData();
-
-      return () => {
-        setGroupValues([]);
-      };
     }, [mode])
   );
 
-  useEffect(() => {
-    formatOrders();
-  }, [outstandingOrders, setOutstandingOrders]);
-
   return (
     <View style={container}>
-      {orders.length > 0 ? (
-        <View style={buttonContainer}>
-          <Button
-            onPress={async () => {
-              if (buttonStateClearAllOrders === "idle") {
-                setButtonStateClearAllOrders("loading");
-                try {
-                  await handleClearingAllPayments();
-                  setButtonStateClearAllOrders("success");
-                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
-                } catch (error) {
-                  setButtonStateClearAllOrders("error");
-                  setTimeout(() => setButtonStateClearAllOrders("idle"), 1000);
-                }
-              }
-            }}
-            style={button}
-          >
-            {buttonStateClearAllOrders === "loading" ? (
-              <ActivityIndicator color="white" />
-            ) : buttonStateClearAllOrders === "success" ? (
-              <>
-                <Text style={buttonText}>Paid!</Text>
-              </>
-            ) : buttonStateClearAllOrders === "error" ? (
-              <>
-                <Text style={buttonText}>Error!</Text>
-              </>
-            ) : !isCourierFees ? (
-              "Pay all outstanding orders"
-            ) : (
-              "Pay all courier fees"
-            )}
-          </Button>
-        </View>
-      ) : null}
       <View style={headerWrapper}>
         <Text style={header}>
           {!isCourierFees ? "Itemized Breakdown" : "Calculated Courier Fees"}
@@ -409,8 +152,10 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             <View style={priceWrapper}>
               <Text style={subTotalCost}>Subtotal:</Text>
               <Text style={subTotalCost}>
-                {subTotal
-                  ? Dinero({ amount: subTotal || 0 }).toFormat("$0,0.00")
+                {mappedWarehouseCosts
+                  ? Dinero({
+                      amount: mappedWarehouseCosts * 100 || 0,
+                    }).toFormat("$0,0.00")
                   : null}
               </Text>
             </View>
@@ -425,9 +170,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             <View style={priceWrapper}>
               <Text style={totalCost}>Total:</Text>
               <Text style={totalCost}>
-                {subTotal && totalVat
+                {mappedWarehouseCosts && totalVat
                   ? Dinero({
-                      amount: subTotal + totalVat || 0,
+                      amount: mappedWarehouseCosts * 100 + totalVat || 0,
                       precision: 2,
                     }).toFormat("$0,0.00")
                   : null}
@@ -472,6 +217,12 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           </View>
         ) : null}
       </View>
+
+      <ConfirmMassPaymentModal
+        showModal={showModal}
+        handlePress={isCourierFees ? payDeliveryFees : payWarehouseOrders}
+        isCourierFees={isCourierFees}
+      />
     </View>
   );
 };
