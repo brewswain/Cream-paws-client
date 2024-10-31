@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
-import { Button, Checkbox } from "native-base";
+import { Button } from "native-base";
 import { CheckBox } from "@ui-kitten/components";
 
 import {
@@ -23,6 +23,7 @@ import {
 } from "../../models/order";
 import { useFinanceStore } from "../../store/financeStore";
 import { payDeliveryFees, payWarehouseOrders } from "../../api/routes/orders";
+import ItemizedList from "../TodayAtAGlance/atom/ItemizedList";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
@@ -34,99 +35,10 @@ interface GroupValue {
   order_id: string | string[];
 }
 
-interface CheckBoxState {
+export interface CheckBoxState {
   isChecked: boolean;
   id: number;
 }
-interface ItemizedListProps {
-  targetOrders: OrderFromSupabase[];
-  checkBoxState: CheckBoxState[];
-  setCheckBoxState: (checkBoxes: CheckBoxState[]) => void;
-  fetchData: () => void;
-  handlePayment: (orderIds: number[]) => void;
-  isCourierFees: boolean;
-}
-const ItemizedList = ({
-  targetOrders,
-  checkBoxState,
-  setCheckBoxState,
-  fetchData,
-  isCourierFees,
-  handlePayment,
-}: ItemizedListProps) => {
-  const [buttonStateSelectedOrders, setButtonStateSelectedOrders] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-
-  const checkedOrderIds = checkBoxState
-    .filter((order) => order.isChecked)
-    .map((order) => order.id);
-
-  const resetCheckboxes = () => {
-    setCheckBoxState(
-      targetOrders.map((order) => ({ isChecked: false, id: order.id }))
-    );
-  };
-
-  return (
-    <View>
-      {targetOrders.length
-        ? targetOrders.map((order, index) => {
-            return (
-              <View key={index} style={styles.orderContainer}>
-                <View style={styles.orderCard}>
-                  <CheckBox
-                    checked={checkBoxState[index].isChecked}
-                    onChange={(nextChecked) => {
-                      let data = [...checkBoxState];
-                      data[index].isChecked = nextChecked;
-
-                      setCheckBoxState(data);
-                    }}
-                  />
-                  <View style={styles.textContainer}>
-                    <Text
-                      style={styles.tableChowDescription}
-                    >{`${order.flavours.details.flavour_name} - ${order.variety.size} ${order.variety.unit}`}</Text>
-                  </View>
-                </View>
-              </View>
-            );
-          })
-        : null}
-
-      {targetOrders.length ? (
-        <View style={styles.buttonContainer}>
-          <Button
-            onPress={async () => {
-              await handlePayment(checkedOrderIds);
-              fetchData();
-              resetCheckboxes();
-            }}
-            isDisabled={checkedOrderIds.length < 1}
-            style={styles.button}
-          >
-            {buttonStateSelectedOrders === "loading" ? (
-              <ActivityIndicator color="white" />
-            ) : buttonStateSelectedOrders === "success" ? (
-              <>
-                <Text style={styles.buttonText}>Paid!</Text>
-              </>
-            ) : buttonStateSelectedOrders === "error" ? (
-              <>
-                <Text style={styles.buttonText}>Error!</Text>
-              </>
-            ) : !isCourierFees ? (
-              "Pay selected orders"
-            ) : (
-              "Pay selected deliveries"
-            )}
-          </Button>
-        </View>
-      ) : null}
-    </View>
-  );
-};
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const [buttonStateSelectedOrders, setButtonStateSelectedOrders] =
@@ -205,10 +117,8 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     header,
     headerWrapper,
     tableContainer,
-    orderContainer,
     tableQuantity,
     deEmphasis,
-    tableChowDescription,
     tablePrice,
     buttonContainer,
     payAllOrderButton,
@@ -222,8 +132,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     vatCost,
     totalCost,
     deliveryCost,
-    orderCard,
-    textContainer,
+
     buttonText,
   } = styles;
 
@@ -464,7 +373,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       </View>
       {!isFetching ? (
         <View style={tableContainer}>
-          {isCourierFees ? (
+          {isCourierFees && courierOrders ? (
             <ItemizedList
               targetOrders={courierOrders}
               checkBoxState={courierChecked}
@@ -473,7 +382,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               isCourierFees={isCourierFees}
               handlePayment={payDeliveryFees}
             />
-          ) : isWarehouseOrders ? (
+          ) : isWarehouseOrders && warehouseOrders ? (
             <ItemizedList
               targetOrders={warehouseOrders}
               checkBoxState={warehouseOrdersChecked}
@@ -592,16 +501,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // Fix naming  convention
-  orderContainer: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingLeft: 14,
-    paddingRight: 14,
-  },
   tableQuantity: {
     color: "white",
     fontSize: 18,
@@ -610,9 +509,7 @@ const styles = StyleSheet.create({
   deEmphasis: {
     fontSize: 12,
   },
-  tableChowDescription: {
-    color: "white",
-  },
+
   tablePrice: {
     color: "white",
     alignItems: "flex-end",
@@ -689,21 +586,6 @@ const styles = StyleSheet.create({
   deliveryCost: {
     color: "white",
     fontSize: 20,
-  },
-  orderCard: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 8,
-  },
-  textContainer: {
-    flexDirection: "column",
-    flexWrap: "wrap", // Wrap text if it exceeds the width
-    justifyContent: "center",
-
-    width: "65%", // Set a maximum width for the text
-    maxWidth: "65%",
   },
 });
 
