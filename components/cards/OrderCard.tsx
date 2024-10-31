@@ -7,15 +7,15 @@ import Dinero from "dinero.js";
 
 import { deleteCustomersOrder } from "../../api/routes/orders";
 
-import { CombinedOrder } from "../../models/order";
+import { CombinedOrder, OrderFromSupabase } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
-  data: CombinedOrder;
+  data: OrderFromSupabase;
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
-  customerId: string;
+  customerId: number;
 }
 
 const OrderCard = ({
@@ -27,7 +27,6 @@ const OrderCard = ({
   customerId,
 }: OrderCardProps) => {
   const navigation = useNavigation();
-  const { orders, delivery_cost } = data;
 
   const {
     container,
@@ -42,11 +41,7 @@ const OrderCard = ({
 
   const viewDetails = () => {
     navigation.navigate("OrderDetails", {
-      orders,
-      client_name,
-      delivery_cost,
-      delivery_date: data.delivery_date,
-      customer_id: customerId,
+      order: data,
     });
   };
 
@@ -62,30 +57,31 @@ const OrderCard = ({
     }
   };
 
-  const mappedCostArray = orders
-    .filter((order) => order.payment_made === false)
-    .map(
-      (order) =>
-        order.chow_details.flavours.varieties.retail_price * order.quantity
-    );
+  // const mappedCostArray = orders
+  //   .filter((order) => order.payment_made === false)
+  //   .map(
+  //     (order) =>
+  //       order.chow_details.flavours.varieties.retail_price * order.quantity
+  //   );
 
-  const subTotal = Math.round(
-    mappedCostArray.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    ) * 100
-  );
+  // const subTotal = Math.round(
+  //   mappedCostArray.reduce(
+  //     (accumulator, currentValue) => accumulator + currentValue,
+  //     0
+  //   ) * 100
+  // );
 
-  const deliveryCostArray = data.orders
-    .map((order) => order.delivery_cost)
-    .sort((a, b) => b - a);
+  // const deliveryCostArray = data.orders
+  //   .map((order) => order.delivery_cost)
+  //   .sort((a, b) => b - a);
 
-  const totalWithDeliveryCost = deliveryCostArray[0]
-    ? subTotal + deliveryCostArray[0] * 100
-    : subTotal;
+  // const totalWithDeliveryCost = deliveryCostArray[0]
+  //   ? subTotal + deliveryCostArray[0] * 100
+  //   : subTotal;
 
   const formattedDeliveryDate = new Date(data.delivery_date).toDateString();
   const today = new Date().toDateString();
+
   return (
     <View style={container}>
       <Pressable style={flexRow} onPress={() => viewDetails()}>
@@ -99,20 +95,19 @@ const OrderCard = ({
         >
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
-            {orders.map((order, index) => {
-              return (
-                <View key={`${order.id} - ${index}`}>
-                  <Text style={orderDetails}>
-                    {`${order.chow_details.brand} - ${order.chow_details.flavours.flavour_name} x ${order.quantity}`}
-                  </Text>
-                </View>
-              );
-            })}
+            <View>
+              <Text
+                style={orderDetails}
+              >{`${data.flavours.brand_details.name}  - ${data.flavours.details.flavour_name} x ${data.quantity}`}</Text>
+            </View>
           </View>
           <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
-                amount: Math.round(totalWithDeliveryCost || 0),
+                amount: Math.round(
+                  (data.delivery_cost + data.retail_price * data.quantity) *
+                    100 || 0
+                ),
               }).toFormat("$0,0.00")}
             </Text>
           </View>

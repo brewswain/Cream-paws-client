@@ -9,9 +9,7 @@ import { Button } from "native-base";
 
 const FinanceScreen = () => {
   const [showSupplierOwed, setShowSupplierOwed] = useState(false);
-  const [mode, setMode] = useState<"customers" | "courier" | "warehouse">(
-    "customers"
-  );
+  const [mode, setMode] = useState<"courier" | "warehouse">("courier");
   const { container, header } = styles;
 
   const options = [
@@ -23,23 +21,16 @@ const FinanceScreen = () => {
     <ScrollView style={container}>
       <View style={{ alignItems: "center", paddingVertical: 10 }}>
         <View style={styles.selectorContainer}>
-          <Button onPress={() => setMode("customers")}>Customer</Button>
           <Button onPress={() => setMode("courier")}>Courier Fees</Button>
           <Button onPress={() => setMode("warehouse")}>Warehouse</Button>
         </View>
       </View>
 
       <Text style={header}>
-        {mode === "warehouse"
-          ? "Total owed Supplier"
-          : mode === "customers"
-          ? "Total owed Cream Paws"
-          : "Total owed courier"}
+        {mode === "warehouse" ? "Total owed Supplier" : "Total owed courier"}
       </Text>
 
       <ItemizedBreakdownCard mode={mode} />
-
-      {/* New Card Block */}
     </ScrollView>
   );
 };

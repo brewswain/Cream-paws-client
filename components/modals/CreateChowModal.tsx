@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { createRef, useContext, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   Pressable,
@@ -13,15 +13,24 @@ import { Button, FormControl, Modal } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { useNavigation } from "@react-navigation/native";
-import { createChow } from "../../api";
-import { createChowFlavour, findChow } from "../../api/routes/stock";
-import { Chow } from "../../models/chow";
+// import { createChow } from "../../api";
+import {
+  createChow,
+  createChowFlavour,
+  findChow,
+} from "../../api/routes/stock";
+import {
+  Chow,
+  ChowFromSupabase,
+  ChowFromSupabasePayload,
+} from "../../models/chow";
 import { StockContext } from "../../context/StockContext";
+import { useChowStore } from "../../store/chowStore";
 
 interface CreateChowProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
-  brand_id?: string;
+  brand_id?: number;
 }
 
 const CreateChowModal = ({
@@ -29,11 +38,10 @@ const CreateChowModal = ({
   setShowModal,
   brand_id,
 }: CreateChowProps) => {
-  const [chowPayload, setChowPayload] = useState<Chow>({
-    brand: "",
+  const [chowPayload, setChowPayload] = useState<ChowFromSupabasePayload>({
+    brand_name: "",
     flavours: [
       {
-        flavour_name: "",
         varieties: [
           {
             size: 0,
@@ -42,6 +50,7 @@ const CreateChowModal = ({
             retail_price: 0,
           },
         ],
+        flavour_name: "",
       },
     ],
   });
@@ -50,13 +59,14 @@ const CreateChowModal = ({
 
   const stockDetails = useContext(StockContext);
   const { populateChowList } = stockDetails;
+  const { fetchChows } = useChowStore();
 
   const navigation = useNavigation();
 
-  const inputRef2 = useRef();
-  const inputRef3 = useRef();
-  const inputRef4 = useRef();
-  const inputRef5 = useRef();
+  const inputRef2 = createRef<TextInput>();
+  const inputRef3 = createRef<TextInput>();
+  const inputRef4 = createRef<TextInput>();
+  const inputRef5 = createRef<TextInput>();
 
   const {
     input,
@@ -69,11 +79,10 @@ const CreateChowModal = ({
 
   const addNewFlavourField = () => {
     setChowPayload({
-      brand: chowPayload?.brand || "",
+      brand_name: chowPayload?.brand_name || "",
       flavours: [
-        ...chowPayload.flavours,
+        ...chowPayload!.flavours,
         {
-          flavour_name: "",
           varieties: [
             {
               size: 0,
@@ -82,6 +91,7 @@ const CreateChowModal = ({
               retail_price: 0,
             },
           ],
+          flavour_name: "",
         },
       ],
     });
@@ -164,7 +174,7 @@ const CreateChowModal = ({
   };
 
   const validateFormEntry = () => {
-    if (chowPayload?.brand === undefined) {
+    if (chowPayload?.brand_name === undefined) {
       setErrors({ ...errors, message: "Brand info is required" });
       return false;
     }
@@ -173,22 +183,19 @@ const CreateChowModal = ({
   };
 
   const handleChowCreation = async () => {
-    // Heavyhanded use of !, but we should never have undefined here
-    await createChow(chowPayload!);
-    populateChowList();
+    await createChow(chowPayload);
   };
 
   const handleFlavourCreation = async () => {
     const flavourPayload = chowPayload.flavours;
     // ! used here since we're only going to run this method if we have  our brand_id
-    await createChowFlavour(brand_id!, flavourPayload);
-    const data: Chow = await findChow(brand_id!);
+    chowPayload.id && (await createChowFlavour(chowPayload.id, flavourPayload));
+    const data = await findChow(brand_id!);
 
-    navigation.navigate("ChowFlavour", {
-      flavours: data.flavours,
-      brand: data.brand,
-      brand_id: data.brand_id!,
-    });
+    data &&
+      navigation.navigate("ChowFlavour", {
+        chow: data,
+      });
   };
 
   const handleSubmit = () => {
@@ -197,6 +204,8 @@ const CreateChowModal = ({
     } else {
       handleChowCreation();
     }
+
+    fetchChows();
 
     closeModal();
   };
@@ -207,13 +216,16 @@ const CreateChowModal = ({
         {chowPayload.flavours[flavourIndex].varieties.map(
           (variety, varietyIndex) => {
             return (
-              <View key={`${variety.chow_id} ${variety.unit}`}>
+              <View key={varietyIndex}>
                 <FormControl isRequired>
                   <FormControl.Label>Size</FormControl.Label>
                   <TextInput
                     style={input}
+                    ref={inputRef3}
                     value={variety.size.toString()}
                     selectTextOnFocus
+                    returnKeyType="next"
+                    onSubmitEditing={() => inputRef4.current?.focus()}
                     onChange={(event) =>
                       handleChowVarietyChange(
                         event,
@@ -222,7 +234,6 @@ const CreateChowModal = ({
                         varietyIndex
                       )
                     }
-                    ref={inputRef3}
                   />
                 </FormControl>
                 <FormControl isRequired>
@@ -247,12 +258,10 @@ const CreateChowModal = ({
                             ]}
                             onPress={() => {
                               setUnitIndex(index);
-
                               const data = { ...chowPayload };
-
                               data.flavours[flavourIndex].varieties[
                                 varietyIndex
-                              ].unit = unit;
+                              ].unit = unit as "lb" | "kg" | "oz";
 
                               setChowPayload(data);
                             }}
@@ -285,7 +294,7 @@ const CreateChowModal = ({
                       )
                     }
                     returnKeyType="next"
-                    onSubmitEditing={() => inputRef5.current.focus()}
+                    onSubmitEditing={() => inputRef5.current?.focus()}
                     blurOnSubmit={false}
                     ref={inputRef4}
                   />
@@ -368,9 +377,9 @@ const CreateChowModal = ({
                 selectTextOnFocus
                 style={input}
                 returnKeyType="next"
-                onSubmitEditing={() => inputRef2.current.focus()}
+                onSubmitEditing={() => inputRef2.current?.focus()}
                 blurOnSubmit={false}
-                onChange={(event) => handleChowChange(event, "brand")}
+                onChange={(event) => handleChowChange(event, "brand_name")}
               />
             </FormControl>
           )}
@@ -388,7 +397,7 @@ const CreateChowModal = ({
                     handleChowFlavourChange(event, "flavour_name", index)
                   }
                   returnKeyType="next"
-                  onSubmitEditing={() => inputRef3.current.focus()}
+                  onSubmitEditing={() => inputRef3.current?.focus()}
                   blurOnSubmit={false}
                   ref={inputRef2}
                 />
@@ -423,7 +432,7 @@ const CreateChowModal = ({
           <Button
             style={confirmationButton}
             onPress={() => handleSubmit()}
-            isDisabled={!validateFormEntry}
+            // isDisabled={!validateFormEntry}
           >
             Save
           </Button>
@@ -461,6 +470,7 @@ const styles = StyleSheet.create({
   confirmationButton: {
     backgroundColor: "hsl(213,74%,54%)",
   },
+
   dropdown: {
     height: 30,
     paddingLeft: 10,

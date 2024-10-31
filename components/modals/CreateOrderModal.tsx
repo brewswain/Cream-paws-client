@@ -12,29 +12,56 @@ import {
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
 
 import { CheckBox } from "@rneui/themed";
-import { Button, CheckIcon, FormControl, Modal, Select } from "native-base";
+import { Button, CheckIcon, FormControl, Modal } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
-import { Chow } from "../../models/chow";
+import { ChowFromSupabase } from "../../models/chow";
 import { findChowVariety } from "../../api/routes/stock";
+import { Customer } from "../../models/customer";
+import { OrderFromSupabasePayload, OrderPayload } from "../../models/order";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
   setShowModal(booleanStatus: boolean): void;
   populateCustomersList(): void;
-  chow?: Chow[];
+  chow?: ChowFromSupabase[];
   customers?: Customer[];
 }
 
 interface ChowDetails {
-  chow_id: string;
-  brand: string;
-  flavour_name: string;
-  flavour_id: string;
+  brand_id: number;
+  flavour_id: number;
+  variety_id: number;
   quantity: number;
+}
+
+interface ChowInput {
+  brand_id: number;
+  flavour_id: number;
+  variety_id: number;
+  quantity: number;
+  brand_name: string;
+  flavour_name: string;
+  size: number;
+  unit: "lb" | "kg" | "oz";
+  retail_price: number;
+  wholesale_price: number;
+}
+
+interface OrderInput {
+  customer_id: number;
+  delivery_cost: number;
+  customer_name: string;
+  delivery_date: string;
+  payment_made: boolean;
+  payment_date: string;
+  is_delivery: boolean;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
 }
 
 const CreateOrderModal = ({
@@ -44,17 +71,23 @@ const CreateOrderModal = ({
   chow,
   customers,
 }: CreateOrderModalProps) => {
-  const [chowInputs, setChowInputs] = useState<any[]>([
+  const [chowInputs, setChowInputs] = useState<ChowInput[]>([
     {
-      chow_id: "",
-      brand: "",
-      flavour_name: "",
+      brand_id: 0,
+      flavour_id: 0,
+      variety_id: 0,
       quantity: 1,
-      retail_price: null,
+      brand_name: "",
+      flavour_name: "",
+      retail_price: 0,
+      wholesale_price: 0,
+      size: 0,
+      unit: "lb",
     },
   ]);
-  const [orderInputs, setOrderInputs] = useState<any>({
-    customer_id: "",
+  const [orderInputs, setOrderInputs] = useState<OrderInput>({
+    customer_id: 0,
+    customer_name: "",
     delivery_date: "",
     payment_made: false,
     delivery_cost: 0,
@@ -64,10 +97,25 @@ const CreateOrderModal = ({
     warehouse_paid: false,
   });
   const [selectedChow, setSelectedChow] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = useState<number>();
   const [datePickerIsVisible, setDatePickerIsVisible] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedCustomerIndex, setSelectedCustomerIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedDeliveryCostIndex, setSelectedDeliveryCostIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedBrandIndex, setSelectedBrandIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedFlavourIndex, setSelectedFlavourIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
+  const [selectedVarietyIndex, setSelectedVarietyIndex] = useState<
+    IndexPath | IndexPath[]
+  >(new IndexPath(0));
 
   const orderInputsPaymentMade = orderInputs.payment_made;
   const orderInputDriverPaid = orderInputs.driver_paid;
@@ -81,7 +129,8 @@ const CreateOrderModal = ({
 
   const resetState = () => {
     setOrderInputs({
-      customer_id: "",
+      customer_id: 0,
+      customer_name: "",
       delivery_date: "",
       payment_made: false,
       delivery_cost: 0,
@@ -93,16 +142,21 @@ const CreateOrderModal = ({
 
     setChowInputs([
       {
-        chow_id: "",
-        brand: "",
-        flavour_name: "",
+        brand_id: 0,
+        flavour_id: 0,
+        variety_id: 0,
         quantity: 1,
-        retail_price: null,
+        brand_name: "",
+        flavour_name: "",
+        retail_price: 0,
+        wholesale_price: 0,
+        size: 0,
+        unit: "lb",
       },
     ]);
 
     setSelectedChow("");
-    setSelectedCustomer("");
+    setSelectedCustomer(0);
     setSelectedDate(undefined);
   };
 
@@ -124,16 +178,17 @@ const CreateOrderModal = ({
 
   const selectedBrand = (chowInputIndex: number) => {
     const filteredChow = chow
-      ?.map((brand) => brand)
-      .filter((item) => item.brand === chowInputs[chowInputIndex].brand);
+      ?.map((brand_name) => brand_name)
+      .filter((item) => item.id === chowInputs[chowInputIndex].brand_id);
 
     if (filteredChow) {
       return filteredChow[0];
     }
   };
 
-  const selectedFlavour = (chowInputIndex: number, flavour_id: string) => {
+  const selectedFlavour = (chowInputIndex: number, flavour_id: number) => {
     const chow = selectedBrand(chowInputIndex);
+
     const filteredFlavour = chow?.flavours.filter(
       (flavour) => flavour.flavour_id === flavour_id
     );
@@ -144,11 +199,17 @@ const CreateOrderModal = ({
   };
 
   const addField = () => {
-    const newField = {
-      brand: "",
-      flavour_id: "",
-      chow_id: "",
-      quantity: "1",
+    const newField: ChowInput = {
+      brand_id: 0,
+      flavour_id: 0,
+      variety_id: 0,
+      quantity: 1,
+      brand_name: "",
+      flavour_name: "",
+      size: 0,
+      unit: "lb",
+      retail_price: 0,
+      wholesale_price: 0,
     };
     setChowInputs([...chowInputs, newField]);
   };
@@ -160,61 +221,97 @@ const CreateOrderModal = ({
     setChowInputs(data);
   };
 
-  const renderBrandDropdown = () => {
-    return chow?.map((item) => {
+  const renderBrandDropdown = (fieldIndex: number) => {
+    if (!chow) {
+      return;
+    }
+    return chow.map((brand, index) => {
       return (
-        <Select.Item
-          label={`${item.brand}`}
-          value={`${item.brand}`}
-          key={item.brand_id}
+        <SelectItem
+          key={index}
+          title={brand.brand_name}
+          onPressIn={() => {
+            let data = [...chowInputs];
+            const currentBrand = data[fieldIndex];
+            currentBrand.brand_id = brand.id;
+            currentBrand.brand_name = brand.brand_name;
+
+            setChowInputs(data);
+          }}
         />
       );
     });
   };
 
-  const renderFlavourDropdown = (chowInputIndex: number) => {
-    const chow = selectedBrand(chowInputIndex);
+  const renderFlavourDropdown = (fieldIndex: number) => {
+    const chow = selectedBrand(fieldIndex);
 
-    return chow?.flavours.map((flavour) => (
-      <Select.Item
-        label={flavour.flavour_name}
-        value={flavour.flavour_id}
-        key={flavour.flavour_id}
+    return chow?.flavours.map((flavour, index) => (
+      <SelectItem
+        key={index}
+        title={flavour.flavour_name}
+        onPressIn={() => {
+          let data = [...chowInputs];
+          const currentFlavour = data[fieldIndex];
+          currentFlavour.flavour_id = flavour.flavour_id;
+          currentFlavour.flavour_name = flavour.flavour_name;
+
+          setChowInputs(data);
+        }}
       />
     ));
   };
 
-  const renderVarieties = (chowInputIndex: number, flavour_id: string) => {
-    const flavour = selectedFlavour(chowInputIndex, flavour_id);
+  const renderVarieties = (fieldIndex: number, flavour_id: number) => {
+    const flavour = selectedFlavour(fieldIndex, flavour_id);
 
-    return flavour?.varieties.map((variety) => (
-      <Select.Item
-        label={`${variety.size} ${variety.unit}`}
-        value={variety.chow_id}
-        key={variety.chow_id}
-      />
-    ));
+    return flavour?.varieties.map((variety, index) => {
+      return (
+        <SelectItem
+          key={index}
+          title={`${variety.size} ${variety.unit}`}
+          onPressIn={() => {
+            let data = [...chowInputs];
+            const currentVariety = data[fieldIndex];
+            currentVariety.variety_id = variety.id!;
+            currentVariety.size = variety.size;
+            currentVariety.unit = variety.unit;
+            currentVariety.retail_price = variety.retail_price;
+            currentVariety.wholesale_price = variety.wholesale_price;
+
+            setChowInputs(data);
+          }}
+        />
+      );
+    });
   };
 
   const renderDeliveryCost = () => {
-    const TEST_DELIVERY_COSTS = [0, 20, 45, 60, 100];
+    const TEST_DELIVERY_COSTS = ["0", 20, 45, 60, 100];
 
     return TEST_DELIVERY_COSTS.map((price, index) => (
-      <Select.Item
-        key={`${price}+${index}`}
-        value={price}
-        label={price.toString()}
+      <SelectItem
+        key={index}
+        title={price}
+        onPressIn={() => {
+          let data = { ...orderInputs };
+          data.delivery_cost = Number(price);
+
+          setOrderInputs(data);
+        }}
       />
     ));
   };
 
   const renderCustomersDropdown = () => {
-    return customers?.map((customer) => {
+    return customers?.map((customer, index) => {
       return (
-        <Select.Item
-          key={customer.id}
-          label={customer.name}
-          value={customer.id}
+        <SelectItem
+          key={index}
+          title={customer.name ? customer.name : "N/A"}
+          onPressIn={() => {
+            handleCustomerSelected(customer.id, customer.name || "N/A");
+          }}
         />
       );
     });
@@ -223,10 +320,11 @@ const CreateOrderModal = ({
   // TODO: fix 'any' typing here, expect this to give problems--The problem is that if i were to pass an interface here, it'd need to iterate through each [value] and have its own unique type
   // Perhaps a for in loop?🤔
 
+  // const orderPayload: OrderFromSupabasePayload = {
   const orderPayload: { [value: string]: any } = {
     // For now. Let's use our state directly to make an API call, but constructing this
     // payload to act like a pseudo-singleton would be really nice.
-    customer_id: selectedCustomer,
+    customer_id: Number(selectedCustomer),
     chow_array: chowInputs,
     payment_made: orderInputs.payment_made,
     payment_date: orderInputs.payment_made ? new Date() : "Payment Not Made",
@@ -251,17 +349,40 @@ const CreateOrderModal = ({
     // }
   };
 
-  const handleCheckBoxChange = (name: string) => {
-    const data = { ...orderInputs };
-
-    data[name] = !data[name];
-
-    setOrderInputs(data);
+  const handleCheckBoxChange = (field: string) => {
+    switch (field) {
+      case "payment_made":
+        setOrderInputs((prevInput) => ({
+          ...prevInput,
+          payment_made: !prevInput.payment_made,
+        }));
+        break;
+      case "is_delivery":
+        setOrderInputs((prevInput) => ({
+          ...prevInput,
+          is_delivery: !prevInput.is_delivery,
+        }));
+        break;
+      case "driver_paid":
+        setOrderInputs((prevInput) => ({
+          ...prevInput,
+          driver_paid: !prevInput.driver_paid,
+        }));
+        break;
+      case "warehouse_paid":
+        setOrderInputs((prevInput) => ({
+          ...prevInput,
+          warehouse_paid: !prevInput.warehouse_paid,
+        }));
+        break;
+      default:
+        console.error("Invalid field parameter");
+    }
   };
 
   const handleDateChange = (date: Date) => {
     const data = { ...orderInputs };
-    data["delivery_date"] = date;
+    data.delivery_date = date.toISOString();
     setOrderInputs(data);
   };
   const handleDateConfirm = (date: Date) => {
@@ -279,25 +400,7 @@ const CreateOrderModal = ({
     const inputValue = event.nativeEvent.text.trim(); // Trim whitespace from input value
     const convertedText = parseInt(inputValue);
     if (!isNaN(convertedText)) {
-      data[index][name] = convertedText; // Only update quantity if input is a valid number
-    }
-
-    setChowInputs(data);
-  };
-
-  const handleChowSelected = async (
-    itemValue: string,
-    index: number,
-    name: string
-  ) => {
-    setSelectedChow(itemValue);
-    const data = [...chowInputs];
-    data[index][name] = itemValue;
-
-    if (name === "chow_id") {
-      const response = await findChowVariety(itemValue);
-      data[index].retail_price = response.retail_price;
-      setChowInputs(data);
+      data[index].quantity = convertedText; // Only update quantity if input is a valid number
     }
 
     setChowInputs(data);
@@ -309,16 +412,18 @@ const CreateOrderModal = ({
     name: string
   ) => {
     const data = [...chowInputs];
-    data[index][name] = parseInt(event.nativeEvent.text);
+    data[index].retail_price = parseInt(event.nativeEvent.text);
     setChowInputs(data);
   };
 
-  const handleCustomerSelected = (itemValue: string) => {
-    // setSelectedCustomer(itemValue);
-    setSelectedCustomer(itemValue);
-    const data = { ...orderInputs };
-    data.customer_id = itemValue;
-    setOrderInputs(data);
+  const handleCustomerSelected = (customerId: number, customerName: string) => {
+    setSelectedCustomer(customerId);
+
+    setOrderInputs({
+      ...orderInputs,
+      customer_id: customerId,
+      customer_name: customerName,
+    });
   };
 
   const handleDeliverySelected = (itemValue: string) => {
@@ -338,34 +443,30 @@ const CreateOrderModal = ({
     const chowArray = orderPayload.chow_array;
 
     Promise.all(
-      chowArray.map(async (chowDetails: ChowDetails) => {
-        const { chow_id, quantity, flavour_id, brand, retail_price } =
-          chowDetails;
-        const { customer_id, delivery_date, payment_date, delivery_cost } =
-          orderPayload;
+      chowArray.map(async (chowDetails: ChowInput) => {
+        const newOrderPayload: OrderPayload = {
+          brand_id: chowDetails.brand_id,
+          flavour_id: chowDetails.flavour_id,
+          variety_id: chowDetails.variety_id,
+          quantity: chowDetails.quantity,
+          retail_price: chowDetails.retail_price,
+          wholesale_price: chowDetails.wholesale_price,
+          customer_id: orderPayload.customer_id,
+          delivery_date: orderPayload.delivery_date,
+          delivery_cost: orderPayload.delivery_cost,
+          payment_date: orderPayload.payment_date,
 
-        const newOrderPayload = {
-          delivery_date,
-          brand,
-          payment_date,
-          quantity,
-          delivery_cost,
-          retail_price,
-          flavour_id,
           payment_made: orderInputs.payment_made,
           is_delivery: orderInputs.is_delivery,
           driver_paid: orderInputs.driver_paid,
           warehouse_paid: orderInputs.warehouse_paid,
-          customer_id,
-          chow_id,
         };
 
         await createOrder(newOrderPayload);
+        closeModal();
         populateCustomersList();
       })
-    ).then(() => {
-      closeModal();
-    });
+    );
   };
 
   return (
@@ -381,19 +482,16 @@ const CreateOrderModal = ({
         <Modal.Body>
           <View>
             <Select
-              minWidth="200"
-              selectedValue={orderInputs.customer_id}
+              selectedIndex={selectedCustomerIndex}
+              value={
+                orderInputs.customer_name
+                  ? orderInputs.customer_name
+                  : "Choose Customer *"
+              }
               accessibilityLabel="Choose Customer"
-              placeholder="Choose Customer *"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              mt="1"
-              pl="4"
-              onValueChange={(nextValue) => handleCustomerSelected(nextValue)}
+              onSelect={(index) => setSelectedCustomerIndex(index)}
             >
-              {chow && renderCustomersDropdown()}
+              {renderCustomersDropdown()}
             </Select>
           </View>
           {/* </TouchableWithoutFeedback> */}
@@ -424,17 +522,12 @@ const CreateOrderModal = ({
 
           <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
             <Select
-              minWidth="200"
-              selectedValue={orderInputs.delivery_cost}
-              accessibilityLabel="Delivery Cost"
-              placeholder="Delivery Cost *"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              mt="1"
-              pl="4"
-              onValueChange={(itemValue) => handleDeliverySelected(itemValue)}
+              selectedIndex={selectedDeliveryCostIndex}
+              value={
+                orderInputs.delivery_cost ? orderInputs.delivery_cost : "0"
+              }
+              accessibilityLabel="Choose Delivery Cost"
+              onSelect={(index) => setSelectedDeliveryCostIndex(index)}
             >
               {chow && renderDeliveryCost()}
             </Select>
@@ -453,75 +546,56 @@ const CreateOrderModal = ({
           <FormControl.Label>Chow Details</FormControl.Label>
           {chowInputs.map((field, index) => {
             return (
-              <View key={`${field} + ${index}`}>
-                <TouchableWithoutFeedback onPress={renderBrandDropdown}>
+              <View key={index}>
+                <TouchableWithoutFeedback>
                   <Select
-                    minWidth="200"
-                    selectedValue={chowInputs[index].brand}
-                    accessibilityLabel="Choose Brand"
-                    placeholder="Choose Brand *"
-                    _selectedItem={{
-                      bg: "teal.600",
-                      endIcon: <CheckIcon size={5} />,
-                    }}
-                    mt="1"
-                    pl="4"
-                    onValueChange={(itemValue) =>
-                      handleChowSelected(itemValue, index, "brand")
+                    selectedIndex={selectedBrandIndex}
+                    value={
+                      chowInputs[index].brand_name
+                        ? chowInputs[index].brand_name
+                        : "Choose Brand *"
                     }
-                    key={field.chow_id}
+                    accessibilityLabel="Choose Brand"
+                    onSelect={(index) => setSelectedBrandIndex(index)}
                   >
-                    {chow && renderBrandDropdown()}
+                    {chow && renderBrandDropdown(index)}
                   </Select>
                 </TouchableWithoutFeedback>
-                {field.brand && (
-                  <TouchableWithoutFeedback
-                    onPress={() => renderFlavourDropdown(index)}
-                  >
+
+                {field.brand_id ? (
+                  <TouchableWithoutFeedback>
                     <Select
-                      minWidth="200"
-                      selectedValue={chowInputs[index].flavour_id}
-                      accessibilityLabel="Choose Flavour"
-                      placeholder="Choose Flavour *"
-                      _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size={5} />,
-                      }}
-                      mt="1"
-                      pl="4"
-                      onValueChange={(itemValue) =>
-                        handleChowSelected(itemValue, index, "flavour_id")
+                      selectedIndex={selectedFlavourIndex}
+                      value={
+                        chowInputs[index].flavour_name
+                          ? chowInputs[index].flavour_name
+                          : "Choose Flavour *"
                       }
-                      key={field.chow_id}
+                      accessibilityLabel="Choose Flavour"
+                      onSelect={(index) => setSelectedFlavourIndex(index)}
                     >
-                      {chow && renderFlavourDropdown(index)}
+                      {renderFlavourDropdown(index)}
                     </Select>
                   </TouchableWithoutFeedback>
-                )}
-                {field.flavour_id && (
+                ) : null}
+                {field.flavour_id ? (
                   <TouchableWithoutFeedback
                     onPress={() => renderVarieties(index, field.flavour_id)}
                   >
                     <Select
-                      minWidth="200"
-                      selectedValue={chowInputs[index].chow_id}
-                      accessibilityLabel="Choose Size"
-                      placeholder="Choose Size *"
-                      _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size={5} />,
-                      }}
-                      mt="1"
-                      pl="4"
-                      onValueChange={(itemValue) =>
-                        handleChowSelected(itemValue, index, "chow_id")
+                      selectedIndex={selectedVarietyIndex}
+                      value={
+                        chowInputs[index].size && chowInputs[index].unit
+                          ? `${chowInputs[index].size} ${chowInputs[index].unit}`
+                          : "Choose Variety"
                       }
-                      key={field.chow_id}
+                      accessibilityLabel="Choose Variety"
+                      onSelect={(index) => setSelectedVarietyIndex(index)}
                     >
                       {chow && renderVarieties(index, field.flavour_id)}
                     </Select>
                   </TouchableWithoutFeedback>
-                )}
+                ) : null}
 
                 <FormControl.Label>Quantity</FormControl.Label>
                 <TextInput
@@ -533,7 +607,6 @@ const CreateOrderModal = ({
                     handleQuantityChange(event, index, "quantity")
                   }
                   defaultValue={chowInputs[index].quantity.toString()}
-                  key={`index: ${index} Quantity `}
                 />
                 {chowInputs[index].retail_price ? (
                   <>
@@ -547,33 +620,19 @@ const CreateOrderModal = ({
                         handlePriceChange(event, index, "retail_price")
                       }
                       defaultValue={chowInputs[index].retail_price.toString()}
-                      key={`index: ${index} retail_price `}
                     />
                   </>
                 ) : null}
                 <View style={buttonContainer}>
-                  <Button
-                    style={button}
-                    onPress={() => addField()}
-                    key={`index: ${index} AddField `}
-                  >
-                    <Icon
-                      name="plus"
-                      size={10}
-                      key={`index: ${index} PlusIcon `}
-                    />
+                  <Button style={button} onPress={() => addField()}>
+                    <Icon name="plus" size={10} />
                   </Button>
                   <Button
                     style={button}
                     isDisabled={chowInputs.length <= 1}
                     onPress={() => removeField(index)}
-                    key={`index: ${index} RemoveField `}
                   >
-                    <Icon
-                      name="minus"
-                      size={10}
-                      key={`index: ${index} MinusIcon `}
-                    />
+                    <Icon name="minus" size={10} />
                   </Button>
                 </View>
               </View>
@@ -589,12 +648,9 @@ const CreateOrderModal = ({
             style={confirmationButton}
             onPress={() => handleOrderCreation()}
             isDisabled={
-              !orderInputs.customer_id ||
-              !orderInputs.delivery_date ||
-              chowInputs.some(
-                (chowInput) =>
-                  chowInput.chow_id === "" || chowInput.quantity === 0
-              )
+              !orderPayload.customer_id ||
+              !orderPayload.delivery_date ||
+              !orderPayload.chow_array
             }
           >
             Save

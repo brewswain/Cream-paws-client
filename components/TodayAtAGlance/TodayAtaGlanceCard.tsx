@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -11,169 +11,80 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import Dinero from "dinero.js";
 import { Divider } from "native-base";
-import { findCustomer, getAllOrders } from "../../api";
-import { getTodaysOrders } from "../../utils";
-import { CombinedOrder, OrderWithChowDetails } from "../../models/order";
+import { TodaysOrder } from "../../models/order";
 import { Customer } from "../../models/customer";
 import moment from "moment";
-import {
-  initialState,
-  todaysOrdersReducer,
-} from "./TodayAtaGlanceCard.reducer";
+
 import CustomCollapsible from "./atom/CustomCollapsible";
-import {
-  ChowInfo,
-  ChowMap,
-  CollapsibleTargets,
-  CustomersMap,
-  OrdersMap,
-} from "./TodayAtAGlanceCard.model";
+
+import { useTodaysOrdersStore } from "../../store/todaysOrdersStore";
 
 const TodayAtaGlanceCard = () => {
-  const [todaysOrders, dispatch] = useReducer(
-    todaysOrdersReducer,
-    initialState
-  );
-
-  const toggleCollapsed = (target: CollapsibleTargets) => {
-    dispatch({
-      type: "collapsed",
-      target,
-    });
-  };
-
-  const updateOrders = (target: keyof OrdersMap, orders) => {
-    dispatch({ type: "orders", orders, target });
-  };
-
-  const updateCustomers = (
-    target: keyof CustomersMap,
-    customers: Customer[]
-  ) => {
-    dispatch({ type: "customers", customers, target });
-  };
-
-  const updateChow = (target: keyof ChowMap, chow: ChowInfo[]) => {
-    dispatch({ type: "chow", chow, target });
-  };
+  const {
+    fetchTodaysOrders,
+    completedOrders,
+    outstandingOrders,
+    todaysOrders,
+    ordersCollapsed,
+    toggleOrdersCollapsed,
+    customersCollapsed,
+    toggleCustomersCollapsed,
+  } = useTodaysOrdersStore();
 
   const {
     container,
     highlight,
-    completedHighlight,
     header,
     subHeader,
     deemphasis,
     totalCostContainer,
   } = styles;
+
   const navigation = useNavigation();
 
   const handleClick = (customer: Customer) => {
-    navigation.navigate("CustomerDetails", customer);
+    navigation.navigate("CustomerDetails", { customer });
   };
 
   const populateData = async () => {
-    const response = await getTodaysOrders();
-
-    const filteredOutstandingOrders = response.filter(
-      (order: OrderWithChowDetails) => order.payment_made === false
-    );
-    const filteredCompletedOrders = response.filter(
-      (order: OrderWithChowDetails) => order.payment_made === true
-    );
-
-    updateOrders("unpaidOrders", filteredOutstandingOrders);
-    updateOrders("completedOrders", filteredCompletedOrders);
-
-    const [outstandingCustomerList, completedCustomerList] = await Promise.all([
-      Promise.all(
-        filteredOutstandingOrders.map((order) =>
-          findCustomer(order?.customer_id)
-        )
-      ),
-      Promise.all(
-        filteredCompletedOrders.map((order) => findCustomer(order?.customer_id))
-      ),
-    ]);
-
-    const filterUniqueCustomers = (
-      customers: (Customer | undefined)[]
-    ): Customer[] => {
-      const uniqueCustomerIds: Record<string, boolean> = {};
-      return customers.filter((customer) => {
-        if (customer && !uniqueCustomerIds[customer.id]) {
-          uniqueCustomerIds[customer.id] = true;
-          return true;
-        }
-        return false;
-      }) as Customer[];
-    };
-
-    const [outstandingFilteredCustomers, completedFilteredCustomers] = [
-      filterUniqueCustomers(outstandingCustomerList),
-      filterUniqueCustomers(completedCustomerList),
-    ];
-
-    updateCustomers("outstandingCustomers", outstandingFilteredCustomers);
-    updateCustomers("completedCustomers", completedFilteredCustomers);
-
-    const mapOrderToChowInfo = (orders: OrderWithChowDetails[]): ChowInfo[] => {
-      return orders.map((order: OrderWithChowDetails) => ({
-        quantity: order?.quantity ?? 0,
-        details: {
-          brand: order?.chow_details?.brand ?? "",
-          flavour: order?.chow_details?.flavours.flavour_name ?? "",
-          size: order?.chow_details?.flavours.varieties.size ?? 0,
-          unit: order?.chow_details?.flavours.varieties.unit ?? "",
-          order_id: order?.order_id ?? "",
-        },
-      }));
-    };
-
-    const customerChowArray = mapOrderToChowInfo(filteredOutstandingOrders);
-    const completedOrderCustomerChowArray = mapOrderToChowInfo(
-      filteredCompletedOrders
-    );
-
-    const deduplicateChowArray = (orders: ChowInfo[]): ChowInfo[] => {
-      return orders.reduce((unique: ChowInfo[], chowObject) => {
-        const existingIndex = unique.findIndex(
-          (obj) => obj.details.order_id === chowObject.details.order_id
-        );
-
-        if (existingIndex !== -1) {
-          unique[existingIndex].quantity += chowObject.quantity;
-        } else {
-          unique.push(chowObject);
-        }
-
-        return unique;
-      }, []);
-    };
-
-    const [cleanedChowArray, cleanedCompletedOrderChowArray] = [
-      deduplicateChowArray(customerChowArray),
-      deduplicateChowArray(completedOrderCustomerChowArray),
-    ];
-
-    updateChow("outstandingChow", cleanedChowArray);
-    updateChow("completedChow", cleanedCompletedOrderChowArray);
+    fetchTodaysOrders();
   };
 
-  const totalBagsOfChow = todaysOrders.chow.outstandingChow.reduce(
-    (total, chow) => total + chow.quantity,
-    0
-  );
-  const completedOrdersTotalBagOfChow = todaysOrders.chow.completedChow.reduce(
-    (total, chow) => total + chow.quantity,
-    0
+  const totalOutstandingStock = () => {
+    return Object.values(todaysOrders).reduce(
+      (accumulator, customerOrders) =>
+        accumulator +
+        customerOrders.reduce((acc, order) => acc + order.quantity, 0),
+      0
+    );
+  };
+
+  // Remove fdrom here once we confirm it works
+
+  const totalStock = totalOutstandingStock();
+  const todaysOrderArray = Object.values(todaysOrders).flat(); //can also spread like this: [...Object.values(todaysOrders)]
+
+  // Used any[] cause lazy and reduce is weird and gives us type never, probably due to reduce's accumulator and callback params by default.
+  const combinedOrderQuantityArray: TodaysOrder[] = todaysOrderArray.reduce(
+    (acc: any[], current) => {
+      const existingOrder = acc.find(
+        (order) => order.variety.id === current.variety.id
+      );
+
+      if (existingOrder) {
+        existingOrder.quantity += current.quantity;
+        return acc;
+      } else {
+        acc.push({ ...current });
+        return acc;
+      }
+    },
+    []
   );
 
   const mappedCostArray =
-    todaysOrders.orders.unpaidOrders.map(
-      (order: OrderWithChowDetails | CombinedOrder) =>
-        order.chow_details.flavours.varieties.retail_price * order.quantity +
-        order.delivery_cost
+    combinedOrderQuantityArray.map(
+      (order) => order.retail_price * order.quantity + order.delivery_cost
     ) || undefined;
 
   const subTotal = Math.round(
@@ -230,15 +141,12 @@ const TodayAtaGlanceCard = () => {
         <View>
           <Text style={header}>Today at a Glance</Text>
           <View>
-            {todaysOrders.orders.unpaidOrders &&
-            todaysOrders.orders.unpaidOrders.length > 0 ? (
-              <TouchableOpacity onPress={() => toggleCollapsed("unpaidOrders")}>
+            {outstandingOrders && outstandingOrders.length > 0 ? (
+              <TouchableOpacity onPress={() => toggleOrdersCollapsed()}>
                 <Text style={highlight}>
-                  {todaysOrders.orders.unpaidOrders.length}{" "}
+                  {outstandingOrders.length}{" "}
                   <Text style={subHeader}>
-                    {todaysOrders.orders.unpaidOrders.length > 1
-                      ? "orders"
-                      : "order"}
+                    {outstandingOrders.length > 1 ? "orders" : "order"}
                   </Text>
                 </Text>
               </TouchableOpacity>
@@ -246,59 +154,64 @@ const TodayAtaGlanceCard = () => {
               <Text style={subHeader}>No orders left!</Text>
             )}
 
-            <CustomCollapsible
-              todaysOrders={todaysOrders}
-              target={"unpaidOrders"}
-            >
-              {todaysOrders.customers.outstandingCustomers &&
-                todaysOrders.customers.outstandingCustomers.length > 0 &&
-                todaysOrders.customers.outstandingCustomers.map(
-                  (customer, index) => (
-                    <TouchableOpacity
-                      key={`${customer.id}, index: ${index}`}
-                      onPress={() => handleClick(customer)}
-                    >
-                      <Text style={deemphasis}>
-                        {customer.name}
-                        {customer.orders && customer.orders?.length > 1
-                          ? ` x ${customerOutstandingOrders(customer)}`
-                          : null}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
+            <CustomCollapsible isCollapsed={ordersCollapsed}>
+              {todaysOrders
+                ? Object.values(todaysOrders).map((customerOrders) => {
+                    const customerData = customerOrders[0].customers;
+                    const mappedRetailPriceTotal = customerOrders.map(
+                      (order) => order.retail_price * order.quantity
+                    );
+                    const mappedDeliveryCost = customerOrders.map(
+                      (order) => order.delivery_cost
+                    );
+
+                    const mappedSubtotal = Math.round(
+                      mappedRetailPriceTotal.reduce(
+                        (accumulator, currentValue) =>
+                          accumulator + currentValue,
+                        0
+                      ) * 100
+                    );
+                    return (
+                      <TouchableOpacity
+                        onPress={() => handleClick(customerData)}
+                      >
+                        <Text
+                          style={deemphasis}
+                        >{`${customerData.name} x ${customerOrders.length}`}</Text>
+                        <Text>{`Retail Price: ${Dinero({
+                          amount: mappedSubtotal || 0,
+                          precision: 2,
+                        }).toFormat("$0,0.00")}, Delivery: $${Math.max(
+                          ...mappedDeliveryCost
+                        )}.00`}</Text>
+                      </TouchableOpacity>
+                    );
+                  })
+                : null}
             </CustomCollapsible>
           </View>
 
           <View>
-            {todaysOrders.chow.outstandingChow &&
-            todaysOrders.chow.outstandingChow.length > 0 ? (
-              <TouchableOpacity onPress={() => toggleCollapsed("unpaidStock")}>
+            {totalStock && totalStock > 0 ? (
+              <TouchableOpacity onPress={() => toggleCustomersCollapsed()}>
                 <Text style={highlight}>
-                  {totalBagsOfChow} 
+                  {totalStock}{" "}
                   <Text style={subHeader}>{`${
-                    todaysOrders.chow.outstandingChow.length > 1 ||
-                    totalBagsOfChow > 1
-                      ? "bags"
-                      : "bag"
+                    totalStock > 1 ? "bags" : "bag"
                   } of Chow`}</Text>
                 </Text>
               </TouchableOpacity>
             ) : (
               <Text style={subHeader}>No chow to be delivered</Text>
             )}
-
-            <CustomCollapsible
-              target={"unpaidStock"}
-              todaysOrders={todaysOrders}
-              // style={{ display: "flex", flexDirection: "column" }}
-            >
-              {todaysOrders.chow.outstandingChow.map((chow, index) => (
+            <CustomCollapsible isCollapsed={customersCollapsed}>
+              {combinedOrderQuantityArray.map((chow, index) => (
                 <View key={index}>
                   {chow && (
                     <View>
                       <Text style={deemphasis}>
-                        {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
+                        {`${chow.flavours.brand_details.name} ${chow.flavours.details.flavour_name} - ${chow.variety.size}${chow.variety.unit} x ${chow.quantity}`}
                       </Text>
                     </View>
                   )}
@@ -308,94 +221,6 @@ const TodayAtaGlanceCard = () => {
           </View>
         </View>
       </ScrollView>
-
-      {todaysOrders.orders.completedOrders &&
-      todaysOrders.orders.completedOrders.length > 0 ? (
-        <View>
-          <Text style={subHeader}>Today's completed orders</Text>
-
-          <View>
-            {todaysOrders.orders.completedOrders &&
-            todaysOrders.orders.completedOrders.length > 0 ? (
-              <TouchableOpacity
-                onPress={() => toggleCollapsed("completedOrders")}
-              >
-                <Text style={completedHighlight}>
-                  {todaysOrders.orders.completedOrders.length}{" "}
-                  <Text style={subHeader}>
-                    {todaysOrders.orders.completedOrders.length > 1
-                      ? "orders"
-                      : "order"}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <Text style={subHeader}>No orders left!</Text>
-            )}
-            <CustomCollapsible
-              target={"completedOrders"}
-              todaysOrders={todaysOrders}
-            >
-              {todaysOrders.customers.completedCustomers &&
-                todaysOrders.customers.completedCustomers.length > 0 &&
-                todaysOrders.customers.completedCustomers.map(
-                  (customer, index) => (
-                    <TouchableOpacity
-                      key={`${customer.id}, index: ${index}`}
-                      onPress={() => handleClick(customer)}
-                    >
-                      <Text style={deemphasis}>
-                        {customer.name}
-                        {customer.orders && customer.orders?.length > 1
-                          ? ` x ${customerCompletedOrdersLength(customer)}`
-                          : null}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-            </CustomCollapsible>
-          </View>
-
-          <View>
-            {todaysOrders.chow.completedChow &&
-            todaysOrders.chow.completedChow.length > 0 ? (
-              <TouchableOpacity
-                onPress={() => toggleCollapsed("completedStock")}
-              >
-                <Text style={completedHighlight}>
-                  {completedOrdersTotalBagOfChow} 
-                  <Text style={subHeader}>{`${
-                    todaysOrders.chow.completedChow.length > 1 ||
-                    completedOrdersTotalBagOfChow > 1
-                      ? "bags"
-                      : "bag"
-                  } of Chow`}</Text>
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <Text style={subHeader}>No chow to be delivered</Text>
-            )}
-
-            <CustomCollapsible
-              target={"completedStock"}
-              todaysOrders={todaysOrders}
-              // style={{ display: "flex", flexDirection: "column" }}
-            >
-              {todaysOrders.chow.completedChow.map((chow, index) => (
-                <View key={index}>
-                  {chow && (
-                    <View>
-                      <Text style={deemphasis}>
-                        {`${chow.details.brand} ${chow.details.flavour} - ${chow.details.size}${chow.details.unit} x ${chow.quantity}`}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </CustomCollapsible>
-          </View>
-        </View>
-      ) : null}
 
       <View style={{ paddingBottom: 10, alignItems: "center" }}>
         <Divider style={{ marginTop: 10, marginBottom: 20 }} />

@@ -1,81 +1,60 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Dinero from "dinero.js";
 import "react-native-get-random-values";
-import { v4 as uuid } from "uuid";
 
 import Icon from "@expo/vector-icons/AntDesign";
 
-import {
-  createOrder,
-  deleteOrder,
-  getAllChow,
-  getAllCustomers,
-  getAllOrders,
-  updateOrder,
-} from "../api";
-
-import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView } from "native-base";
-import React from "react";
 import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
-import { combineOrders, getUnpaidCustomerOrders } from "../utils/orderUtils";
-import { CombinedOrder, OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase } from "../models/order";
 import { Chow } from "../models/chow";
-import { Customer } from "../models/customer";
+import { useCustomerStore } from "../store/customerStore";
+import { supabase } from "../utils/supabase";
+import { useOrderStore } from "../store/orderStore";
+import { useChowStore } from "../store/chowStore";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [chow, setChow] = useState<Chow[]>();
-  const [customers, setCustomers] = useState<Customer[]>();
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [data, setData] = useState<CombinedOrder[]>();
+  const { customers } = useCustomerStore();
+  const {
+    orders,
+    fetchOrders,
+    isFetching,
+    setOutstandingOrders,
+    setCompletedOrders,
+    outstandingOrders,
+    completedOrders,
+  } = useOrderStore();
+  const { fetchChows, chows } = useChowStore();
 
   const populateAllData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getUnpaidCustomerOrders();
-      populateCustomersList();
-      populateChowList();
-      const formattedOrders = response && (await combineOrders(response));
+    fetchOrders();
+    fetchChows();
 
-      // Sort the orders first by delivery_date in ascending order, then by name
-      formattedOrders.sort((a, b) => {
-        // Compare delivery_date
-        const dateA = new Date(a.delivery_date);
-        const dateB = new Date(b.delivery_date);
-        const dateComparison = dateA - dateB;
-
-        // If delivery_date is the same, compare by name
-        if (dateComparison === 0) {
-          const nameA = a.name.toLowerCase(); // assuming case-insensitive comparison
-          const nameB = b.name.toLowerCase();
-          return nameA.localeCompare(nameB);
-        }
-
-        return dateComparison;
-      });
-
-      setData(formattedOrders);
-
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.error(error);
-    }
-  };
-
-  const populateCustomersList = async () => {
-    const response = await getAllCustomers();
-    setCustomers(response);
-  };
-  const populateChowList = async () => {
-    const response = await getAllChow();
-    setChow(response);
+    setOutstandingOrders(
+      orders
+        .filter((order) => order.payment_made === false)
+        .sort((a, b) => {
+          return (
+            new Date(a.delivery_date).getTime() -
+            new Date(b.delivery_date).getTime()
+          );
+        })
+    );
+    setCompletedOrders(
+      orders
+        .filter((order) => order.payment_made === true)
+        .sort((a, b) => {
+          return (
+            new Date(a.delivery_date).getTime() -
+            new Date(b.delivery_date).getTime()
+          );
+        })
+    );
   };
 
   const populateData = async () => {
@@ -87,46 +66,61 @@ const OrdersScreen = () => {
     setShowModal(true);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      populateData();
-    }, [isDeleted])
-  );
+  useEffect(() => {
+    populateData();
+  }, []);
 
-  const deliveryDates = data?.map((order) =>
-    new Date(order.delivery_date).toDateString()
-  );
-  const today = new Date().toDateString();
   return (
     <View style={styles.container}>
       <ScrollView>
-        {isLoading ? (
+        {isFetching ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
-          <View>
-            {data?.map((order, index) => {
-              return (
-                <View key={order.customer_id + index.toString()}>
-                  <OrderCard
-                    key={`${order.orders[0].order_id} ${order.orders.length} - ${index}`}
-                    isDeleted={isDeleted}
-                    setIsDeleted={setIsDeleted}
-                    populateData={populateData}
-                    client_name={order.name}
-                    customerId={order.customer_id}
-                    data={order}
-                  />
-                </View>
-              );
-            })}
-          </View>
+          <>
+            <View>
+              <Text>Incomplete Orders</Text>
+              {outstandingOrders?.map((order, index) => {
+                return (
+                  <View key={index}>
+                    <OrderCard
+                      key={order.id}
+                      isDeleted={isDeleted}
+                      setIsDeleted={setIsDeleted}
+                      populateData={populateData}
+                      client_name={order.customers.name}
+                      customerId={order.customer_id}
+                      data={order}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            <View>
+              <Text>Completed Orders</Text>
+              {completedOrders?.map((order, index) => {
+                return (
+                  <View key={index}>
+                    <OrderCard
+                      key={order.id}
+                      isDeleted={isDeleted}
+                      setIsDeleted={setIsDeleted}
+                      populateData={populateData}
+                      client_name={order.customers.name}
+                      customerId={order.customer_id}
+                      data={order}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          </>
         )}
 
         <CreateOrderModal
           isOpen={showModal}
           setShowModal={setShowModal}
           populateCustomersList={populateData}
-          chow={chow}
+          chow={chows}
           customers={customers}
         />
       </ScrollView>

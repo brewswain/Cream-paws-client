@@ -1,7 +1,7 @@
-import { OrderWithChowDetails } from "./order";
+import { OrderFromSupabase } from "./order";
 
 export interface Customer {
-  id: string;
+  id: number;
   pets?: [
     {
       name: string;
@@ -12,7 +12,7 @@ export interface Customer {
   location?: string;
   name?: string;
   city?: string;
-  orders?: OrderWithChowDetails[];
+  orders?: OrderFromSupabase[];
 }
 
 export interface CustomerPayload {

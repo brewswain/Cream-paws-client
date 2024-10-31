@@ -1,43 +1,25 @@
-import { useState, useRef } from "react";
-import {
-  NativeSyntheticEvent,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputChangeEventData,
-  View,
-} from "react-native";
+import { useState, createRef } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 
-import { Button, FormControl } from "native-base";
+import { Button } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
-
-import { findChow, updateChow, updateChowFlavour } from "../api/routes/stock";
 
 import { useNavigation } from "@react-navigation/native";
 
 import { RootTabScreenProps } from "../types";
-import { OrderWithChowDetails } from "../models/order";
-import { findCustomer, updateCustomer } from "../api";
-import { Customer } from "../models/customer";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
+import { updateCustomer } from "../api";
 import {
   Header,
-  SubFields,
   SubHeader,
 } from "../components/details/DetailScreenComponents";
+import { Customer } from "../models/customer";
 
 interface EditCustomerScreenProps {
   navigation: RootTabScreenProps<"EditCustomer">;
   route: {
     params: {
-      name: string;
-      location: string;
-      city: string;
-      id: string;
-      contactNumber: string;
-      orders: OrderWithChowDetails[];
-      pets: [{ name: string; breed: string }];
+      customer: Customer;
     };
   };
 }
@@ -45,32 +27,31 @@ interface EditCustomerScreenProps {
 const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
   // Orders left off of this payload since we're gonna add that unedited to our updateCustomer call
   const [customerPayload, setCustomerPayload] = useState({
-    ...route.params,
+    ...route.params.customer,
   });
 
   const navigate = useNavigation();
 
-  const inputRef2 = useRef();
-  const inputRef3 = useRef();
-  const inputRef4 = useRef();
+  const inputRef2 = createRef<TextInput>();
+  const inputRef3 = createRef<TextInput>();
+  const inputRef4 = createRef<TextInput>();
 
   const addField = () => {
     const data = { ...customerPayload };
     const newField = { name: "", breed: "" };
 
-    data.pets.push(newField);
+    data.pets ? data.pets.push(newField) : [newField];
     setCustomerPayload(data);
   };
 
   const removeField = (specifiedPetIndex: number) => {
     const data = { ...customerPayload };
 
-    data.pets.splice(specifiedPetIndex, 1);
+    data.pets ? data.pets.splice(specifiedPetIndex, 1) : [];
     setCustomerPayload(data);
   };
 
   const handleCustomerChange = (name: string, value: string | number) => {
-    console.log({ name, value });
     setCustomerPayload((prevState) => ({
       ...prevState,
       [name]: value,
@@ -79,56 +60,22 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
 
   const handlePetsChange = (
     text: string,
-    name: string,
+    name: "name" | "breed",
     specifiedPetIndex: number
   ) => {
     const data = { ...customerPayload };
-    data.pets[specifiedPetIndex][name] = text;
-    2;
+    data.pets ? (data.pets[specifiedPetIndex][name] = text) : [];
+
     setCustomerPayload(data);
   };
 
-  const getCustomer = async () => {
-    const data = await findCustomer(route.params.id);
-    setCustomerPayload(data);
-  };
   const handleUpdate = async () => {
-    await updateCustomer(route.params.id, {
+    await updateCustomer(route.params.customer.id, {
       ...customerPayload,
-      orders: route.params.orders,
+      orders: route.params.customer.orders,
     });
     navigate.navigate("Customers");
   };
-
-  // All our un-nested data aka we don't include our pets here
-  const customerFields: SubFields[] = [
-    {
-      title: "Name",
-      content: customerPayload.name,
-      name: "name",
-    },
-    {
-      title: "Contact Number",
-      content: customerPayload.contactNumber,
-      name: "contactNumber",
-      type: "numeric",
-      ref: inputRef2,
-    },
-    {
-      title: "Address",
-      content: customerPayload.location,
-      name: "location",
-      ref: inputRef3,
-    },
-    {
-      title: "City",
-      content: customerPayload.city,
-      name: "city",
-      ref: inputRef4,
-    },
-  ];
-
-  console.log({ customerPayload });
 
   return (
     <View
@@ -139,7 +86,6 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
       }}
     >
       <Header>Customer Details</Header>
-
       <View>
         <SubHeader>Name</SubHeader>
         <TextInput
@@ -150,7 +96,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
           }
           returnKeyType={"next"}
           blurOnSubmit={false}
-          onSubmitEditing={() => inputRef2.current.focus()}
+          onSubmitEditing={() => inputRef2.current && inputRef2.current.focus()}
           defaultValue={customerPayload.name}
         />
         <SubHeader>Contact Number</SubHeader>
@@ -163,7 +109,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
           returnKeyType={"next"}
           keyboardType="numeric"
           blurOnSubmit={false}
-          onSubmitEditing={() => inputRef3.current.focus()}
+          onSubmitEditing={() => inputRef3.current && inputRef3.current.focus()}
           defaultValue={customerPayload.contactNumber}
           ref={inputRef2}
         />
@@ -176,7 +122,7 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
           }
           returnKeyType={"next"}
           blurOnSubmit={false}
-          onSubmitEditing={() => inputRef4.current.focus()}
+          onSubmitEditing={() => inputRef4.current && inputRef4.current.focus()}
           defaultValue={customerPayload.location}
           ref={inputRef3}
         />
@@ -192,56 +138,62 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
           ref={inputRef4}
         />
       </View>
-
       <Header>Pets</Header>
-      {customerPayload.pets.map((pet, petIndex) => (
-        <View style={{ paddingTop: 4 }}>
-          <SubHeader>Name</SubHeader>
-          <TextInput
-            selectTextOnFocus
-            style={styles.input}
-            onChangeText={(text: string) =>
-              handlePetsChange(text, "name", petIndex)
-            }
-          >
-            {pet.name}
-          </TextInput>
-          <SubHeader>Breed</SubHeader>
-          <TextInput
-            selectTextOnFocus
-            style={styles.input}
-            onChangeText={(text: string) =>
-              handlePetsChange(text, "breed", petIndex)
-            }
-          >
-            {pet.breed}
-          </TextInput>
-          <View style={styles.buttonContainer}>
-            <Button
-              style={styles.button}
-              onPress={() => addField()}
-              key={`petIndex: ${petIndex} AddField `}
-            >
-              <Icon
-                name="plus"
-                size={10}
-                key={`petIndex: ${petIndex} PlusIcon `}
-              />
-            </Button>
-            <Button
-              isDisabled={customerPayload.pets.length <= 1}
-              onPress={() => removeField(petIndex)}
-              key={`petIndex: ${petIndex} RemoveField `}
-            >
-              <Icon
-                name="minus"
-                size={10}
-                key={`petIndex: ${petIndex} MinusIcon `}
-              />
-            </Button>
-          </View>
-        </View>
-      ))}
+      {/* Pets block */}
+      {customerPayload.pets && customerPayload.pets.length
+        ? customerPayload.pets.map((pet, petIndex) => {
+            return (
+              <View style={{ paddingTop: 4 }}>
+                <SubHeader>Name</SubHeader>
+                <TextInput
+                  selectTextOnFocus
+                  style={styles.input}
+                  onChangeText={(text: string) =>
+                    handlePetsChange(text, "name", petIndex)
+                  }
+                >
+                  {pet.name}
+                </TextInput>
+                {/* <SubHeader>Breed</SubHeader>
+                <TextInput
+                  selectTextOnFocus
+                  style={styles.input}
+                  onChangeText={(text: string) =>
+                    handlePetsChange(text, "breed", petIndex)
+                  }
+                >
+                  {pet.breed}
+                </TextInput> */}
+                <View style={styles.buttonContainer}>
+                  <Button
+                    style={styles.button}
+                    onPress={() => addField()}
+                    key={`petIndex: ${petIndex} AddField `}
+                  >
+                    <Icon
+                      name="plus"
+                      size={10}
+                      key={`petIndex: ${petIndex} PlusIcon `}
+                    />
+                  </Button>
+                  <Button
+                    isDisabled={
+                      !customerPayload.pets || customerPayload.pets.length <= 1
+                    }
+                    onPress={() => removeField(petIndex)}
+                    key={`petIndex: ${petIndex} RemoveField `}
+                  >
+                    <Icon
+                      name="minus"
+                      size={10}
+                      key={`petIndex: ${petIndex} MinusIcon `}
+                    />
+                  </Button>
+                </View>
+              </View>
+            );
+          })
+        : null}
       <Button.Group space={2} style={styles.confirmationButtonContainer}>
         <Button variant="ghost" onPress={() => navigate.navigate("Customers")}>
           Cancel
@@ -256,6 +208,8 @@ const EditCustomerScreen = ({ navigation, route }: EditCustomerScreenProps) => {
     </View>
   );
 };
+
+// Pets block
 
 const styles = StyleSheet.create({
   input: {

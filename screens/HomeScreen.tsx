@@ -1,9 +1,9 @@
 import {
-	Dimensions,
-	SafeAreaView,
-	ScrollView,
-	StyleSheet,
-	View,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 
 import { NavigationMenu, TodayAtaGlanceCard } from "../components";
@@ -16,39 +16,39 @@ import { RootTabScreenProps } from "../types";
 const screenHeight = Dimensions.get("window").height;
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
-	const { safeAreaView, container } = styles;
+  const { safeAreaView, container } = styles;
 
-	return (
-		// <SafeAreaView style={safeAreaView}>
-		//    <ScrollView>
-		<View style={container}>
-			<TodayAtaGlanceCard />
-		</View>
-		//    </ScrollView>
-		// </SafeAreaView>
-	);
+  return (
+    // <SafeAreaView style={safeAreaView}>
+    //    <ScrollView>
+    <View style={container}>
+      <TodayAtaGlanceCard />
+    </View>
+    //    </ScrollView>
+    // </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	safeAreaView: {
-		flex: 1,
-		width: "100%",
-	},
-	container: {
-		flex: 1,
-		backgroundColor: "#252526",
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "space-between",
-		height: screenHeight,
-	},
-	title: {
-		fontSize: 20,
-		fontWeight: "bold",
-	},
-	separator: {
-		marginVertical: 30,
-		height: 1,
-		width: "80%",
-	},
+  safeAreaView: {
+    flex: 1,
+    width: "100%",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#252526",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: screenHeight,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  separator: {
+    marginVertical: 30,
+    height: 1,
+    width: "80%",
+  },
 });

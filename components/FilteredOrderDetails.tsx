@@ -7,9 +7,10 @@ import { CheckBox } from "@rneui/themed";
 
 import DetailsText from "./DetailsText";
 import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
-import { OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
 import { SelectedOrder } from "../screens/CustomerDetailsScreen";
 import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
+import { useOrderStore } from "../store/orderStore";
 
 interface FilteredOrderDetailsProps {
   color?: string;
@@ -30,18 +31,14 @@ const FilteredOrderDetails = ({
   } = customerDetails;
 
   const { orderContainer, divider } = styles;
-
-  const orders = isCompleted
-    ? contextOrders.completedOrders
-    : contextOrders.outstandingOrders;
-
-  useEffect(() => {
-    orders.map((_, index) => {
-      if (!selectedOrders[index]) {
-        setSelectedOrders([...selectedOrders, { index, selected: false }]);
-      }
-    });
-  }, []);
+  const {
+    isFetching,
+    completedOrders,
+    outstandingOrders,
+    selectedOrderIds,
+    setSelectedOrderIds,
+  } = useOrderStore();
+  const orders = isCompleted ? completedOrders : outstandingOrders;
 
   const handleCheckBoxChange = (orderIndex: number) => {
     const data = [...selectedOrders];
@@ -57,94 +54,88 @@ const FilteredOrderDetails = ({
 
   return (
     <View>
-      {orders?.map((order: OrderWithChowDetails, orderIndex: number) => {
-        const formattedDeliveryDate = formatDate(order.delivery_date);
-        const totalCost = order.delivery_cost
-          ? order.chow_details.flavours.varieties.retail_price *
-              order.quantity +
-            order.delivery_cost
-          : order.chow_details.flavours.varieties.retail_price * order.quantity;
+      {orders.length ? (
+        orders?.map((order: OrderFromSupabase, orderIndex: number) => {
+          const formattedDeliveryDate = formatDate(order.delivery_date);
+          const totalCost = order.delivery_cost
+            ? order.retail_price * order.quantity + order.delivery_cost
+            : order.retail_price * order.quantity;
 
-        return (
-          <View
-            key={`${orderIndex} Chow ID:${order.id}`}
-            style={orderContainer}
-          >
-            {!isCompleted ? (
-              <View>
-                <CheckBox
-                  title="Check to pay"
-                  containerStyle={{
-                    backgroundColor: "transparent",
-                    paddingLeft: 0,
-                    marginLeft: 0,
-                  }}
-                  checked={
-                    selectedOrders[orderIndex]
-                      ? selectedOrders[orderIndex].selected
-                      : false
-                  }
-                  onPress={() => handleCheckBoxChange(orderIndex)}
-                />
-              </View>
-            ) : null}
-            {/* Payment Made Block */}
-            <DetailsText
-              color={color}
-              paddingLeft={paddingLeft}
-              header="Summary"
-              details={`${order.chow_details.brand}-${
-                order.chow_details.flavours.varieties.size
-              } ${order.chow_details.flavours.varieties.unit} (${Dinero({
-                amount: Math.round(
-                  order.chow_details.flavours.varieties.retail_price * 100
-                ),
-              }).toFormat("$0,0.00")})  x ${order.quantity}`}
-            />
-            {/* <DetailsText color={color}
+          return (
+            <View
+              key={`${orderIndex} Chow ID:${order.id}`}
+              style={orderContainer}
+            >
+              {!isCompleted ? (
+                <View>
+                  <CheckBox
+                    title="Check to pay"
+                    containerStyle={{
+                      backgroundColor: "transparent",
+                      paddingLeft: 0,
+                      marginLeft: 0,
+                    }}
+                    checked={selectedOrderIds.includes(order.id)}
+                    onPress={() => setSelectedOrderIds(order.id)}
+                  />
+                </View>
+              ) : null}
+              {/* Payment Made Block */}
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Summary"
+                details={`${order.flavours.brand_details.name}-${
+                  order.variety.size
+                } ${order.variety.unit} (${Dinero({
+                  amount: Math.round(order.retail_price * 100),
+                }).toFormat("$0,0.00")})  x ${order.quantity}`}
+              />
+
+              {/* <DetailsText color={color}
             paddingLeft={paddingLeft}
                      header="Customer Paid for Chow"
                      details={order.payment_made ? "Yes" : "No"}
                   /> */}
 
-            {/* Is Delivery Block */}
-            {/* <DetailsText
+              {/* Is Delivery Block */}
+              {/* <DetailsText
               color={color}
               paddingLeft={paddingLeft}
               header="Delivery"
               details={order.is_delivery ? "Yes" : "No"}
             /> */}
 
-            <DetailsText
-              color={color}
-              paddingLeft={paddingLeft}
-              header="Delivery Date"
-              details={new Date(order.delivery_date).toDateString()}
-            />
-
-            {order.delivery_cost ? (
               <DetailsText
                 color={color}
                 paddingLeft={paddingLeft}
-                header="Delivery Cost"
-                details={Dinero({
-                  amount: Math.round(order.delivery_cost * 100),
-                }).toFormat("$0,0.00")}
+                header="Delivery Date"
+                details={new Date(order.delivery_date).toDateString()}
               />
-            ) : null}
 
-            {order.delivery_cost ? (
-              <DetailsText
-                color={color}
-                paddingLeft={paddingLeft}
-                header="Total"
-                details={Dinero({
-                  amount: Math.round(totalCost * 100),
-                }).toFormat("$0,0.00")}
-              />
-            ) : null}
+              {order.delivery_cost ? (
+                <DetailsText
+                  color={color}
+                  paddingLeft={paddingLeft}
+                  header="Delivery Cost"
+                  details={Dinero({
+                    amount: Math.round(order.delivery_cost * 100),
+                  }).toFormat("$0,0.00")}
+                />
+              ) : null}
 
-            {/* {order.payment_made ? (
+              {order.delivery_cost ? (
+                <DetailsText
+                  color={color}
+                  paddingLeft={paddingLeft}
+                  header="Total"
+                  details={Dinero({
+                    amount: Math.round(totalCost * 100),
+                  }).toFormat("$0,0.00")}
+                />
+              ) : null}
+
+              {/* {order.payment_made ? (
               <DetailsText
                 color={color}
                 paddingLeft={paddingLeft}
@@ -166,43 +157,49 @@ const FilteredOrderDetails = ({
                 }).toFormat("$0,0.00")}
               />
             )} */}
-            {order.is_delivery ? (
-              <DetailsText
-                color={color}
-                paddingLeft={paddingLeft}
-                header="Delivery Date"
-                details={formattedDeliveryDate}
-              />
-            ) : null}
-            {/* Quantity Block */}
-            {/* <DetailsText
+              {order.is_delivery ? (
+                <DetailsText
+                  color={color}
+                  paddingLeft={paddingLeft}
+                  header="Delivery Date"
+                  details={formattedDeliveryDate}
+                />
+              ) : null}
+
+              {/* Quantity Block */}
+              {/* <DetailsText
               color={color}
               paddingLeft={paddingLeft}
               header="Quantity"
               details={order.quantity}
             /> */}
-            {/* Driver/Warehouse Block */}
-            <DetailsText
-              color={color}
-              paddingLeft={paddingLeft}
-              header="Warehouse Paid"
-              details={order.warehouse_paid ? "Yes" : "No"}
-            />
-            <DetailsText
-              color={color}
-              paddingLeft={paddingLeft}
-              header="Driver Paid"
-              details={order.driver_paid ? "Yes" : "No"}
-            />
-            <CollapsibleChowDetails
-              chowDetails={order.chow_details}
-              index={orderIndex}
-              color="black"
-              paddingLeft={0}
-            />
-          </View>
-        );
-      })}
+              {/* Driver/Warehouse Block */}
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Warehouse Paid"
+                details={order.warehouse_paid ? "Yes" : "No"}
+              />
+              <DetailsText
+                color={color}
+                paddingLeft={paddingLeft}
+                header="Driver Paid"
+                details={order.driver_paid ? "Yes" : "No"}
+              />
+              <CollapsibleChowDetails
+                order={order}
+                index={orderIndex}
+                color="black"
+                paddingLeft={0}
+              />
+            </View>
+          );
+        })
+      ) : (
+        <Text style={{ paddingLeft: 14, fontSize: 18, paddingTop: 12 }}>
+          {isFetching ? "Loading..." : "No Orders found."}
+        </Text>
+      )}
       <View style={divider} />
     </View>
   );

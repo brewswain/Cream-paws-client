@@ -5,14 +5,14 @@ import {
   SetStateAction,
   useState,
 } from "react";
-import { Chow } from "../models/chow";
+import { Chow, ChowFromSupabase } from "../models/chow";
 import { getAllChow } from "../api";
 
 interface StockContextInterface {
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
-  chows: Chow[];
-  setChows: Dispatch<SetStateAction<Chow[]>>;
+  chows: ChowFromSupabase[];
+  setChows: Dispatch<SetStateAction<ChowFromSupabase[]>>;
   populateChowList: () => void;
 }
 
@@ -26,14 +26,14 @@ export const StockContext = createContext<StockContextInterface>({
 
 export const StockContextProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [chows, setChows] = useState<Chow[]>([]);
+  const [chows, setChows] = useState<ChowFromSupabase[]>([]);
 
   const populateChowList = async () => {
     setIsLoading(true);
     try {
-      const response: Chow[] = await getAllChow();
-
+      const response = await getAllChow();
       setChows(response);
+
       setIsLoading(false);
     } catch (error) {
       console.error(error);

@@ -9,9 +9,9 @@ import { useNavigation } from "@react-navigation/native";
 interface SettingsModalProps {
   showModal: boolean;
   setShowModal: Dispatch<SetStateAction<boolean>>;
-  handleDeletion: (id: string) => void;
+  handleDeletion: (id: number) => void;
   handleEdit?: () => void;
-  deletionId?: string;
+  deletionId?: number;
   deleteFlavour?: boolean;
 }
 
@@ -28,7 +28,7 @@ const SettingsModal = ({
 
   const navigate = useNavigation();
 
-  const handleDelete = (deletionId: string | undefined) => {
+  const handleDelete = (deletionId: number | undefined) => {
     if (deletionId) {
       handleDeletion(deletionId);
     } else {
