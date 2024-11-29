@@ -116,7 +116,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
       </View>
       {!isFetching ? (
         <View style={tableContainer}>
-          {isCourierFees && courierOrders && courierChecked ? (
+          {isCourierFees && courierOrders && courierChecked.length ? (
             <ItemizedList
               targetOrders={courierOrders}
               checkBoxState={courierChecked}
@@ -125,7 +125,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
               isCourierFees={isCourierFees}
               handlePayment={payDeliveryFees}
             />
-          ) : isWarehouseOrders && warehouseOrders ? (
+          ) : isWarehouseOrders &&
+            warehouseOrders &&
+            warehouseOrdersChecked.length ? (
             <ItemizedList
               targetOrders={warehouseOrders}
               checkBoxState={warehouseOrdersChecked}
