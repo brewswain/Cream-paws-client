@@ -156,7 +156,7 @@ const TodayAtaGlanceCard = () => {
 
             <CustomCollapsible isCollapsed={ordersCollapsed}>
               {todaysOrders
-                ? Object.values(todaysOrders).map((customerOrders) => {
+                ? Object.values(todaysOrders).map((customerOrders, index) => {
                     const customerData = customerOrders[0].customers;
                     const mappedRetailPriceTotal = customerOrders.map(
                       (order) => order.retail_price * order.quantity
@@ -175,6 +175,7 @@ const TodayAtaGlanceCard = () => {
                     return (
                       <TouchableOpacity
                         onPress={() => handleClick(customerData)}
+                        key={index}
                       >
                         <Text
                           style={deemphasis}
@@ -209,7 +210,7 @@ const TodayAtaGlanceCard = () => {
               {combinedOrderQuantityArray.map((chow, index) => (
                 <View key={index}>
                   {chow && (
-                    <View>
+                    <View key={`${chow.variety.id} - ${index}`}>
                       <Text style={deemphasis}>
                         {`${chow.flavours.brand_details.name} ${chow.flavours.details.flavour_name} - ${chow.variety.size}${chow.variety.unit} x ${chow.quantity}`}
                       </Text>
