@@ -12,17 +12,16 @@ import {
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
+import { IndexPath, Select, SelectItem } from "@ui-kitten/components";
 
 import { CheckBox } from "@rneui/themed";
-import { Button, CheckIcon, FormControl, Modal } from "native-base";
+import { Button, FormControl, Modal } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createOrder } from "../../api";
 import { ChowFromSupabase } from "../../models/chow";
-import { findChowVariety } from "../../api/routes/stock";
 import { Customer } from "../../models/customer";
-import { OrderFromSupabasePayload, OrderPayload } from "../../models/order";
+import { OrderPayload } from "../../models/order";
 
 interface CreateOrderModalProps {
   isOpen: boolean;
