@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import "react-native-get-random-values";
@@ -6,84 +6,65 @@ import "react-native-get-random-values";
 import Icon from "@expo/vector-icons/AntDesign";
 
 import { ScrollView } from "native-base";
+import { useFocusEffect } from "@react-navigation/native";
+
 import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
-import { OrderFromSupabase } from "../models/order";
-import { Chow } from "../models/chow";
-import { useCustomerStore } from "../store/customerStore";
-import { supabase } from "../utils/supabase";
-import { useOrderStore } from "../store/orderStore";
-import { useChowStore } from "../store/chowStore";
+import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
+import { flattenOrdersFromCustomers } from "../lib/orders/flattenOrdersFromCustomers";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const { customers } = useCustomerStore();
-  const {
-    orders,
-    fetchOrders,
-    isFetching,
-    setOutstandingOrders,
-    setCompletedOrders,
-    outstandingOrders,
-    completedOrders,
-  } = useOrderStore();
-  const { fetchChows, chows } = useChowStore();
+  const { data: customers = [], isPending, refetch } = useCustomersWithOrdersQuery();
 
-  const populateAllData = async () => {
-    fetchOrders();
-    fetchChows();
+  const { outstandingOrders, completedOrders } = useMemo(() => {
+    const flat = flattenOrdersFromCustomers(customers);
+    const outstanding = flat
+      .filter((order) => order.payment_made === false)
+      .sort(
+        (a, b) =>
+          new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime()
+      );
+    const completed = flat
+      .filter((order) => order.payment_made === true)
+      .sort(
+        (a, b) =>
+          new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime()
+      );
+    return { outstandingOrders: outstanding, completedOrders: completed };
+  }, [customers]);
 
-    setOutstandingOrders(
-      orders
-        .filter((order) => order.payment_made === false)
-        .sort((a, b) => {
-          return (
-            new Date(a.delivery_date).getTime() -
-            new Date(b.delivery_date).getTime()
-          );
-        })
-    );
-    setCompletedOrders(
-      orders
-        .filter((order) => order.payment_made === true)
-        .sort((a, b) => {
-          return (
-            new Date(a.delivery_date).getTime() -
-            new Date(b.delivery_date).getTime()
-          );
-        })
-    );
-  };
+  const populateData = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
-  const populateData = async () => {
-    // while this is an unnecessary layer for now, i'd rather just keep this code as unchanged as possible for the interim
-    populateAllData();
-  };
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch])
+  );
 
   const openModal = () => {
     setShowModal(true);
   };
 
-  useEffect(() => {
-    populateData();
-  }, []);
+  const showInitialLoad = isPending && customers.length === 0;
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        {isFetching ? (
+        {showInitialLoad ? (
           generateSkeletons({ count: 4, type: "OrderSkeleton" })
         ) : (
           <>
             <View>
               <Text>Incomplete Orders</Text>
-              {outstandingOrders?.map((order, index) => {
+              {outstandingOrders?.map((order) => {
                 return (
-                  <View key={index}>
+                  <View key={order.id}>
                     <OrderCard
-                      key={order.id}
                       isDeleted={isDeleted}
                       setIsDeleted={setIsDeleted}
                       populateData={populateData}
@@ -97,11 +78,10 @@ const OrdersScreen = () => {
             </View>
             <View>
               <Text>Completed Orders</Text>
-              {completedOrders?.map((order, index) => {
+              {completedOrders?.map((order) => {
                 return (
-                  <View key={index}>
+                  <View key={order.id}>
                     <OrderCard
-                      key={order.id}
                       isDeleted={isDeleted}
                       setIsDeleted={setIsDeleted}
                       populateData={populateData}
@@ -120,7 +100,6 @@ const OrdersScreen = () => {
           isOpen={showModal}
           setShowModal={setShowModal}
           populateCustomersList={populateData}
-          chow={chows}
           customers={customers}
         />
       </ScrollView>

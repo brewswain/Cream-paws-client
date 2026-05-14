@@ -1,7 +1,10 @@
 import moment from "moment";
 
-import { findCustomer, getAllCustomers, updateOrder } from "../api";
-import { OrderFromSupabase } from "../models/order";
+import { updateOrder } from "../api";
+import {
+  OrderFromSupabase,
+  toOrderUpdatePayload,
+} from "../models/order";
 import { Customer } from "../models/customer";
 import {
   deleteCustomersOrder,
@@ -13,11 +16,10 @@ export const clearWarehouseOrders = async (orders: OrderFromSupabase[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        const updatedOrder = {
+        const updatedOrder = toOrderUpdatePayload({
           ...order,
           warehouse_paid: true,
-        };
-
+        });
         await updateOrder(updatedOrder);
       })
     );
@@ -27,7 +29,7 @@ export const clearWarehouseOrders = async (orders: OrderFromSupabase[]) => {
   }
 };
 
-export const clearCustomerOrders = async (order_ids: number[]) => {
+export const clearCustomerOrders = async (order_ids: string[]) => {
   try {
     await Promise.all(
       order_ids.map(async (id) => {
@@ -45,11 +47,10 @@ export const clearCourierFees = async (orders: OrderFromSupabase[]) => {
   try {
     await Promise.all(
       orders.map(async (order) => {
-        const updatedOrder = {
+        const updatedOrder = toOrderUpdatePayload({
           ...order,
           driver_paid: true,
-        };
-
+        });
         await updateOrder(updatedOrder);
       })
     );
@@ -88,96 +89,5 @@ export const getUnpaidWarehouseOrders = async () => {
   return filteredOutstandingOrders;
 };
 
-// export const combineOrders = async (orders: OrderFromSupabase[]) => {
-//   const combinedOrders: Record<string, any[]> = {};
-
-//   for (const order of orders) {
-//     const customer = await findCustomer(order.customer_id);
-
-//     const {
-//       delivery_date,
-//       delivery_cost,
-//       driver_paid,
-//       quantity,
-//       chow_id,
-//       customer_id,
-//       ...restOrderDetails
-//     } = order;
-
-//     order.flavours.brand_details.
-
-//     const orderKey = `${customer.name}-${delivery_date}`;
-
-//     if (!combinedOrders[orderKey]) {
-//       combinedOrders[orderKey] = {
-//         name: customer.name,
-//         delivery_date,
-//         delivery_cost,
-//         driver_paid,
-//         customer_id,
-//         orders: [],
-//       };
-//     }
-
-//     const existingOrderIndex = combinedOrders[orderKey].orders.findIndex(
-//       (existingOrder) => existingOrder.chow_id === chow_id
-//     );
-
-//     if (existingOrderIndex !== -1) {
-//       // Update quantity if the same chow_id is detected
-//       combinedOrders[orderKey].orders[existingOrderIndex].quantity += quantity;
-//     } else {
-//       // Add a new order if chow_id is not present
-//       combinedOrders[orderKey].orders.push({
-//         chow_id,
-//         quantity,
-//         delivery_date,
-//         delivery_cost,
-//         driver_paid,
-//         ...restOrderDetails,
-//       });
-//     }
-//   }
-
-//   return Object.values(combinedOrders);
-// };
-
-export const concatFinanceQuantities = async (orders: OrderFromSupabase[]) => {
-  // const updatedOrders = {};
-  // for (const order of orders) {
-  //   const existingOrder = updatedOrders[order.chow_id];
-
-  //   if (existingOrder) {
-  //     // Update quantity for the existing order
-  //     existingOrder.quantity += order.quantity;
-  //   } else {
-  //     // Add a new order if chow_id is not present
-  //     updatedOrders[order.chow_id] = { ...order };
-  //   }
-  // }
-
-  // return Object.values(updatedOrders);
-  const itemizedBill = orders.reduce(
-    (accumulator: OrderFromSupabase[] | [], currentOrder) => {
-      const varietyId = currentOrder.variety.id;
-      const existingOrderIndex = accumulator.findIndex(
-        (order) => order.variety.id === varietyId
-      );
-
-      if (existingOrderIndex !== -1) {
-        // Update quantity of existing order
-        accumulator[existingOrderIndex].quantity += currentOrder.quantity;
-      } else {
-        // Add new order to array
-        return [
-          ...accumulator,
-          { ...currentOrder, quantity: currentOrder.quantity },
-        ];
-      }
-
-      return accumulator;
-    },
-    []
-  );
-  return itemizedBill;
-};
+export const concatFinanceQuantities = async (orders: OrderFromSupabase[]) =>
+  orders.map((o) => ({ ...o }));

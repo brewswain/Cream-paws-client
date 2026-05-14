@@ -1,53 +1,67 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
 
-import { concatFinanceQuantities } from "../../utils/orderUtils";
 import { OrderFromSupabase } from "../../models/order";
 import { useFinanceStore } from "../../store/financeStore";
 import { payDeliveryFees, payWarehouseOrders } from "../../api/routes/orders";
 import ItemizedList from "../TodayAtAGlance/atom/ItemizedList";
 import ConfirmMassPaymentModal from "../modals/ConfirmMassPaymentModal";
+import { useCustomersWithOrdersQuery } from "../../hooks/useCustomersWithOrdersQuery";
+import { flattenOrdersFromCustomers } from "../../lib/orders/flattenOrdersFromCustomers";
 
 interface ItemizedBreakdownCardProps {
   mode: "warehouse" | "customers" | "courier";
 }
 
-interface GroupValue {
-  index: number;
-  selected: boolean;
-  order_id: string | string[];
-}
-
 export interface CheckBoxState {
   isChecked: boolean;
-  id: number;
+  id: string;
 }
 
 const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
-  const [isError, setIsError] = useState(false);
-
   const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
 
-  const {
-    fetchFinanceData,
-    warehouseOrders,
-    courierOrders,
-    isFetching,
-    showModal,
-    error,
-  } = useFinanceStore();
+  const { data: customers = [], isPending, isError, error, refetch } =
+    useCustomersWithOrdersQuery();
 
-  const [courierChecked, setCourierChecked] = useState<CheckBoxState[]>(
-    courierOrders.map((order) => ({ isChecked: false, id: order.id }))
+  const { showModal } = useFinanceStore();
+
+  const flatOrders = useMemo(
+    () => flattenOrdersFromCustomers(customers),
+    [customers]
   );
+
+  const warehouseOrders = useMemo(
+    () => flatOrders.filter((o) => o.warehouse_paid === false),
+    [flatOrders]
+  );
+
+  const courierOrders = useMemo(
+    () => flatOrders.filter((o) => o.driver_paid === false),
+    [flatOrders]
+  );
+
+  const [courierChecked, setCourierChecked] = useState<CheckBoxState[]>([]);
   const [warehouseOrdersChecked, setWarehouseOrdersChecked] = useState<
     CheckBoxState[]
-  >(warehouseOrders.map((order) => ({ isChecked: false, id: order.id })));
+  >([]);
+
+  useEffect(() => {
+    setCourierChecked(
+      courierOrders.map((order) => ({ isChecked: false, id: String(order.id) }))
+    );
+  }, [courierOrders]);
+
+  useEffect(() => {
+    setWarehouseOrdersChecked(
+      warehouseOrders.map((order) => ({ isChecked: false, id: String(order.id) }))
+    );
+  }, [warehouseOrders]);
 
   const {
     container,
@@ -66,17 +80,20 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   } = styles;
 
   const mappedWarehouseCosts = warehouseOrders
-    .map((order) => order.wholesale_price)
+    .map(
+      (order) =>
+        (order.retail_price ?? 0) * (order.quantity ?? 1)
+    )
     .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
   const mappedVatArray = warehouseOrders.map(
-    (order) => order.wholesale_price * 0.125
+    (order) => (order.retail_price ?? 0) * (order.quantity ?? 1) * 0.125
   );
 
   const mappedCourierProfits = courierOrders
     .map(
       (order) =>
-        (order.retail_price - order.wholesale_price) * 0.5 * order.quantity
+        (order.retail_price ?? 0) * 0.25 * (order.quantity ?? 1)
     )
     .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
@@ -100,12 +117,17 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
     ) * 100
   );
 
+  const refetchLists = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
   useFocusEffect(
     useCallback(() => {
-      // This function will be called whenever the screen is focused. Wrapping it in useCallback will prevent it from being called again to force a re-render when the data doesn't change
-      fetchFinanceData();
-    }, [mode])
+      void refetch();
+    }, [refetch])
   );
+
+  const showInitialLoad = isPending && customers.length === 0;
 
   return (
     <View style={container}>
@@ -114,37 +136,39 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
           {!isCourierFees ? "Itemized Breakdown" : "Calculated Courier Fees"}
         </Text>
       </View>
-      {!isFetching ? (
+      {isError ? (
+        <View style={statusContainer}>
+          <Text style={status}>
+            {error instanceof Error ? error.message : "Error loading data. Please try again."}
+          </Text>
+        </View>
+      ) : showInitialLoad ? (
+        <View style={statusContainer}>
+          <Text style={status}>Loading data...</Text>
+        </View>
+      ) : (
         <View style={tableContainer}>
-          {isCourierFees && courierOrders && courierChecked.length ? (
+          {isCourierFees && courierOrders.length > 0 && courierChecked.length > 0 ? (
             <ItemizedList
               targetOrders={courierOrders}
               checkBoxState={courierChecked}
               setCheckBoxState={setCourierChecked}
-              fetchData={fetchFinanceData}
+              fetchData={refetchLists}
               isCourierFees={isCourierFees}
               handlePayment={payDeliveryFees}
             />
           ) : isWarehouseOrders &&
-            warehouseOrders &&
-            warehouseOrdersChecked.length ? (
+            warehouseOrders.length > 0 &&
+            warehouseOrdersChecked.length > 0 ? (
             <ItemizedList
               targetOrders={warehouseOrders}
               checkBoxState={warehouseOrdersChecked}
               setCheckBoxState={setWarehouseOrdersChecked}
-              fetchData={fetchFinanceData}
+              fetchData={refetchLists}
               isCourierFees={isCourierFees}
               handlePayment={payWarehouseOrders}
             />
           ) : null}
-        </View>
-      ) : isError ? (
-        <View style={statusContainer}>
-          <Text style={status}>Error loading data. Please try again.</Text>
-        </View>
-      ) : (
-        <View style={statusContainer}>
-          <Text style={status}>Loading data...</Text>
         </View>
       )}
 
@@ -224,6 +248,7 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
         showModal={showModal}
         handlePress={isCourierFees ? payDeliveryFees : payWarehouseOrders}
         isCourierFees={isCourierFees}
+        onAfterPayment={refetchLists}
       />
     </View>
   );
@@ -235,7 +260,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     display: "flex",
-    tex: "center",
+    alignItems: "center",
   },
   header: {
     fontSize: 24,

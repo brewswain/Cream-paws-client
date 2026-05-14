@@ -16,13 +16,9 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "compileSdkVersion": 33,
-            "targetSdkVersion": 33,
-            "buildToolsVersion": "31.0.0"
-          },
+
           "ios": {
-            "deploymentTarget": "13.0"
+            "deploymentTarget": "16.4"
           }
         }
       ]

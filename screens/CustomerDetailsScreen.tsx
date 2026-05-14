@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -13,13 +13,14 @@ import Dinero from "dinero.js";
 import { RootTabScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
-import { OrderFromSupabase, OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase } from "../models/order";
 import { clearCustomerOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
-import { findCustomer } from "../api";
 import { Customer } from "../models/customer";
 import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
-import { getCustomersOrders } from "../api/routes/orders";
+import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
+import { partitionOrdersByPayment } from "../lib/customers/partitionOrdersByPayment";
+import { pickCustomerFromMergedList } from "../lib/customers/pickCustomerFromMergedList";
 import { useOrderStore } from "../store/orderStore";
 
 interface CustomerDetailProps {
@@ -43,54 +44,37 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     useState("idle");
   const [buttonStateClearAllOrders, setButtonStateClearAllOrders] =
     useState("idle");
-  const [isFetching, setIsFetching] = useState<boolean>(true);
   const [customerPayload, setCustomerPayload] = useState<Customer>(customer);
-  const [orders, setOrders] = useState<OrderFromSupabase[]>();
 
   const customerDetails = useContext(CustomerDetailsContext);
   const { selectedOrders, setSelectedOrders } = customerDetails;
   const {
-    customerOrders,
-    fetchCustomerOrders,
+    completedOrders,
     setCompletedOrders,
     setOutstandingOrders,
     outstandingOrders,
     selectedOrderIds,
   } = useOrderStore();
 
-  const populateOrders = async () => {
-    if (customerOrders) {
-      const outstandingOrders = customerOrders
-        ? customerOrders.filter(
-            (order: OrderFromSupabase) => order.payment_made === false
-          )
-        : [];
+  const { data: mergedList = [], refetch } = useCustomersWithOrdersQuery();
 
-      const completedOrders = customerOrders
-        ? customerOrders
-            .filter((order: OrderFromSupabase) => order.payment_made === true)
-            .sort((a: OrderFromSupabase, b: OrderFromSupabase) =>
-              b.delivery_date.localeCompare(a.delivery_date)
-            )
-        : [];
-
-      setOutstandingOrders(outstandingOrders);
-      setCompletedOrders(completedOrders);
-    }
-  };
+  const hydratedCustomer = useMemo(() => {
+    const fromList = pickCustomerFromMergedList(mergedList, customer.id);
+    return {
+      ...customer,
+      ...(fromList ?? {}),
+      orders: fromList?.orders ?? customer.orders,
+      pets: customer.pets,
+    };
+  }, [mergedList, customer]);
 
   useEffect(() => {
-    populateOrders();
-  }, []);
-  // const customerData = findCustomer(route.params.id);
-  // const populateCustomerData = async () => {
-  //   const data = await findCustomer(route.params.id);
-  //   setCustomer(data);
-  // };
-
-  // const { pets, orders, name, id, contactNumber, location, city } =
-  //   route.params;
-  // // const { pets, orders, name, id } = testCustomerDetails;
+    const { outstandingOrders: nextOut, completedOrders: nextDone } =
+      partitionOrdersByPayment(hydratedCustomer.orders);
+    setOutstandingOrders(nextOut);
+    setCompletedOrders(nextDone);
+    setCustomerPayload(hydratedCustomer);
+  }, [hydratedCustomer, setOutstandingOrders, setCompletedOrders]);
   const {
     container,
     header,
@@ -107,15 +91,13 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const { height, width } = useWindowDimensions();
 
   const petsExist = customerPayload.pets && customerPayload.pets.length > 0;
-  const ordersExist = customerOrders && customerOrders.length > 0;
+  const orderCount = outstandingOrders.length + completedOrders.length;
   // const locationExist = location !== undefined;
   // const contactNumberExist = contactNumber !== undefined;
 
-  const mappedCostArray = customerOrders
-    ? customerOrders
-        .filter((order: OrderFromSupabase) => order.payment_made === false)
-        .map((order: OrderFromSupabase) => order.retail_price * order.quantity)
-    : [];
+  const mappedCostArray = outstandingOrders.map(
+    (order: OrderFromSupabase) => (order.retail_price ?? 0) * order.quantity
+  );
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
@@ -134,7 +116,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     .map((order) => order.index);
 
   const ordersChosenForClearing = selectedIndicesArray.map(
-    (selectedIndex) => orders![selectedIndex]
+    (selectedIndex) => outstandingOrders[selectedIndex]
   );
 
   //TODO: implement navigation from collapsibleOrder to order edit screen
@@ -162,8 +144,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         )
       );
 
-      setIsFetching(true);
-      populateOrders();
+      await refetch();
 
       // Revert to idle state after a delay
       setTimeout(() => {
@@ -187,12 +168,11 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       const allOrderIds = outstandingOrders.map(
         (order: OrderFromSupabase) => order.id
       );
-      clearCustomerOrders(allOrderIds);
+      await clearCustomerOrders(allOrderIds);
       // On success, set success state
       setOutstandingOrders([]);
       setButtonStateClearAllOrders("success");
-      populateOrders();
-      setIsFetching(true);
+      await refetch();
 
       // Revert to idle state after a delay
       setTimeout(() => {
@@ -263,9 +243,9 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
   const renderOrders = () => {
     return (
       <View style={container}>
-        {orders ? (
+        {orderCount ? (
           <Text style={subHeader}>
-            {orders?.length > 1 ? "Orders" : "Order"}
+            {orderCount > 1 ? "Orders" : "Order"}
           </Text>
         ) : null}
 
@@ -392,7 +372,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
         {contactNumberExist && renderContactNumber()}
         */}
         {petsExist && renderPets()}
-        {customerOrders.length && renderOrders()}
+        {orderCount > 0 ? renderOrders() : null}
       </View>
     </ScrollView>
   );

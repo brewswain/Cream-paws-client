@@ -1,10 +1,9 @@
 import { Skeleton } from "@rneui/themed";
-import ChowSkeleton from "./varieties/ChowSkeleton";
 import CustomerSkeleton from "./varieties/CustomerSkeleton";
 import OrderSkeleton from "./varieties/OrderSkeleton";
 
 interface SkeletonProps {
-	type: "CustomerSkeleton" | "OrderSkeleton" | "ChowSkeleton";
+	type: "CustomerSkeleton" | "OrderSkeleton";
 	count?: number;
 }
 
@@ -22,9 +21,6 @@ const NativeSkeleton = ({ type }: SkeletonProps) => {
 
 		case "OrderSkeleton":
 			return <OrderSkeleton />;
-
-		case "ChowSkeleton":
-			return <ChowSkeleton />;
 
 		default:
 			return <Skeleton width={300} height={200} animation="wave" />;

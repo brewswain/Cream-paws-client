@@ -1,71 +1,53 @@
-import { axiosInstance } from "../api";
+import { axiosInstance } from "../http";
+import { postCustomerCreate } from "../../lib/customers/postCustomerCreate";
+import { putCustomerUpdate } from "../../lib/customers/putCustomerUpdate";
+import { queryClient } from "../../lib/queryClient";
+import { customerKeys } from "../../lib/queryKeys";
 import { Customer, CustomerPayload } from "../../models/customer";
-import { supabase } from "../../utils/supabase";
-import { logNewSupabaseError } from "../error";
+import {
+  customerWriteRequestSchema,
+  type CustomerWriteRequest,
+} from "../../schemas/customerWrite";
 
-// Creating default param in case we don't have any pets added
-export const createCustomer = async (customer: CustomerPayload) => {
-  const { name, pets, contactNumber, location, city } = customer;
-  try {
-    const response = await axiosInstance.post("/customer", {
-      name,
-      pets,
-      city,
-      contactNumber,
-      location,
-    });
-    return response.data;
-  } catch (error) {
-    alert(error);
-  }
-};
+function payloadToWriteRequest(customer: CustomerPayload): CustomerWriteRequest {
+  const pets = (customer.pets ?? [])
+    .filter((p: { name?: string }) => (p.name ?? "").trim().length > 0)
+    .map((p: { name: string; breed?: string }) => ({
+      name: String(p.name).trim(),
+      ...(p.breed && String(p.breed).trim()
+        ? { breed: String(p.breed).trim() }
+        : {}),
+    }));
+  return customerWriteRequestSchema.parse({
+    name: customer.name.trim(),
+    pets,
+    city: customer.city?.trim() || undefined,
+    contactNumber: customer.contactNumber?.trim() || undefined,
+    location: customer.location?.trim() || undefined,
+  });
+}
 
-export const deleteCustomer = async (id: number) => {
-  try {
-    await axiosInstance.delete(`/customer/${id}`);
-  } catch (error) {
-    // TODO: use toasts instead of alerts
-    alert(error);
-  }
-};
-
-export const findCustomer = async (id: number) => {
-  const { data, error } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("id", id)
-    .returns<Customer>()
-    .single();
-
-  if (error) {
-    logNewSupabaseError("Error finding Customer: ", error);
-    throw new Error(error.message);
-  }
-
+/** Legacy helper — prefer `useCreateCustomerMutation`. */
+export async function createCustomer(customer: CustomerPayload) {
+  const data = await postCustomerCreate(payloadToWriteRequest(customer));
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
   return data;
-};
+}
 
-export const getAllCustomers = async () => {
-  const { data, error } = await supabase
-    .from("customers")
-    .select(
-      `
-        id, name, contact_number, location, city, pets(name, breed)
-      `
-    )
-    .returns<Customer[]>()
-    .order("name");
+export async function deleteCustomer(id: string | number) {
+  await axiosInstance.delete(`/api/customer/${id}`);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+}
 
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data;
-};
-
-export const updateCustomer = async (id: number, customer: Customer) => {
-  try {
-    await axiosInstance.put(`/customer/${id}`, customer);
-  } catch (error) {
-    alert(error);
-  }
-};
+/** Legacy helper — prefer `useUpdateCustomerMutation`. */
+export async function updateCustomer(id: string | number, customer: Customer) {
+  const body = payloadToWriteRequest({
+    name: customer.name ?? "",
+    pets: (customer.pets as CustomerPayload["pets"]) ?? [],
+    city: customer.city,
+    contactNumber: customer.contactNumber,
+    location: customer.location,
+  });
+  await putCustomerUpdate(id, body);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+}

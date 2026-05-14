@@ -4,35 +4,27 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import { Button, ScrollView } from "native-base";
-import { IndexPath, Layout, Select, SelectItem } from "@ui-kitten/components";
-
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Toast from "react-native-toast-message";
 
-import { deleteOrder, getAllChow, updateOrder } from "../api";
+import { deleteOrder, updateOrder } from "../api";
 import { Header } from "../components/details/DetailScreenComponents";
 import { RootTabScreenProps } from "../types";
 import {
   OrderFromSupabase,
-  OrderFromSupabasePayload,
-  OrderWithChowDetails,
+  OrderUpdatePayload,
+  formatOrderSummaryLine,
+  toOrderUpdatePayload,
 } from "../models/order";
-import { clearCustomerOrders } from "../utils/orderUtils";
-import { ChosenFlavour, ChowFromSupabase } from "../models/chow";
-
 import Dinero from "dinero.js";
-import { useOrderStore } from "../store/orderStore";
+import { isOrderConflictError } from "../lib/orders/isOrderConflictError";
+import { refetchCanonicalOrderAfterConflict } from "../lib/orders/refetchCanonicalOrderAfterConflict";
 
-interface CustomerOrderDetails extends OrderWithChowDetails {
-  client_name: string;
-  chow_id: string;
-  delivery_date: string;
-}
 interface OrderDetailsProps {
   navigation: RootTabScreenProps<"OrderDetails">;
   route: {
@@ -42,151 +34,22 @@ interface OrderDetailsProps {
   };
 }
 
+function buildPayload(order: OrderFromSupabase): OrderUpdatePayload {
+  return toOrderUpdatePayload(order);
+}
+
 const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
   const { order } = route.params;
-  const [orderPayload, setOrderPayload] =
-    useState<OrderFromSupabasePayload>(order);
-  const [chow, setChow] = useState<ChowFromSupabase[]>();
-  const [selectedBrandIndex, setSelectedBrandIndex] = useState<
-    IndexPath | IndexPath[]
-  >(new IndexPath(0));
-  const [selectedFlavourIndex, setSelectedFlavourIndex] = useState<
-    IndexPath | IndexPath[]
-  >(new IndexPath(0));
-  const [selectedVarietyIndex, setSelectedVarietyIndex] = useState<
-    IndexPath | IndexPath[]
-  >(new IndexPath(0));
-  const [selectedDeliveryCostIndex, setSelectedDeliveryCostIndex] = useState<
-    IndexPath | IndexPath[]
-  >(new IndexPath(0));
-
-  const [datePickerIsVisible, setDatePickerIsVisible] =
-    useState<boolean>(false);
+  const [orderPayload, setOrderPayload] = useState<OrderUpdatePayload>(
+    buildPayload(order)
+  );
+  const [datePickerIsVisible, setDatePickerIsVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-
-  const { fetchOrders } = useOrderStore();
-
   const navigate = useNavigation();
-  const populateChowList = async () => {
-    const response = await getAllChow();
-    setChow(response);
-  };
 
-  const selectedBrand = () => {
-    const filteredChow = chow
-      ?.map((brand) => brand)
-      .filter((item) => {
-        return item.id === orderPayload.flavours.brand_details.id;
-      });
-
-    if (filteredChow) {
-      return filteredChow[0];
-    }
-  };
-
-  const selectedFlavour = () => {
-    const chow = selectedBrand();
-    const filteredFlavour = chow?.flavours.filter((flavour) => {
-      return orderPayload.flavours.details
-        ? flavour.flavour_id === orderPayload.flavours.details.flavour_id
-        : [];
-    });
-
-    if (filteredFlavour) {
-      return filteredFlavour[0] as ChosenFlavour;
-    }
-  };
-
-  const renderBrandDropdown = () => {
-    return chow?.map((brand, index) => {
-      // using index for key since our brand information isn't unique-- multiple entities can use the same brand
-      return (
-        <SelectItem
-          key={index}
-          title={brand.brand_name}
-          onPressIn={() =>
-            setOrderPayload({
-              ...orderPayload,
-              flavours: {
-                brand_details: {
-                  id: brand.id,
-                  name: brand.brand_name,
-                },
-              },
-              variety: undefined,
-            })
-          }
-        />
-      );
-    });
-  };
-
-  const renderFlavourDropdown = () => {
-    const chow = selectedBrand();
-    return chow?.flavours.map((flavour, index) => (
-      <SelectItem
-        key={index}
-        title={flavour.flavour_name}
-        onPressIn={() =>
-          setOrderPayload({
-            ...orderPayload,
-            flavours: {
-              ...orderPayload.flavours,
-              details: {
-                flavour_id: flavour.flavour_id,
-                flavour_name: flavour.flavour_name,
-              },
-            },
-            variety: undefined,
-          })
-        }
-      />
-    ));
-  };
-
-  const renderVarietyDropdown = () => {
-    const flavour = selectedFlavour();
-    return flavour?.varieties.map((variety, index) => {
-      return (
-        <SelectItem
-          key={index}
-          title={`${variety.size} ${variety.unit}`}
-          onPressIn={() =>
-            setOrderPayload({
-              ...orderPayload,
-              variety: {
-                id: variety.id,
-                size: variety.size,
-                unit: variety.unit,
-                chow_id: variety.chow_id,
-                retail_price: variety.retail_price,
-                wholesale_price: variety.wholesale_price,
-              },
-            })
-          }
-        />
-      );
-    });
-  };
-
-  const renderDeliveryCost = () => {
-    const DELIVERY_COSTS = [0, 20, 45, 60, 100];
-
-    return DELIVERY_COSTS.map((delivery_cost, index) => (
-      <SelectItem
-        key={index}
-        title={Dinero({
-          amount: Math.round(delivery_cost * 100 || 0),
-        }).toFormat("$0,0.00")}
-        onPressIn={() => {
-          setOrderPayload({
-            ...orderPayload,
-            delivery_cost: delivery_cost,
-          });
-        }}
-      />
-    ));
-  };
+  useEffect(() => {
+    setOrderPayload(buildPayload(order));
+  }, [order]);
 
   const toggleDatePickerVisibility = () => {
     setDatePickerIsVisible(!datePickerIsVisible);
@@ -194,251 +57,178 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
 
   const handleDateConfirm = (date: Date) => {
     setSelectedDate(date);
-
-    let data = orderPayload;
-    data.delivery_date = date.toString();
-    setOrderPayload(data);
+    setOrderPayload((prev) => ({
+      ...prev,
+      delivery_date: date.toISOString().split("T")[0],
+    }));
   };
 
   const handleUpdate = async () => {
-    await updateOrder(orderPayload);
-    fetchOrders();
-    navigate.goBack();
+    try {
+      await updateOrder(orderPayload);
+      Toast.show({ type: "success", text1: "Order updated" });
+      navigate.goBack();
+    } catch (err) {
+      if (isOrderConflictError(err)) {
+        const fresh = await refetchCanonicalOrderAfterConflict(order.id);
+        if (fresh) {
+          setOrderPayload(toOrderUpdatePayload(fresh));
+          setSelectedDate(undefined);
+        }
+        Toast.show({
+          type: "error",
+          text1: "Order changed elsewhere",
+          text2: "This form was reset to the latest server version.",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Could not update order",
+          text2: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
   };
 
-  const handleDelete = async (id: number) => {
-    await deleteOrder(id);
-    fetchOrders();
-
-    navigate.goBack();
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteOrder(id);
+      Toast.show({ type: "success", text1: "Order marked paid" });
+      navigate.goBack();
+    } catch (err) {
+      if (isOrderConflictError(err)) {
+        const fresh = await refetchCanonicalOrderAfterConflict(id);
+        if (fresh) {
+          setOrderPayload(toOrderUpdatePayload(fresh));
+        }
+        Toast.show({
+          type: "error",
+          text1: "Order changed elsewhere",
+          text2: "Refresh the form and try again.",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Could not update order",
+          text2: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
   };
 
-  const formatDate = (date: string) => {
-    const formattedDate = new Date(date).toDateString();
-
-    return formattedDate;
-  };
-
-  useEffect(() => {
-    populateChowList();
-  }, []);
-
-  const isPayloadMissingDetails =
-    !orderPayload.flavours.brand_details.name ||
-    !orderPayload.flavours ||
-    !orderPayload.variety ||
-    !orderPayload.quantity ||
-    orderPayload.quantity < 1 ||
-    !orderPayload.delivery_date;
-
+  const formatDate = (date: string) => new Date(date).toDateString();
   const formattedDeliveryDate = formatDate(orderPayload.delivery_date);
+  const retail = orderPayload.retail_price ?? 0;
+  const total =
+    retail * orderPayload.quantity + (orderPayload.delivery_cost ?? 0);
 
   return (
     <ScrollView style={{ backgroundColor: "white", flex: 1 }}>
-      <View key={order.id}>
-        <View style={styles.container}>
-          <Text
-            style={{ fontSize: 26, textAlign: "center", fontWeight: "600" }}
-          >
-            {order.customers.name}
+      <View style={styles.container}>
+        <Text style={styles.title}>{order.customers.name}</Text>
+
+        <Header>Summary</Header>
+        <Text style={styles.subtle}>{formatOrderSummaryLine(order)}</Text>
+
+        <Header>Services (read-only)</Header>
+        <Text style={styles.subtle}>
+          {JSON.stringify(orderPayload.services)}
+        </Text>
+
+        <Header>Quantity</Header>
+        <TextInput
+          value={String(orderPayload.quantity)}
+          onChangeText={(value) =>
+            setOrderPayload((prev) => ({
+              ...prev,
+              quantity: parseInt(value, 10) || 0,
+            }))
+          }
+          keyboardType="numeric"
+          style={styles.input}
+        />
+
+        <Header>Retail price</Header>
+        <TextInput
+          value={String(orderPayload.retail_price ?? 0)}
+          onChangeText={(value) =>
+            setOrderPayload((prev) => ({
+              ...prev,
+              retail_price: parseFloat(value) || 0,
+            }))
+          }
+          keyboardType="decimal-pad"
+          style={styles.input}
+        />
+
+        <Header>Delivery cost</Header>
+        <TextInput
+          value={String(orderPayload.delivery_cost ?? 0)}
+          onChangeText={(value) =>
+            setOrderPayload((prev) => ({
+              ...prev,
+              delivery_cost: parseFloat(value) || 0,
+            }))
+          }
+          keyboardType="decimal-pad"
+          style={styles.input}
+        />
+
+        <Header>Delivery date</Header>
+        <Pressable onPress={toggleDatePickerVisibility}>
+          <Text style={styles.deliveryText}>
+            {selectedDate
+              ? selectedDate.toDateString()
+              : formattedDeliveryDate}
           </Text>
-          <Layout>
-            <Select
-              selectedIndex={selectedBrandIndex}
-              value={orderPayload.flavours.brand_details.name}
-              onSelect={(index) => setSelectedBrandIndex(index)}
-            >
-              {chow && renderBrandDropdown()}
-            </Select>
-          </Layout>
+        </Pressable>
 
-          <TouchableWithoutFeedback>
-            <Select
-              selectedIndex={selectedFlavourIndex}
-              value={
-                orderPayload.flavours.details?.flavour_name
-                  ? orderPayload.flavours.details.flavour_name
-                  : "Choose Flavour"
-              }
-              onSelect={(index) => setSelectedFlavourIndex(index)} //
-              accessibilityLabel="Choose Flavour"
-              placeholder="Choose Flavour *"
-            >
-              {selectedBrand() && renderFlavourDropdown()}
-            </Select>
-          </TouchableWithoutFeedback>
+        <DateTimePickerModal
+          isVisible={datePickerIsVisible}
+          onConfirm={handleDateConfirm}
+          onCancel={toggleDatePickerVisibility}
+        />
 
-          <TouchableWithoutFeedback
-            onPress={
-              () => {}
-              // renderVarieties();
-            }
-          >
-            <Select
-              selectedIndex={selectedVarietyIndex}
-              value={
-                orderPayload.variety
-                  ? `${orderPayload.variety.size} ${orderPayload.variety.unit}`
-                  : "Choose Variety"
-              }
-              onSelect={(index) => setSelectedVarietyIndex(index)} //
-              accessibilityLabel="Choose Variety"
-              placeholder="Choose Variety *"
-            >
-              {renderVarietyDropdown()}
-            </Select>
-          </TouchableWithoutFeedback>
+        <Text style={styles.total}>
+          Total:{" "}
+          {Dinero({ amount: Math.round(total * 100) }).toFormat("$0,0.00")}
+        </Text>
 
-          <Header>Quantity</Header>
-          <TextInput
-            onChangeText={(value) =>
-              setOrderPayload({
-                ...orderPayload,
-                quantity: parseInt(value) || 0,
-              })
-            }
-            selectTextOnFocus
-            style={[
-              styles.customInput,
-              { maxWidth: "15%", textAlign: "center" },
-            ]}
-            keyboardType="numeric"
-          >
-            {orderPayload.quantity}
-          </TextInput>
-
-          <View style={{ marginVertical: 6 }}>
-            <Header>Delivery Cost</Header>
-            <TouchableWithoutFeedback onPress={() => renderDeliveryCost()}>
-              <Select
-                selectedIndex={selectedVarietyIndex}
-                value={orderPayload.delivery_cost}
-                onSelect={(index) => setSelectedDeliveryCostIndex(index)} //
-                accessibilityLabel="Delivery Cost"
-                placeholder="Delivery Cost *"
-              >
-                {renderDeliveryCost()}
-              </Select>
-            </TouchableWithoutFeedback>
-          </View>
-
-          <Header>Delivery Date</Header>
-
-          <Pressable onPress={() => toggleDatePickerVisibility()}>
-            <Text style={styles.deliveryText}>
-              {selectedDate ? (
-                <Text>{new Date(selectedDate).toDateString()}</Text>
-              ) : orderPayload.delivery_date ? (
-                <Text>{formattedDeliveryDate}</Text>
-              ) : (
-                "Choose Delivery Date *"
-              )}
-            </Text>
-          </Pressable>
-
-          <DateTimePickerModal
-            isVisible={datePickerIsVisible}
-            onConfirm={(date) => {
-              handleDateConfirm(date);
-            }}
-            onCancel={toggleDatePickerVisibility}
-          />
-
-          <Header>Costs</Header>
-          <Text>Retail Price</Text>
-          <TextInput
-            style={[styles.customInput, { fontSize: 18 }]}
-            onChangeText={(value) =>
-              setOrderPayload({
-                ...orderPayload,
-                quantity: parseInt(value) || 0,
-              })
-            }
-            selectTextOnFocus
-            keyboardType="numeric"
-          >
-            {Dinero({
-              amount: Math.round(orderPayload.retail_price * 100 || 0),
-            }).toFormat("$0,0.00")}
-          </TextInput>
-          <Text>Total</Text>
-          <TextInput
-            style={{ fontSize: 20, paddingBottom: 18 }}
-            onChangeText={(value) =>
-              setOrderPayload({
-                ...orderPayload,
-                quantity: parseInt(value) || 0,
-              })
-            }
-            selectTextOnFocus
-            keyboardType="numeric"
-          >
-            {Dinero({
-              amount: Math.round(
-                (orderPayload.retail_price * orderPayload.quantity +
-                  orderPayload.delivery_cost) *
-                  100 || 0
-              ),
-            }).toFormat("$0,0.00")}
-          </TextInput>
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            gap: 10,
-          }}
-        >
-          <Button
-            disabled={isPayloadMissingDetails}
-            colorScheme={isPayloadMissingDetails ? "trueGray" : "teal"}
-            style={{
-              marginTop: 20,
-              width: 150,
-              alignSelf: "center",
-            }}
-            onPress={() => handleUpdate()}
-          >
-            Update Order
+        <View style={styles.actions}>
+          <Button colorScheme="teal" onPress={() => void handleUpdate()} marginBottom={3}>
+            Update order
           </Button>
-          <Button
-            colorScheme="danger"
-            style={{
-              marginTop: 20,
-              width: 150,
-              alignSelf: "center",
-            }}
-            onPress={() => handleDelete(order.id)}
-          >
-            Delete Order
+          <Button colorScheme="danger" onPress={() => void handleDelete(order.id)}>
+            Mark paid (delete flow)
           </Button>
         </View>
       </View>
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     width: "90%",
     alignSelf: "center",
+    paddingBottom: 32,
+  },
+  title: {
+    fontSize: 22,
+    textAlign: "center",
+    fontWeight: "600",
+    marginVertical: 12,
+  },
+  subtle: {
+    color: "#555",
+    marginBottom: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "black",
-    borderRadius: 6,
-    paddingLeft: 12,
-    marginHorizontal: 8,
-    marginTop: 4,
-  },
-  customInput: {
-    color: "black",
-    borderWidth: 0,
-    width: "40%",
     borderBottomWidth: 1,
-    borderRadius: 0,
-    marginHorizontal: 0,
-    marginBottom: 10,
+    borderColor: "#ccc",
+    paddingVertical: 6,
+    marginBottom: 12,
+    fontSize: 16,
   },
   deliveryText: {
     backgroundColor: "hsl(213,74%,54%)",
@@ -448,6 +238,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
     borderRadius: 4,
+  },
+  total: {
+    fontSize: 18,
+    marginVertical: 12,
+  },
+  actions: {
+    gap: 12,
+    marginTop: 16,
   },
 });
 

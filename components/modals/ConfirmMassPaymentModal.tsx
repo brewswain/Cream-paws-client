@@ -5,16 +5,18 @@ import { useFinanceStore } from "../../store/financeStore";
 
 interface ConfirmMassPaymentModalProps {
   showModal: boolean;
-  handlePress: (orderIds: number[]) => void;
+  handlePress: (orderIds: string[]) => void;
   isCourierFees: boolean;
+  onAfterPayment?: () => void;
 }
 
 const ConfirmMassPaymentModal = ({
   showModal,
   handlePress,
   isCourierFees,
+  onAfterPayment,
 }: ConfirmMassPaymentModalProps) => {
-  const { setShowModal, targetIds, fetchFinanceData } = useFinanceStore();
+  const { setShowModal, targetIds } = useFinanceStore();
 
   return (
     <Modal
@@ -34,7 +36,7 @@ const ConfirmMassPaymentModal = ({
             onPress={() => {
               handlePress(targetIds);
               setShowModal(false);
-              fetchFinanceData();
+              onAfterPayment?.();
             }}
           >
             {isCourierFees ? "Pay all courier fees" : "Pay all orders"}

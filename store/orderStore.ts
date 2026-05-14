@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { OrderFromSupabase, OrderPayload } from "../models/order";
+import { OrderFromSupabase, OrderCreateInput } from "../models/order";
 import { create, StateCreator } from "zustand";
 import { supabase } from "../utils/supabase";
 import { createOrder, getAllOrders } from "../api";
@@ -16,12 +16,12 @@ type UseOrderStore = {
   isFetching: boolean;
   error: string | null;
   fetchOrders: () => Promise<void>;
-  fetchCustomerOrders: (customerId: number) => Promise<void>;
-  createOrder: (orderPayload: OrderPayload) => Promise<void>;
+  fetchCustomerOrders: (customerId: string | number) => Promise<void>;
+  createOrder: (orderPayload: OrderCreateInput) => Promise<void>;
   // deleteOrder: (orderId: string) => Promise<void>;
   // updateOrder: (orderId: string, orderPayload: OrderPayload) => Promise<void>;
-  selectedOrderIds: number[];
-  setSelectedOrderIds: (orderId: number) => void;
+  selectedOrderIds: string[];
+  setSelectedOrderIds: (orderId: string) => void;
   setOutstandingOrders: (orders: OrderFromSupabase[]) => void;
   setCompletedOrders: (orders: OrderFromSupabase[]) => void;
 };
@@ -41,7 +41,7 @@ const useOrderStore = create<UseOrderStore>(
       isFetching: false,
       error: null,
       selectedOrderIds: [],
-      setSelectedOrderIds: (orderId: number) => {
+      setSelectedOrderIds: (orderId: string) => {
         set((state) => ({
           ...state,
           selectedOrderIds: state.selectedOrderIds.includes(orderId)
@@ -81,7 +81,7 @@ const useOrderStore = create<UseOrderStore>(
           console.error(error);
         }
       },
-      fetchCustomerOrders: async (customerId: number) => {
+      fetchCustomerOrders: async (customerId: string | number) => {
         try {
           const data = await getCustomersOrders(customerId);
           set({ customerOrders: data, isFetching: false, error: null });
@@ -93,7 +93,7 @@ const useOrderStore = create<UseOrderStore>(
           console.error(error);
         }
       },
-      createOrder: async (orderPayload: OrderPayload) => {
+      createOrder: async (orderPayload: OrderCreateInput) => {
         try {
           await createOrder(orderPayload);
         } catch (error) {

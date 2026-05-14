@@ -11,8 +11,11 @@ import Navigation from "./navigation";
 import { useFonts } from "expo-font";
 
 import * as SplashScreen from "expo-splash-screen";
+import { QueryClientProvider } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
+
 import { CustomerDetailsProvider } from "./context/CustomerDetailsContext";
-import { StockContextProvider } from "./context/StockContext";
+import { queryClient } from "./lib/queryClient";
 
 export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -40,12 +43,13 @@ export default function App() {
     <ApplicationProvider {...eva} theme={eva.light}>
       <SafeAreaProvider>
         <NativeBaseProvider>
-          <CustomerDetailsProvider>
-            <StockContextProvider>
+          <QueryClientProvider client={queryClient}>
+            <CustomerDetailsProvider>
               <Navigation colorScheme={colorScheme} />
               <StatusBar />
-            </StockContextProvider>
-          </CustomerDetailsProvider>
+              <Toast />
+            </CustomerDetailsProvider>
+          </QueryClientProvider>
         </NativeBaseProvider>
       </SafeAreaProvider>
     </ApplicationProvider>

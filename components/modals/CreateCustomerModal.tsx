@@ -1,16 +1,24 @@
-import { createRef, useEffect, useRef, useState } from "react";
-import {
-  NativeSyntheticEvent,
-  StyleSheet,
-  TextInput,
-  TextInputChangeEventData,
-  View,
-} from "react-native";
-
-import { Button, FormControl, Modal } from "native-base";
+import { useEffect } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, FormControl, Input, Modal } from "native-base";
+import { StyleSheet, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 
-import { createCustomer } from "../../api";
+import { useCreateCustomerMutation } from "../../hooks/useCreateCustomerMutation";
+import {
+  customerCreateFormSchema,
+  formValuesToWriteRequest,
+  type CustomerCreateFormValues,
+} from "../../schemas/customerWrite";
+
+const defaultValues: CustomerCreateFormValues = {
+  name: "",
+  contactNumber: "",
+  location: "",
+  city: "",
+  pets: [{ name: "", breed: "" }],
+};
 
 interface CreateCustomerModalProps {
   isOpen: boolean;
@@ -23,91 +31,43 @@ const CreateCustomerModal = ({
   setShowModal,
   populateCustomerList,
 }: CreateCustomerModalProps) => {
-  // Used for dynamically rendering a new input for each pet
-  // TODO: convert all of these fields into one state object
-  const [name, setName] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const [location, setLocation] = useState("");
-  const [city, setCity] = useState("");
-  const [pets, setPets] = useState<any[]>([{ name: "", breed: "" }]);
-
-  const inputRef2 = createRef<TextInput>();
-  const inputRef3 = createRef<TextInput>();
-  const inputRef4 = createRef<TextInput>();
+  const createMutation = useCreateCustomerMutation();
 
   const {
-    input,
-    button,
-    buttonContainer,
-    confirmationButton,
-    confirmationButtonContainer,
-  } = styles;
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CustomerCreateFormValues>({
+    resolver: zodResolver(customerCreateFormSchema),
+    defaultValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({ control, name: "pets" });
+
+  useEffect(() => {
+    if (!isOpen) {
+      reset(defaultValues);
+    }
+  }, [isOpen, reset]);
 
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const addField = () => {
-    const newField = { name: "", breed: "" };
-    setPets([...pets, newField]);
-  };
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      const body = formValuesToWriteRequest(values);
+      await createMutation.mutateAsync(body);
+      populateCustomerList();
+      closeModal();
+    } catch {
+      /* toast handled in mutation */
+    }
+  });
 
-  const removeField = (index: number) => {
-    const data = [...pets];
-    data.splice(index, 1);
-    setPets(data);
-  };
-
-  // Typing is ultra specific here to avoid solving TS errors by using Casting as I think that's a bit heavyhanded for this problem
-  // This way, while not being the most attractive, is explicit and easy to tell what's happening type-wise.
-  // That being said, this is using React Native specific Types (to my knowledge), so us not using event.target.value can be a bit odd
-  const handleNameChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>
-  ) => {
-    setName(event.nativeEvent.text);
-  };
-
-  const handlePetsChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>,
-    index: number,
-    name: string
-  ) => {
-    const data = [...pets];
-    data[index][name] = event.nativeEvent.text;
-
-    setPets(data);
-  };
-  const handleContactNumberChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>
-  ) => {
-    setContactNumber(event.nativeEvent.text);
-  };
-
-  const handleLocationChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>
-  ) => {
-    setLocation(event.nativeEvent.text);
-  };
-
-  const handleCityChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>
-  ) => {
-    setCity(event.nativeEvent.text);
-  };
-
-  const handleCustomerCreation = async () => {
-    const customerPayload = {
-      name,
-      pets,
-      location,
-      city,
-      contactNumber,
-    };
-
-    await createCustomer(customerPayload);
-    populateCustomerList();
-    closeModal();
-  };
+  const { button, buttonContainer, confirmationButton, confirmationButtonContainer } =
+    styles;
 
   return (
     <Modal
@@ -120,100 +80,104 @@ const CreateCustomerModal = ({
         <Modal.CloseButton />
         <Modal.Header>Create Customer</Modal.Header>
         <Modal.Body>
-          <FormControl isRequired>
+          <FormControl isInvalid={!!errors.name} isRequired>
             <FormControl.Label>Name</FormControl.Label>
-            <TextInput
-              selectTextOnFocus
-              style={input}
-              onChange={(event) => handleNameChange(event)}
-              value={name}
-              returnKeyType="next"
-              onSubmitEditing={() => inputRef2.current?.focus()}
-              blurOnSubmit={false}
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  returnKeyType="next"
+                />
+              )}
             />
+            <FormControl.ErrorMessage>{errors.name?.message}</FormControl.ErrorMessage>
           </FormControl>
-          <FormControl>
+
+          <FormControl mt={2}>
             <FormControl.Label>Contact Number</FormControl.Label>
-            <TextInput
-              selectTextOnFocus
-              style={input}
-              onChange={(event) => handleContactNumberChange(event)}
-              value={contactNumber}
-              keyboardType="numeric"
-              returnKeyType="next"
-              onSubmitEditing={() => inputRef3.current?.focus()}
-              blurOnSubmit={false}
-              ref={inputRef2}
+            <Controller
+              control={control}
+              name="contactNumber"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ?? ""}
+                  keyboardType="phone-pad"
+                />
+              )}
             />
           </FormControl>
-          <FormControl>
+
+          <FormControl mt={2}>
             <FormControl.Label>Address</FormControl.Label>
-            <TextInput
-              selectTextOnFocus
-              style={input}
-              onChange={(event) => handleLocationChange(event)}
-              value={location}
-              returnKeyType="next"
-              onSubmitEditing={() => inputRef4.current?.focus()}
-              blurOnSubmit={false}
-              ref={inputRef3}
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input onBlur={onBlur} onChangeText={onChange} value={value ?? ""} />
+              )}
             />
           </FormControl>
-          <FormControl>
+
+          <FormControl mt={2}>
             <FormControl.Label>City</FormControl.Label>
-            <TextInput
-              selectTextOnFocus
-              style={input}
-              onChange={(event) => handleCityChange(event)}
-              value={city}
-              ref={inputRef4}
+            <Controller
+              control={control}
+              name="city"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input onBlur={onBlur} onChangeText={onChange} value={value ?? ""} />
+              )}
             />
           </FormControl>
+
           <FormControl mt={3}>
             <FormControl.Label>Pets</FormControl.Label>
-            {pets.map((pet, index) => {
-              return (
-                <View key={index}>
-                  <TextInput
-                    selectTextOnFocus
-                    style={input}
-                    placeholder="Name"
-                    key={`index: ${index} name `}
-                    onChange={(event) => handlePetsChange(event, index, "name")}
-                    value={pet.name}
-                  />
-
-                  <TextInput
-                    selectTextOnFocus
-                    style={input}
-                    placeholder="Breed"
-                    key={`index: ${index} breed `}
-                    onChange={(event) =>
-                      handlePetsChange(event, index, "breed")
-                    }
-                    value={pet.breed}
-                  />
-
-                  <View style={buttonContainer}>
-                    <Button
-                      key={`${index} AddButton`}
-                      onPress={() => addField()}
-                      style={button}
-                    >
-                      <Icon name="plus" size={10} key={`${index} PlusIcon`} />
-                    </Button>
-                    <Button
-                      key={`${index} RemoveButton`}
-                      isDisabled={pets.length <= 1}
-                      onPress={() => removeField(index)}
-                      style={button}
-                    >
-                      <Icon name="minus" size={10} key={`${index} MinusIcon`} />
-                    </Button>
-                  </View>
+            {fields.map((field, index) => (
+              <View key={field.id} style={{ marginBottom: 8 }}>
+                <Controller
+                  control={control}
+                  name={`pets.${index}.name`}
+                  render={({ field: f }) => (
+                    <Input
+                      placeholder="Name"
+                      onBlur={f.onBlur}
+                      onChangeText={f.onChange}
+                      value={f.value}
+                      mb={2}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name={`pets.${index}.breed`}
+                  render={({ field: f }) => (
+                    <Input
+                      placeholder="Breed"
+                      onBlur={f.onBlur}
+                      onChangeText={f.onChange}
+                      value={f.value ?? ""}
+                    />
+                  )}
+                />
+                <View style={buttonContainer}>
+                  <Button onPress={() => append({ name: "", breed: "" })} style={button}>
+                    <Icon name="plus" size={10} />
+                  </Button>
+                  <Button
+                    isDisabled={fields.length <= 1}
+                    onPress={() => remove(index)}
+                    style={button}
+                  >
+                    <Icon name="minus" size={10} />
+                  </Button>
                 </View>
-              );
-            })}
+              </View>
+            ))}
           </FormControl>
         </Modal.Body>
         <Button.Group space={2} style={confirmationButtonContainer}>
@@ -221,8 +185,9 @@ const CreateCustomerModal = ({
             Cancel
           </Button>
           <Button
-            onPress={() => handleCustomerCreation()}
+            onPress={() => void onSubmit()}
             style={confirmationButton}
+            isLoading={createMutation.isPending}
           >
             Save
           </Button>
@@ -233,17 +198,7 @@ const CreateCustomerModal = ({
 };
 
 const styles = StyleSheet.create({
-  input: {
-    margin: 5,
-    marginBottom: 8,
-    marginTop: 0,
-    paddingLeft: 10,
-    width: 270,
-    borderRadius: 4,
-    backgroundColor: "hsl(240,57%,97%)",
-  },
   buttonContainer: {
-    display: "flex",
     flexDirection: "row",
     justifyContent: "flex-end",
   },

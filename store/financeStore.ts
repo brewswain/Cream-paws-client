@@ -1,21 +1,13 @@
 import { create, StateCreator } from "zustand";
-import { Customer, CustomerPayload } from "../models/customer";
-import { supabase } from "../utils/supabase";
 import { persist, createJSONStorage, PersistOptions } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getFinanceScreenOrders } from "../api/routes/orders";
-import { OrderFromSupabase } from "../models/order";
 
+/** Finance UI state only; order rows come from TanStack Query (`customerKeys.listWithOrders`). */
 type UseFinanceStore = {
-  isFetching: boolean;
-  error: string | null;
-  fetchFinanceData: () => void;
-  warehouseOrders: OrderFromSupabase[];
-  courierOrders: OrderFromSupabase[];
   showModal: boolean;
   setShowModal: (show: boolean) => void;
-  targetIds: number[];
-  setTargetIds: (ids: number[]) => void;
+  targetIds: string[];
+  setTargetIds: (ids: string[]) => void;
 };
 
 type FinancePersist = (
@@ -25,27 +17,11 @@ type FinancePersist = (
 
 const useFinanceStore = create<UseFinanceStore>(
   (persist as FinancePersist)(
-    (set, get) => ({
-      isFetching: false,
-      error: null,
-      warehouseOrders: [],
-      courierOrders: [],
+    (set) => ({
       showModal: false,
       setShowModal: (show: boolean) => set({ showModal: show }),
       targetIds: [],
-      setTargetIds: (ids: number[]) => set({ targetIds: ids }),
-      fetchFinanceData: async () => {
-        set({ isFetching: true });
-        const { unpaidWarehouseOrders, unpaidCourierFees } =
-          await getFinanceScreenOrders();
-
-        set({
-          warehouseOrders: unpaidWarehouseOrders,
-          courierOrders: unpaidCourierFees,
-          isFetching: false,
-          error: null,
-        });
-      },
+      setTargetIds: (ids: string[]) => set({ targetIds: ids }),
     }),
     {
       name: "finance-storage",
