@@ -1,105 +1,60 @@
 import {
+  OrderCreateInput,
   OrderFromSupabase,
-  OrderFromSupabasePayload,
-  OrderPayload,
+  OrderUpdatePayload,
   OrdersByCustomer,
-  OrderWithChowDetails,
+  toOrderUpdatePayload,
 } from "../../models/order";
-import { supabase } from "../../utils/supabase";
-import { axiosInstance } from "../api";
-import { logNewSupabaseError } from "../error";
+import { axiosInstance } from "../http";
+import { mapApiOrderToStore } from "../../lib/customers/mapApiOrderToStore";
+import { queryClient } from "../../lib/queryClient";
+import { customerKeys } from "../../lib/queryKeys";
+import { orderListResponseSchema } from "../../schemas/orderApi";
+import { orderCreateRequestSchema } from "../../schemas/orderCreate";
+import { putOrderUpdateHttp } from "../../lib/orders/putOrderUpdateHttp";
 
-const orderQuery = `
-id,
-is_delivery,
-delivery_date,
-delivery_cost,
-payment_made,
-payment_date,
-retail_price,
-wholesale_price,
-quantity,
-variety_id,
-driver_paid,
-warehouse_paid,
-customer_id,
-flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
-variety:chow_varieties(*),
-customers (name)
-`;
-
-export const createOrder = async (orderPayload: OrderPayload) => {
-  const { data: varietyRetailPriceData, error: varietyRetailPriceError } =
-    await supabase
-      .from("chow_varieties")
-      .select("retail_price")
-      .eq("id", orderPayload.variety_id);
-
-  if (varietyRetailPriceError) {
-    logNewSupabaseError(
-      "Error retrieving intermediary Id: ",
-      varietyRetailPriceError
-    );
-
-    throw new Error(varietyRetailPriceError.message);
-  }
-  const { data: chowIntermediaryData, error: chowIntermediaryError } =
-    await supabase
-      .from("chow_intermediary")
-      .select("id")
-      .eq("brand_id", orderPayload.brand_id)
-      .eq("flavour_id", orderPayload.flavour_id)
-      .eq("variety_id", orderPayload.variety_id);
-
-  if (chowIntermediaryError) {
-    logNewSupabaseError(
-      "Error retrieving intermediary Id: ",
-      chowIntermediaryError
-    );
-    throw new Error(chowIntermediaryError.message);
-  }
-
-  const { error } = await supabase.from("orders").insert({
-    chow_intermediary_ids: chowIntermediaryData[0].id,
-    quantity: orderPayload.quantity,
-    customer_id: orderPayload.customer_id,
-    delivery_date: orderPayload.delivery_date,
-    delivery_cost: orderPayload.delivery_cost,
-    payment_date: orderPayload.payment_date,
-    payment_made: orderPayload.payment_made,
-    is_delivery: orderPayload.is_delivery,
-    driver_paid: orderPayload.driver_paid,
-    warehouse_paid: orderPayload.warehouse_paid,
-    variety_id: orderPayload.variety_id,
-    retail_price: orderPayload.retail_price
-      ? orderPayload.retail_price
-      : varietyRetailPriceData[0].retail_price,
-    wholesale_price: orderPayload.wholesale_price,
-  });
-
-  if (error) {
-    logNewSupabaseError("Error creating new order: ", error);
-    throw new Error(error.message);
-  }
-
-  console.log("Order created successfully");
+export const getAllOrders = async (): Promise<OrderFromSupabase[]> => {
+  const res = await axiosInstance.get<unknown[]>("/api/orders");
+  const parsed = orderListResponseSchema.parse(res.data);
+  return parsed.map((o) => mapApiOrderToStore(o, "Unknown"));
 };
 
-export const deleteOrder = async (id: number) => {
-  const { error } = await supabase
-    .from("orders")
-    .update({
-      payment_made: true,
-      payment_date: new Date().toISOString().split("T")[0],
-    })
-    .eq("id", id);
-
-  if (error) {
-    logNewSupabaseError("Error deleting order: ", error);
-    throw new Error(error.message);
+export const createOrder = async (payload: OrderCreateInput) => {
+  if (!Array.isArray(payload.services) || payload.services.length === 0) {
+    throw new Error("services must be a non-empty array");
   }
 
-  console.log("Successfully deleted Order");
+  const body = orderCreateRequestSchema.parse({
+    customerId: String(payload.customer_id),
+    deliveryDate: payload.delivery_date,
+    deliveryCost: payload.delivery_cost,
+    paymentMade: !!payload.payment_made,
+    paymentDate: payload.payment_date ?? "",
+    isDelivery: !!payload.is_delivery,
+    quantity: payload.quantity ?? 1,
+    driverPaid: !!payload.driver_paid,
+    warehousePaid: !!payload.warehouse_paid,
+    retailPrice: payload.retail_price,
+    services: payload.services,
+  });
+
+  await axiosInstance.post("/api/orders", body);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+};
+
+export const deleteOrder = async (id: string) => {
+  const list = await getAllOrders();
+  const row = list.find((o) => o.id === id);
+  if (!row) {
+    throw new Error("Order not found");
+  }
+  const payload = toOrderUpdatePayload({
+    ...row,
+    payment_made: true,
+    payment_date: new Date().toISOString().split("T")[0],
+  });
+  await putOrderUpdateHttp(payload, row.customers.name);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
 };
 
 export const deleteCustomersOrder = async (
@@ -107,64 +62,23 @@ export const deleteCustomersOrder = async (
   customerId: string
 ) => {
   try {
-    const response = await axiosInstance.delete("/orders/customer", {
+    const response = await axiosInstance.delete("/api/orders/customer", {
       data: { customerId, orderId },
     });
+    await queryClient.invalidateQueries({ queryKey: customerKeys.all });
     return response.data;
-  } catch (error) {}
-};
-
-export const getAllOrders = async () => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(orderQuery)
-    .returns<OrderFromSupabase[]>()
-
-    .order("customers (name)");
-
-  if (error) {
-    logNewSupabaseError("Error retrieving all Orders: ", error);
-    throw new Error(error.message);
+  } catch (error) {
+    console.error(error);
   }
-
-  return data;
 };
 
 export const getTodaysOrders = async () => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(
-      `
-          id,
-          is_delivery,
-          delivery_date,
-          delivery_cost,
-          payment_made,
-          payment_date,
-          retail_price,
-          wholesale_price,
-          quantity,
-          variety_id,
-          driver_paid,
-          warehouse_paid,
-          customer_id,
-          flavours:chow_intermediary (brand_details:brands(name:brand_name, id),details:chows(flavour_id:id, flavour_name)),
-          variety:chow_varieties(*),
-          customers (*)
-          `
-    )
-    .eq("delivery_date", new Date().toISOString().split("T")[0])
-    .returns<OrderFromSupabase[]>();
-
-  if (error) {
-    logNewSupabaseError("Error retrieving today's orders: ", error);
-    throw new Error(error.message);
-  }
-
-  // separate our orders by unique customer
-  const ordersByCustomer: OrdersByCustomer = data.reduce(
-    (acc: { [key: string]: any }, order) => {
-      const customerName = order.customers.name;
+  const today = new Date().toISOString().split("T")[0];
+  const list = await getAllOrders();
+  const rows = list.filter((o) => o.delivery_date === today);
+  const ordersByCustomer: OrdersByCustomer = rows.reduce(
+    (acc: OrdersByCustomer, order) => {
+      const customerName = order.customers?.name ?? "Unknown";
       if (!acc[customerName]) {
         acc[customerName] = [];
       }
@@ -177,145 +91,71 @@ export const getTodaysOrders = async () => {
   return ordersByCustomer;
 };
 
-// Fetch our data and format it in a way for ease of making itemized lists:
-// {
-//    unpaidWarehouseOrders: OrderFromSupabase[];
-//    unpaidCourierFees: OrderFromSupabase[];
-// }
-
-// TODO: put error handling into our state -- so for this case, we want to set our error to warehouseOrdersError. However, for now, the current approach is workable
 export const getFinanceScreenOrders = async () => {
-  const { data: orders, error: warehouseOrdersError } = await supabase
-    .from("orders")
-    .select(orderQuery)
-    .returns<OrderFromSupabase[]>()
-    .order("delivery_date");
-
-  if (warehouseOrdersError) {
-    logNewSupabaseError(
-      "Error retrieving unpaid warehouse orders: ",
-      warehouseOrdersError
-    );
-    throw new Error(warehouseOrdersError.message);
-  }
-
-  const unpaidWarehouseOrders = orders.filter(
+  const list = await getAllOrders();
+  const unpaidWarehouseOrders = list.filter(
     (order) => order.warehouse_paid === false
   );
-  const unpaidCourierFees = orders.filter(
+  const unpaidCourierFees = list.filter(
     (order) => order.driver_paid === false
   );
 
   return { unpaidWarehouseOrders, unpaidCourierFees };
 };
 
-export const payDeliveryFees = async (orderIds: number[]) => {
-  await Promise.all(
-    orderIds.map(async (orderId) => {
-      const { data, error } = await supabase
-        .from("orders")
-        .update({ driver_paid: true })
-        .eq("id", orderId);
-
-      if (error) {
-        logNewSupabaseError("Error updating driver_paid: ", error);
-        throw new Error(error.message);
-      }
-
-      return data;
-    })
-  );
-};
-export const payWarehouseOrders = async (orderIds: number[]) => {
-  await Promise.all(
-    orderIds.map(async (orderId) => {
-      const { data, error } = await supabase
-        .from("orders")
-        .update({ warehouse_paid: true })
-        .eq("id", orderId);
-
-      if (error) {
-        logNewSupabaseError("Error updating warehouse_paid: ", error);
-        throw new Error(error.message);
-      }
-
-      return data;
-    })
-  );
+export const payDeliveryFees = async (orderIds: string[]) => {
+  for (const orderId of orderIds) {
+    const list = await getAllOrders();
+    const row = list.find((o) => o.id === orderId);
+    if (!row) {
+      continue;
+    }
+    const payload = toOrderUpdatePayload({ ...row, driver_paid: true });
+    await putOrderUpdateHttp(payload, row.customers.name);
+  }
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
 };
 
-export const getCustomersOrders = async (customerId: number) => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(orderQuery)
-    .eq("customer_id", customerId)
-    .returns<OrderFromSupabase[]>()
-    .order("customers (name)");
-
-  if (error) {
-    logNewSupabaseError("Error retrieving customer's orders: ", error);
-    throw new Error(error.message);
+export const payWarehouseOrders = async (orderIds: string[]) => {
+  for (const orderId of orderIds) {
+    const list = await getAllOrders();
+    const row = list.find((o) => o.id === orderId);
+    if (!row) {
+      continue;
+    }
+    const payload = toOrderUpdatePayload({ ...row, warehouse_paid: true });
+    await putOrderUpdateHttp(payload, row.customers.name);
   }
-
-  return data;
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
 };
 
-export const setPaymentMade = async (orderId: number) => {
-  const { error } = await supabase
-    .from("orders")
-    .update({ payment_made: true })
-    .eq("id", orderId)
-    .select("payment_made")
-    .single();
-
-  if (error) {
-    logNewSupabaseError("Error updating payment_made: ", error);
-    throw new Error(error.message);
-  }
+export const getCustomersOrders = async (customerId: string | number) => {
+  const list = await getAllOrders();
+  return list
+    .filter((o) => String(o.customer_id) === String(customerId))
+    .sort((a, b) => b.delivery_date.localeCompare(a.delivery_date));
 };
 
-export const updateOrder = async (order: OrderFromSupabasePayload) => {
-  const { data: intermediaryId, error: intermediaryError } = await supabase
-    .from("chow_intermediary")
-    .upsert(
-      {
-        brand_id: order.flavours.brand_details.id,
-        flavour_id: order.flavours.details?.flavour_id,
-        variety_id: order.variety?.id,
-      },
-      {
-        ignoreDuplicates: false,
-        onConflict: "brand_id, flavour_id, variety_id",
-      }
-    )
-    .select("id")
-    .single();
-
-  if (intermediaryError) {
-    logNewSupabaseError("Error upserting intermediary ID: ", intermediaryError);
-    throw new Error(intermediaryError.message);
+export const setPaymentMade = async (orderId: string) => {
+  const list = await getAllOrders();
+  const row = list.find((o) => o.id === orderId);
+  if (!row) {
+    throw new Error("Order not found");
   }
+  const payload = toOrderUpdatePayload({
+    ...row,
+    payment_made: true,
+    payment_date: new Date().toISOString().split("T")[0],
+  });
+  await putOrderUpdateHttp(payload, row.customers.name);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+};
 
-  const { data, error } = await supabase
-    .from("orders")
-    .update({
-      customer_id: order.customer_id,
-      chow_intermediary_ids: intermediaryId.id,
-      delivery_date: order.delivery_date,
-      delivery_cost: order.delivery_cost,
-      retail_price: order.retail_price,
-      wholesale_price: order.wholesale_price,
-      quantity: order.quantity,
-      variety_id: order.variety?.id,
-      payment_made: order.payment_made,
-    })
-    .eq("id", order.id)
-    .single();
-
-  if (error) {
-    logNewSupabaseError("Error updating customer's orders: ", error);
-    throw new Error(error.message);
-  }
-
-  return data;
+export const updateOrder = async (order: OrderUpdatePayload) => {
+  const list = await getAllOrders();
+  const row = list.find((o) => o.id === order.id);
+  const name = row?.customers.name ?? "Unknown";
+  const updated = await putOrderUpdateHttp(order, name);
+  await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+  return updated;
 };
