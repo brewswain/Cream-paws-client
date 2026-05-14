@@ -1,3 +1,3 @@
-import { clearOrders, getTodaysOrders } from "./orderUtils";
+import { getTodaysOrders } from "../api/routes/orders";
 
-export { clearOrders, getTodaysOrders };
+export { getTodaysOrders };

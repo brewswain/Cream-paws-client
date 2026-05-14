@@ -1,21 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import SwitchSelector from "react-native-switch-selector";
 
-import { getAllCustomers, getAllOrders } from "../api";
 import { ItemizedBreakdownCard } from "../components";
-import { getTodaysOrders } from "../utils";
 import { Button } from "native-base";
 
 const FinanceScreen = () => {
-  const [showSupplierOwed, setShowSupplierOwed] = useState(false);
   const [mode, setMode] = useState<"courier" | "warehouse">("courier");
   const { container, header } = styles;
-
-  const options = [
-    { label: "Open Customer Orders", value: false },
-    { label: "Unpaid Warehouse Orders", value: true },
-  ];
 
   return (
     <ScrollView style={container}>

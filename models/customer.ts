@@ -1,7 +1,7 @@
 import { OrderFromSupabase } from "./order";
 
 export interface Customer {
-  id: number;
+  id: string | number;
   pets?: [
     {
       name: string;

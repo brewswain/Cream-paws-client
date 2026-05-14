@@ -1,199 +1,90 @@
-import { ChowFlavour, FilteredChowFlavour } from "./chow";
-import { Customer } from "./customer";
-
-interface Order {
-  delivery_date: string;
-  delivery_cost: number;
-  payment_made: boolean;
-  payment_date: string;
-  is_delivery: boolean;
-  driver_paid: boolean;
-  quantity: number;
-  warehouse_paid: boolean;
-  customer_id: string;
-  chow_id: string;
-  id: string;
-  _id?: string;
-  order_id?: string;
-  flavour_name?: string;
-  version?: number;
-}
-
-type firstTimeOrder = Omit<Order, "id">;
-
-export interface ChowDetails {
-  brand: string;
-  target_group: string;
-  flavours: FilteredChowFlavour | ChowFlavour;
-  size: number;
-  unit: string;
-  wholesale_price: number;
-  retail_price: number;
-  is_paid_for: boolean;
-  delivery_cost?: number;
-  version: number;
-  warehouse_paid: boolean;
-  id: string;
-  brand_id?: string;
-}
-export interface OrderWithChowDetails extends Order {
-  chow_details: ChowDetails;
-}
-
-interface OrderDetails extends OrderWithChowDetails {
-  client_name: string;
-}
-
-export interface CombinedOrder {
-  delivery_date: string;
-  delivery_cost: number;
-  name?: string;
-  client_name?: string;
-  customer_id: string;
-  orders: {
-    chow_id: string;
-    quantity: number;
-    delivery_cost?: number;
-    payment_date: string;
-    payment_made: boolean;
-    is_delivery: boolean;
-    driver_paid: boolean;
-    warehouse_paid: boolean;
-    customer_id: string;
-    chow_details: {
-      brand: string;
-      target_group: string;
-      brand_id?: string;
-      flavours: FilteredChowFlavour;
-      size: number;
-      unit: string;
-      wholesale_price: number;
-      retail_price: number;
-      is_paid_for: boolean;
-      version: number;
-      warehouse_paid: boolean;
-      id: string;
-    };
-    id: string;
-    _id?: string;
-    order_id?: string;
-    flavour_name?: string;
-    version?: number;
-  }[];
-}
-
-export interface OrderPayload {
-  brand_id: number;
-  flavour_id: number;
-  variety_id: number;
-  quantity: number;
-  customer_id: number;
-  delivery_date: string;
-  delivery_cost: number;
-  payment_date: number;
-  payment_made: boolean;
-  is_delivery: boolean;
-  driver_paid: boolean;
-  warehouse_paid: boolean;
-  retail_price: number;
-  wholesale_price: number;
-}
-
+/** Order row shape returned from Supabase (snake_case columns). */
 export interface OrderFromSupabase {
-  id: number;
-  is_delivery: boolean;
+  id: string;
+  customer_id: string;
   delivery_date: string;
-  delivery_cost: number;
+  delivery_cost: number | null;
   payment_made: boolean;
   payment_date: string;
-  retail_price: number;
-  wholesale_price: number;
+  is_delivery: boolean;
   quantity: number;
   driver_paid: boolean;
   warehouse_paid: boolean;
-  customer_id: number;
-  flavours: {
-    details: {
-      flavour_id: number;
-      flavour_name: string;
-    };
-    brand_details: { id: number; name: string };
-  };
-  variety: {
-    id: number;
-    size: number;
-    unit: "lb" | "kg" | "oz";
-    chow_id: number;
-    retail_price: number;
-    wholesale_price: number;
-  };
-
-  customers: { name: string };
-}
-export interface OrderFromSupabasePayload {
-  id: number;
-  is_delivery: boolean;
-  delivery_date: string;
-  delivery_cost: number;
-  payment_made: boolean;
-  payment_date: string;
-  retail_price: number;
-  wholesale_price: number;
-  quantity: number;
-  driver_paid: boolean;
-  warehouse_paid: boolean;
-  customer_id: number;
-  flavours: {
-    details?: {
-      flavour_id: number;
-      flavour_name: string;
-    };
-    brand_details: { id: number; name: string };
-  };
-  variety?: {
-    id: number;
-    size: number;
-    unit: "lb" | "kg" | "oz";
-    chow_id: number;
-    retail_price: number;
-    wholesale_price: number;
-  };
-
+  retail_price: number | null;
+  services: unknown[];
+  version: number;
   customers: { name: string };
 }
 
-export interface TodaysOrder {
-  id: number;
-  is_delivery: boolean;
+/** Payload for creating an order (`services` required by API). */
+export interface OrderCreateInput {
+  customer_id: string;
   delivery_date: string;
-  delivery_cost: number;
+  delivery_cost: number | null;
   payment_made: boolean;
   payment_date: string;
-  retail_price: number;
-  wholesale_price: number;
+  is_delivery: boolean;
   quantity: number;
   driver_paid: boolean;
   warehouse_paid: boolean;
-  customer_id: number;
-  flavours: {
-    details: {
-      flavour_id: number;
-      flavour_name: string;
-    };
-    brand_details: { id: number; name: string };
-  };
-  variety: {
-    id: number;
-    size: number;
-    unit: "lb" | "kg" | "oz";
-    chow_id: number;
-    retail_price: number;
-    wholesale_price: number;
-  };
-
-  customers: Customer;
+  retail_price: number | null;
+  services: unknown[];
 }
 
-export interface OrdersByCustomer {
-  [key: string]: TodaysOrder[];
+/** Full order shape for updates (optimistic locking via `version`). */
+export interface OrderUpdatePayload {
+  id: string;
+  customer_id: string;
+  delivery_date: string;
+  delivery_cost: number | null;
+  payment_made: boolean;
+  payment_date: string;
+  is_delivery: boolean;
+  quantity: number;
+  driver_paid: boolean;
+  warehouse_paid: boolean;
+  retail_price: number | null;
+  services: unknown[];
+  version: number;
+}
+
+/** @deprecated Use OrderFromSupabase — kept as alias for stores referencing today's shape. */
+export type TodaysOrder = OrderFromSupabase;
+
+export type OrdersByCustomer = Record<string, OrderFromSupabase[]>;
+
+export function formatOrderSummaryLine(order: OrderFromSupabase): string {
+  const services = order.services;
+  if (!Array.isArray(services) || services.length === 0) {
+    return `Order · qty ${order.quantity}`;
+  }
+  const first = services[0];
+  if (first && typeof first === "object" && first !== null) {
+    const rec = first as Record<string, unknown>;
+    const label = rec.description ?? rec.name ?? rec.title;
+    if (typeof label === "string" && label.trim()) {
+      return `${label} × ${order.quantity}`;
+    }
+  }
+  return `${services.length} service line(s) × ${order.quantity}`;
+}
+
+export function toOrderUpdatePayload(
+  order: OrderFromSupabase
+): OrderUpdatePayload {
+  return {
+    id: order.id,
+    customer_id: order.customer_id,
+    delivery_date: order.delivery_date,
+    delivery_cost: order.delivery_cost,
+    payment_made: order.payment_made,
+    payment_date: order.payment_date,
+    is_delivery: order.is_delivery,
+    quantity: order.quantity,
+    driver_paid: order.driver_paid,
+    warehouse_paid: order.warehouse_paid,
+    retail_price: order.retail_price,
+    services: Array.isArray(order.services) ? order.services : [],
+    version: order.version,
+  };
 }

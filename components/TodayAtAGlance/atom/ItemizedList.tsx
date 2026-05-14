@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { Button } from "native-base";
 import { CheckBox } from "@ui-kitten/components";
 
-import { OrderFromSupabase } from "../../../models/order";
+import { OrderFromSupabase, formatOrderSummaryLine } from "../../../models/order";
 import { CheckBoxState } from "../../cards/ItemizedBreakdownCard";
 import { useFinanceStore } from "../../../store/financeStore";
 
@@ -12,7 +12,7 @@ interface ItemizedListProps {
   checkBoxState: CheckBoxState[];
   setCheckBoxState: (checkBoxes: CheckBoxState[]) => void;
   fetchData: () => void;
-  handlePayment: (orderIds: number[]) => void;
+  handlePayment: (orderIds: string[]) => void;
   isCourierFees: boolean;
 }
 const ItemizedList = ({
@@ -34,13 +34,13 @@ const ItemizedList = ({
 
   const checkedOrderIds = checkBoxState
     .filter((order) => order.isChecked)
-    .map((order) => order.id);
+    .map((order) => String(order.id));
 
-  const allOrderIds = checkBoxState.map((order) => order.id);
+  const allOrderIds = checkBoxState.map((order) => String(order.id));
 
   const resetCheckboxes = () => {
     setCheckBoxState(
-      targetOrders.map((order) => ({ isChecked: false, id: order.id }))
+      targetOrders.map((order) => ({ isChecked: false, id: String(order.id) }))
     );
   };
 
@@ -66,9 +66,9 @@ const ItemizedList = ({
                     }}
                   />
                   <View style={styles.textContainer}>
-                    <Text
-                      style={styles.tableChowDescription}
-                    >{`${order.flavours.details.flavour_name} - ${order.variety.size} ${order.variety.unit}`}</Text>
+                    <Text style={styles.lineDescription}>
+                      {formatOrderSummaryLine(order)}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     maxWidth: "65%",
   },
 
-  tableChowDescription: {
+  lineDescription: {
     color: "white",
   },
 

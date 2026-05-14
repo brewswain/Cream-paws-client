@@ -11,7 +11,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import Dinero from "dinero.js";
 import { Divider } from "native-base";
-import { TodaysOrder } from "../../models/order";
+import { OrderFromSupabase, formatOrderSummaryLine } from "../../models/order";
 import { Customer } from "../../models/customer";
 import moment from "moment";
 
@@ -50,7 +50,7 @@ const TodayAtaGlanceCard = () => {
     fetchTodaysOrders();
   };
 
-  const totalOutstandingStock = () => {
+  const totalUnits = () => {
     return Object.values(todaysOrders).reduce(
       (accumulator, customerOrders) =>
         accumulator +
@@ -59,33 +59,17 @@ const TodayAtaGlanceCard = () => {
     );
   };
 
-  // Remove fdrom here once we confirm it works
+  const totalUnitsCount = totalUnits();
+  const todaysOrderArray = Object.values(todaysOrders).flat();
 
-  const totalStock = totalOutstandingStock();
-  const todaysOrderArray = Object.values(todaysOrders).flat(); //can also spread like this: [...Object.values(todaysOrders)]
-
-  // Used any[] cause lazy and reduce is weird and gives us type never, probably due to reduce's accumulator and callback params by default.
-  const combinedOrderQuantityArray: TodaysOrder[] = todaysOrderArray.reduce(
-    (acc: any[], current) => {
-      const existingOrder = acc.find(
-        (order) => order.variety.id === current.variety.id
-      );
-
-      if (existingOrder) {
-        existingOrder.quantity += current.quantity;
-        return acc;
-      } else {
-        acc.push({ ...current });
-        return acc;
-      }
-    },
-    []
-  );
+  const orderLinesForDisplay: OrderFromSupabase[] = todaysOrderArray;
 
   const mappedCostArray =
-    combinedOrderQuantityArray.map(
-      (order) => order.retail_price * order.quantity + order.delivery_cost
-    ) || undefined;
+    orderLinesForDisplay.map(
+      (order) =>
+        (order.retail_price ?? 0) * order.quantity +
+        (order.delivery_cost ?? 0)
+    ) || [];
 
   const subTotal = Math.round(
     mappedCostArray.reduce(
@@ -157,12 +141,16 @@ const TodayAtaGlanceCard = () => {
             <CustomCollapsible isCollapsed={ordersCollapsed}>
               {todaysOrders
                 ? Object.values(todaysOrders).map((customerOrders, index) => {
-                    const customerData = customerOrders[0].customers;
+                    const first = customerOrders[0];
+                    const customerLite: Customer = {
+                      id: first.customer_id,
+                      name: first.customers.name,
+                    };
                     const mappedRetailPriceTotal = customerOrders.map(
-                      (order) => order.retail_price * order.quantity
+                      (order) => (order.retail_price ?? 0) * order.quantity
                     );
                     const mappedDeliveryCost = customerOrders.map(
-                      (order) => order.delivery_cost
+                      (order) => order.delivery_cost ?? 0
                     );
 
                     const mappedSubtotal = Math.round(
@@ -174,16 +162,17 @@ const TodayAtaGlanceCard = () => {
                     );
                     return (
                       <TouchableOpacity
-                        onPress={() => handleClick(customerData)}
+                        onPress={() => handleClick(customerLite)}
                         key={index}
                       >
                         <Text
                           style={deemphasis}
-                        >{`${customerData.name} x ${customerOrders.length}`}</Text>
+                        >{`${customerLite.name} x ${customerOrders.length}`}</Text>
                         <Text>{`Retail Price: ${Dinero({
                           amount: mappedSubtotal || 0,
                           precision: 2,
                         }).toFormat("$0,0.00")}, Delivery: $${Math.max(
+                          0,
                           ...mappedDeliveryCost
                         )}.00`}</Text>
                       </TouchableOpacity>
@@ -194,28 +183,24 @@ const TodayAtaGlanceCard = () => {
           </View>
 
           <View>
-            {totalStock && totalStock > 0 ? (
+            {totalUnitsCount > 0 ? (
               <TouchableOpacity onPress={() => toggleCustomersCollapsed()}>
                 <Text style={highlight}>
-                  {totalStock}{" "}
-                  <Text style={subHeader}>{`${
-                    totalStock > 1 ? "bags" : "bag"
-                  } of Chow`}</Text>
+                  {totalUnitsCount}{" "}
+                  <Text style={subHeader}>
+                    {totalUnitsCount > 1 ? "units" : "unit"} scheduled
+                  </Text>
                 </Text>
               </TouchableOpacity>
             ) : (
-              <Text style={subHeader}>No chow to be delivered</Text>
+              <Text style={subHeader}>No deliveries scheduled</Text>
             )}
             <CustomCollapsible isCollapsed={customersCollapsed}>
-              {combinedOrderQuantityArray.map((chow, index) => (
-                <View key={index}>
-                  {chow && (
-                    <View key={`${chow.variety.id} - ${index}`}>
-                      <Text style={deemphasis}>
-                        {`${chow.flavours.brand_details.name} ${chow.flavours.details.flavour_name} - ${chow.variety.size}${chow.variety.unit} x ${chow.quantity}`}
-                      </Text>
-                    </View>
-                  )}
+              {orderLinesForDisplay.map((line, index) => (
+                <View key={`${line.id}-${index}`}>
+                  <Text style={deemphasis}>
+                    {formatOrderSummaryLine(line)}
+                  </Text>
                 </View>
               ))}
             </CustomCollapsible>

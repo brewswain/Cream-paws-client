@@ -1,96 +1,89 @@
 import Icon from "@expo/vector-icons/AntDesign";
-import axios from "axios";
-import { ScrollView } from "native-base";
-import { useCallback, useEffect, useState } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
-
-import { getAllCustomers } from "../api/routes/customers";
-
 import { useFocusEffect } from "@react-navigation/native";
+import { ScrollView } from "native-base";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import Toast from "react-native-toast-message";
+
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
+import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
 import { Customer } from "../models/customer";
-import { PostgrestError } from "@supabase/supabase-js";
-import { useCustomerStore } from "../store/customerStore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+function partitionByOpenOrders(customers: Customer[]) {
+  const withOpen = customers.filter(
+    (c) => c.orders?.some((o) => !o.payment_made) ?? false
+  );
+  const withoutOpen = customers.filter((c) => {
+    if (c.orders?.length) {
+      return c.orders.every((o) => o.payment_made === true);
+    }
+    return true;
+  });
+  return { withOpen, withoutOpen };
+}
 
 const CustomersScreen = () => {
-  const [customersWithOpenOrders, setCustomersWithOpenOrders] =
-    useState<Customer[]>();
-  const [customersWithoutOpenOrders, setCustomersWithoutOpenOrders] =
-    useState<Customer[]>();
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
-  const { customers, error, isFetching, fetchCustomers } = useCustomerStore();
+  const { data: customers = [], isPending, error, refetch } =
+    useCustomersWithOrdersQuery();
 
-  const populateCustomersList = async () => {
-    const filterOpenOrders = (customers: Customer[]) => {
-      return customers.filter((customer) => {
-        if (customer.orders) {
-          return customer.orders.some((order) => order.payment_made === false);
-        }
-      });
-    };
+  const { withOpen: customersWithOpenOrders, withoutOpen: customersWithoutOpenOrders } =
+    useMemo(() => partitionByOpenOrders(customers), [customers]);
 
-    const filterNoOpenOrders = (customers: Customer[]) => {
-      return customers.filter((customer) => {
-        if (customer.orders) {
-          return customer.orders.every((order) => order.payment_made === true);
-        }
-        return customer;
-      });
-    };
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch])
+  );
 
-    fetchCustomers();
-
-    setCustomersWithOpenOrders(filterOpenOrders(customers));
-    setCustomersWithoutOpenOrders(filterNoOpenOrders(customers));
-
+  useEffect(() => {
     if (error) {
-      console.error(error);
+      Toast.show({
+        type: "error",
+        text1: "Could not load customers",
+        text2: error instanceof Error ? error.message : String(error),
+      });
     }
+  }, [error]);
+
+  const populateCustomersList = () => {
+    void refetch();
   };
 
   const openModal = () => {
     setShowModal(true);
   };
 
-  useEffect(() => {
-    populateCustomersList();
-  }, []);
-
   return (
     <View style={styles.container}>
-      {isFetching ? (
+      {isPending ? (
         generateSkeletons({ count: 12, type: "CustomerSkeleton" })
       ) : (
         <ScrollView>
-          {customersWithOpenOrders?.map((customer, index) => {
-            return (
-              <View
-                key={customer.id}
-                style={index === 0 ? { marginTop: 12 } : null}
-              >
-                <CustomerCard
-                  customer={customer}
-                  key={customer.id}
-                  populateCustomersList={populateCustomersList}
-                  isDeleted={isDeleted}
-                  setIsDeleted={setIsDeleted}
-                />
-              </View>
-            );
-          })}
-          {customersWithoutOpenOrders?.map((customer, index) => (
+          {customersWithOpenOrders.map((customer, index) => (
             <View
               key={customer.id}
               style={index === 0 ? { marginTop: 12 } : null}
             >
               <CustomerCard
                 customer={customer}
-                key={customer.id}
+                populateCustomersList={populateCustomersList}
+                isDeleted={isDeleted}
+                setIsDeleted={setIsDeleted}
+              />
+            </View>
+          ))}
+          {customersWithoutOpenOrders.map((customer, index) => (
+            <View
+              key={customer.id}
+              style={index === 0 ? { marginTop: 12 } : null}
+            >
+              <CustomerCard
+                customer={customer}
                 populateCustomersList={populateCustomersList}
                 isDeleted={isDeleted}
                 setIsDeleted={setIsDeleted}

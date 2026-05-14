@@ -1,5 +1,5 @@
 import axios from "axios";
-import { axiosInstance } from "../api";
+import { axiosInstance } from "../http";
 
 export const signUp = async (email: string, password: string) => {
 	try {

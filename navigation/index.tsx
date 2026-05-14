@@ -7,7 +7,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
-import { ColorSchemeName, Pressable } from "react-native";
+import { ColorSchemeName } from "react-native";
 
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
@@ -18,10 +18,7 @@ import FinanceScreen from "../screens/FinanceScreen";
 import HomeScreen from "../screens/HomeScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import OrdersScreen from "../screens/OrdersScreen";
-import StockScreen from "../screens/StockScreen";
 
-import ChowFlavourScreen from "../screens/ChowFlavourScreen";
-import EditChowScreen from "../screens/EditChowScreen";
 import OrderDetailsScreen from "../screens/OrderDetailsScreen";
 import {
   RootStackParamList,
@@ -46,10 +43,6 @@ export default function Navigation({
   );
 }
 
-/**
- * A root stack navigator is often used for displaying modals on top of all other content.
- * https://reactnavigation.org/docs/modal
- */
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
@@ -64,11 +57,6 @@ function RootNavigator() {
         options={{ title: `Cream Paws Beta ${appVersion}` }}
       />
 
-      {/* <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ title: "Home" }}
-      /> */}
       <Stack.Screen
         name="Customers"
         component={CustomersScreen}
@@ -91,11 +79,6 @@ function RootNavigator() {
         options={{ title: "Finance" }}
       />
       <Stack.Screen
-        name="Stock"
-        component={StockScreen}
-        options={{ title: "Stock" }}
-      />
-      <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}
         options={{ title: "Oops!" }}
@@ -104,16 +87,6 @@ function RootNavigator() {
         name="CustomerDetails"
         component={CustomerDetailsScreen}
         options={{ title: "Customer Details" }}
-      />
-      <Stack.Screen
-        name="ChowFlavour"
-        component={ChowFlavourScreen}
-        options={{ title: "Chow Flavour" }}
-      />
-      <Stack.Screen
-        name="EditChow"
-        component={EditChowScreen}
-        options={{ title: "Edit Chow" }}
       />
       <Stack.Screen
         name="EditCustomer"
@@ -125,18 +98,10 @@ function RootNavigator() {
         component={OrderDetailsScreen}
         options={{ title: "Order Details" }}
       />
-
-      {/* <Stack.Group screenOptions={{ presentation: "modal" }}>
-            <Stack.Screen name="Modal" component={ModalScreen} />
-         </Stack.Group> */}
     </Stack.Navigator>
   );
 }
 
-/**
- * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
- * https://reactnavigation.org/docs/bottom-tab-navigator
- */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 export function BottomTabNavigator() {
@@ -175,15 +140,6 @@ export function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Stock"
-        component={StockScreen}
-        options={{
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="shopping-bag" color={color} />
-          ),
-        }}
-      />
-      <BottomTab.Screen
         name="Finance"
         component={FinanceScreen}
         options={{
@@ -194,9 +150,6 @@ export function BottomTabNavigator() {
   );
 }
 
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;

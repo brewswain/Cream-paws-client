@@ -6,11 +6,11 @@ import {
   useState,
 } from "react";
 import { SelectedOrder } from "../screens/CustomerDetailsScreen";
-import { OrderWithChowDetails } from "../models/order";
+import { OrderFromSupabase } from "../models/order";
 
 interface CustomerDetailsOrders {
-  outstandingOrders: OrderWithChowDetails[];
-  completedOrders: OrderWithChowDetails[];
+  outstandingOrders: OrderFromSupabase[];
+  completedOrders: OrderFromSupabase[];
 }
 
 interface CustomerDetailsContextInterface {

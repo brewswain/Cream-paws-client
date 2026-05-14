@@ -22,9 +22,6 @@ const NavigationMenu = ({ navigation }: NavigationMenuProps) => {
           </NavigationCard>
         </View>
         <View style={flexRow}>
-          <NavigationCard navigation={navigation} destination="Stock">
-            Stock
-          </NavigationCard>
           <NavigationCard navigation={navigation} destination="Finance">
             Finance
           </NavigationCard>

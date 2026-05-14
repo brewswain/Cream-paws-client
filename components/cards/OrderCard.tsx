@@ -7,7 +7,7 @@ import Dinero from "dinero.js";
 
 import { deleteCustomersOrder } from "../../api/routes/orders";
 
-import { CombinedOrder, OrderFromSupabase } from "../../models/order";
+import { OrderFromSupabase, formatOrderSummaryLine } from "../../models/order";
 
 interface OrderCardProps {
   client_name: string;
@@ -15,7 +15,7 @@ interface OrderCardProps {
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
   populateData: () => void;
-  customerId: number;
+  customerId: string | number;
 }
 
 const OrderCard = ({
@@ -49,20 +49,13 @@ const OrderCard = ({
     try {
       setIsDeleted(false);
       // await deleteOrder(orderId);
-      await deleteCustomersOrder(orderId, customerId);
+      await deleteCustomersOrder(orderId, String(customerId));
       setIsDeleted(true);
       populateData();
     } catch (error) {
       console.error(error);
     }
   };
-
-  // const mappedCostArray = orders
-  //   .filter((order) => order.payment_made === false)
-  //   .map(
-  //     (order) =>
-  //       order.chow_details.flavours.varieties.retail_price * order.quantity
-  //   );
 
   // const subTotal = Math.round(
   //   mappedCostArray.reduce(
@@ -96,16 +89,15 @@ const OrderCard = ({
           <View style={detailsContainer}>
             <Text style={clientNameHeader}>{client_name}</Text>
             <View>
-              <Text
-                style={orderDetails}
-              >{`${data.flavours.brand_details.name}  - ${data.flavours.details.flavour_name} x ${data.quantity}`}</Text>
+              <Text style={orderDetails}>{formatOrderSummaryLine(data)}</Text>
             </View>
           </View>
           <View style={priceContainer}>
             <Text style={price}>
               {Dinero({
                 amount: Math.round(
-                  (data.delivery_cost + data.retail_price * data.quantity) *
+                  ((data.retail_price ?? 0) * data.quantity +
+                    (data.delivery_cost ?? 0)) *
                     100 || 0
                 ),
               }).toFormat("$0,0.00")}

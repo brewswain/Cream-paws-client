@@ -4,7 +4,6 @@ import NavigationCard from "./cards/NavigationCard";
 import OrderCard from "./cards/OrderCard";
 import TodayAtaGlanceCard from "./TodayAtAGlance/TodayAtaGlanceCard";
 
-import CreateChowModal from "./modals/CreateChowModal";
 import CreateCustomerModal from "./modals/CreateCustomerModal";
 import CreateOrderModal from "./modals/CreateOrderModal";
 
@@ -13,7 +12,6 @@ import EditScreenInfo from "./EditScreenInfo";
 import FilteredOrderDetails from "./FilteredOrderDetails";
 import NavigationMenu from "./NavigationMenu";
 
-import CollapsibleChowDetails from "./Dropdowns/CollapsibleChowDetails";
 import CollapsibleOrder from "./Dropdowns/CollapsibleOrder";
 
 export {
@@ -22,7 +20,6 @@ export {
   ItemizedBreakdownCard,
   OrderCard,
   TodayAtaGlanceCard,
-  CreateChowModal,
   CreateCustomerModal,
   CreateOrderModal,
   EditScreenInfo,
@@ -30,5 +27,4 @@ export {
   FilteredOrderDetails,
   NavigationMenu,
   CollapsibleOrder,
-  CollapsibleChowDetails,
 };
