@@ -14,6 +14,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
+import { ReactQueryDevtoolsGate } from "./components/dev/ReactQueryDevtoolsGate";
 import { CustomerDetailsProvider } from "./context/CustomerDetailsContext";
 import { queryClient } from "./lib/queryClient";
 
@@ -49,6 +50,7 @@ export default function App() {
               <StatusBar />
               <Toast />
             </CustomerDetailsProvider>
+            <ReactQueryDevtoolsGate />
           </QueryClientProvider>
         </NativeBaseProvider>
       </SafeAreaProvider>

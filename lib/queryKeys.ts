@@ -1,6 +1,12 @@
 /**
- * `listWithOrders` — HTTP GET `/api/customer` + `/api/orders`, merged for list UIs.
- * Orders tab and finance views derive rows from this key so a single invalidation refreshes all.
+ * Query key factories (TanStack Query v5).
+ *
+ * Invalidation strategy:
+ * - Customer create/update/delete and order mutations should target `customerKeys.all`
+ *   (or `listWithOrders` when you only need the merged list) so Customers, Orders, and
+ *   Finance stay in sync — they all read `useCustomersWithOrdersQuery`.
+ *
+ * Cache policy numbers live in `queryDefaults.ts` + `queryClient` defaults (#22).
  */
 export const customerKeys = {
   all: ["customers"] as const,

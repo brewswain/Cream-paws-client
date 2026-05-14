@@ -50,9 +50,9 @@ const CustomersScreen = () => {
     }
   }, [error]);
 
-  const populateCustomersList = () => {
+  const populateCustomersList = useCallback(() => {
     void refetch();
-  };
+  }, [refetch]);
 
   const openModal = () => {
     setShowModal(true);

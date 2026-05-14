@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, memo, useState } from "react";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -18,14 +18,14 @@ interface OrderCardProps {
   customerId: string | number;
 }
 
-const OrderCard = ({
+const OrderCard = memo(function OrderCard({
   client_name,
   data,
   isDeleted,
   setIsDeleted,
   populateData,
   customerId,
-}: OrderCardProps) => {
+}: OrderCardProps) {
   const navigation = useNavigation();
 
   const {
@@ -107,7 +107,7 @@ const OrderCard = ({
       </Pressable>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
