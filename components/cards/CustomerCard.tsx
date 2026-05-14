@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { Button, Modal } from "native-base";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, memo, useEffect, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -20,12 +20,12 @@ interface CustomerCardProps {
   setIsDeleted: Dispatch<SetStateAction<boolean | null>>;
   isDeleted: boolean | null;
 }
-const CustomerCard = ({
+const CustomerCard = memo(function CustomerCard({
   customer,
   populateCustomersList,
   isDeleted,
   setIsDeleted,
-}: CustomerCardProps) => {
+}: CustomerCardProps) {
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const { name, city } = customer;
@@ -113,7 +113,7 @@ const CustomerCard = ({
       />
     </>
   );
-};
+});
 
 const styles = StyleSheet.create({
   cardContainer: {
