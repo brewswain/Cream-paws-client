@@ -33,6 +33,7 @@ Use this after upgrading Expo / native deps on a branch (e.g. `chore/expo-sdk-up
 
 ## iOS (if applicable)
 
+- [ ] **Xcode / EAS image** supports **iOS deployment target ≥ 13.4** (Expo 50 + `expo-build-properties` in this repo).
 - [ ] `eas build -p ios --profile preview` **succeeds** (certs/profiles valid).
 - [ ] Install via TestFlight or ad hoc; cold start OK.
 - [ ] Same navigation + order edit smoke as Android.
