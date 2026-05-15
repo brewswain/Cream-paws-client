@@ -1,12 +1,12 @@
 import { useEffect, useMemo, type ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Button, Input } from "native-base";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 
-import { RootTabScreenProps } from "../types";
+import { RootStackScreenProps } from "../types";
 import {
   Header,
   SubHeader,
@@ -18,14 +18,12 @@ import {
   type CustomerCreateFormValues,
 } from "../schemas/customerWrite";
 import { useUpdateCustomerMutation } from "../hooks/useUpdateCustomerMutation";
+import { getCustomerWriteValidationFieldMap } from "../lib/customers/customerFormServerErrors";
+import type { CustomerWritableFieldPath } from "../lib/forms/validationResponseFields";
 
 interface EditCustomerScreenProps {
-  navigation: RootTabScreenProps<"EditCustomer">;
-  route: {
-    params: {
-      customer: Customer;
-    };
-  };
+  navigation: RootStackScreenProps<"EditCustomer">["navigation"];
+  route: RootStackScreenProps<"EditCustomer">["route"];
 }
 
 function customerToFormValues(customer: Customer): CustomerCreateFormValues {
@@ -58,6 +56,7 @@ const EditCustomerScreen = ({ route }: EditCustomerScreenProps) => {
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<CustomerCreateFormValues>({
     resolver: zodResolver(customerCreateFormSchema),
@@ -75,22 +74,40 @@ const EditCustomerScreen = ({ route }: EditCustomerScreenProps) => {
     try {
       await updateMutation.mutateAsync({ id: customerId, body });
       navigate.navigate("Customers" as never);
-    } catch {
-      /* toast from mutation */
+    } catch (e) {
+      const map = getCustomerWriteValidationFieldMap(e);
+      const paths = Object.keys(map) as CustomerWritableFieldPath[];
+      if (paths.length === 0) return;
+      for (const path of paths) {
+        const msg = map[path];
+        if (msg) setError(path, { message: msg });
+      }
+      setError("root", {
+        type: "server",
+        message: "Please correct the highlighted fields.",
+      });
     }
   });
 
   return (
-    <View
-      style={{
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{
         backgroundColor: "#f1f2f3",
         alignItems: "center",
         paddingTop: 10,
+        paddingBottom: 32,
       }}
     >
       <Header>Customer Details</Header>
-      <View>
-        <SubHeader>Name</SubHeader>
+      {errors.root?.message ? (
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryTitle}>Could not save</Text>
+          <Text style={styles.summaryBody}>{errors.root.message}</Text>
+        </View>
+      ) : null}
+      <View style={{ width: "92%", maxWidth: 420 }}>
+        <SubHeader>Name *</SubHeader>
         <FormControlBlock error={errors.name?.message}>
           <Controller
             control={control}
@@ -100,103 +117,119 @@ const EditCustomerScreen = ({ route }: EditCustomerScreenProps) => {
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
-                width={270}
+                width="100%"
                 bg="gray.100"
-                py={2}
-                px={2}
+                py={3}
+                px={3}
+                fontSize="md"
               />
             )}
           />
         </FormControlBlock>
 
         <SubHeader>Contact Number</SubHeader>
-        <Controller
-          control={control}
-          name="contactNumber"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ?? ""}
-              keyboardType="phone-pad"
-              width={270}
-              bg="gray.100"
-              py={2}
-              px={2}
-            />
-          )}
-        />
+        <FormControlBlock error={errors.contactNumber?.message}>
+          <Controller
+            control={control}
+            name="contactNumber"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ?? ""}
+                keyboardType="phone-pad"
+                width="100%"
+                bg="gray.100"
+                py={3}
+                px={3}
+                fontSize="md"
+              />
+            )}
+          />
+        </FormControlBlock>
 
         <SubHeader>Address</SubHeader>
-        <Controller
-          control={control}
-          name="location"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ?? ""}
-              width={270}
-              bg="gray.100"
-              py={2}
-              px={2}
-            />
-          )}
-        />
+        <FormControlBlock error={errors.location?.message}>
+          <Controller
+            control={control}
+            name="location"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ?? ""}
+                width="100%"
+                bg="gray.100"
+                py={3}
+                px={3}
+                fontSize="md"
+              />
+            )}
+          />
+        </FormControlBlock>
 
         <SubHeader>City</SubHeader>
-        <Controller
-          control={control}
-          name="city"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ?? ""}
-              width={270}
-              bg="gray.100"
-              py={2}
-              px={2}
-            />
-          )}
-        />
+        <FormControlBlock error={errors.city?.message}>
+          <Controller
+            control={control}
+            name="city"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ?? ""}
+                width="100%"
+                bg="gray.100"
+                py={3}
+                px={3}
+                fontSize="md"
+              />
+            )}
+          />
+        </FormControlBlock>
       </View>
 
       <Header>Pets</Header>
       {fields.map((field, petIndex) => (
-        <View key={field.id} style={{ paddingTop: 4 }}>
-          <SubHeader>Name</SubHeader>
-          <Controller
-            control={control}
-            name={`pets.${petIndex}.name`}
-            render={({ field: f }) => (
-              <Input
-                onBlur={f.onBlur}
-                onChangeText={f.onChange}
-                value={f.value}
-                width={270}
-                bg="gray.100"
-                py={2}
-                px={2}
-              />
-            )}
-          />
+        <View key={field.id} style={{ paddingTop: 4, width: "92%", maxWidth: 420 }}>
+          <SubHeader>Pet name *</SubHeader>
+          <FormControlBlock error={errors.pets?.[petIndex]?.name?.message}>
+            <Controller
+              control={control}
+              name={`pets.${petIndex}.name`}
+              render={({ field: f }) => (
+                <Input
+                  onBlur={f.onBlur}
+                  onChangeText={f.onChange}
+                  value={f.value}
+                  width="100%"
+                  bg="gray.100"
+                  py={3}
+                  px={3}
+                  fontSize="md"
+                />
+              )}
+            />
+          </FormControlBlock>
           <SubHeader>Breed</SubHeader>
-          <Controller
-            control={control}
-            name={`pets.${petIndex}.breed`}
-            render={({ field: f }) => (
-              <Input
-                onBlur={f.onBlur}
-                onChangeText={f.onChange}
-                value={f.value ?? ""}
-                width={270}
-                bg="gray.100"
-                py={2}
-                px={2}
-              />
-            )}
-          />
+          <FormControlBlock error={errors.pets?.[petIndex]?.breed?.message}>
+            <Controller
+              control={control}
+              name={`pets.${petIndex}.breed`}
+              render={({ field: f }) => (
+                <Input
+                  onBlur={f.onBlur}
+                  onChangeText={f.onChange}
+                  value={f.value ?? ""}
+                  width="100%"
+                  bg="gray.100"
+                  py={3}
+                  px={3}
+                  fontSize="md"
+                />
+              )}
+            />
+          </FormControlBlock>
           <View style={styles.buttonContainer}>
             <Button
               style={styles.button}
@@ -227,7 +260,7 @@ const EditCustomerScreen = ({ route }: EditCustomerScreenProps) => {
           Save
         </Button>
       </Button.Group>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -267,6 +300,25 @@ const styles = StyleSheet.create({
   },
   confirmationButton: {
     backgroundColor: "hsl(213,74%,54%)",
+  },
+  summaryBox: {
+    width: "92%",
+    maxWidth: 420,
+    backgroundColor: "#fff3cd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#c9a227",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  summaryTitle: {
+    fontWeight: "700",
+    marginBottom: 4,
+    fontSize: 15,
+  },
+  summaryBody: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 

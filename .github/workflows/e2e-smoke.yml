@@ -1,0 +1,25 @@
+# Smoke E2E entry point (Maestro). Issue #37: full execution needs a device — see e2e/README.md.
+name: E2E smoke (Maestro)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 0"
+
+jobs:
+  maestro-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Maestro version
+        run: maestro --version
+
+      - name: Verify three smoke flows exist
+        run: |
+          test "$(find e2e -maxdepth 1 -name 'smoke_*.yaml' -print | wc -l)" -eq 3

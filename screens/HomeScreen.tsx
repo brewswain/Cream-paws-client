@@ -6,10 +6,7 @@ import {
   View,
 } from "react-native";
 
-import { NavigationMenu, TodayAtaGlanceCard } from "../components";
-import { Text } from "../components/Themed";
-import NavigationCard from "../components/cards/NavigationCard";
-import { BottomTabNavigator } from "../navigation";
+import { TodayAtaGlanceCard } from "../components";
 import { RootTabScreenProps } from "../types";
 
 // Placed here to make available to Stylesheet

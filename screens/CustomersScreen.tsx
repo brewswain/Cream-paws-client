@@ -9,6 +9,8 @@ import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CustomerCard from "../components/cards/CustomerCard";
 import CreateCustomerModal from "../components/modals/CreateCustomerModal";
 import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
+import { getUserVisibleHttpMessage } from "../lib/api/normalizedHttpError";
+import { resolveCustomersQueryData } from "../lib/customers/resolveCustomersQueryData";
 import { Customer } from "../models/customer";
 
 function partitionByOpenOrders(customers: Customer[]) {
@@ -28,8 +30,8 @@ const CustomersScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
 
-  const { data: customers = [], isPending, error, refetch } =
-    useCustomersWithOrdersQuery();
+  const { data, isPending, error, refetch } = useCustomersWithOrdersQuery();
+  const customers = resolveCustomersQueryData(data);
 
   const { withOpen: customersWithOpenOrders, withoutOpen: customersWithoutOpenOrders } =
     useMemo(() => partitionByOpenOrders(customers), [customers]);
@@ -45,7 +47,7 @@ const CustomersScreen = () => {
       Toast.show({
         type: "error",
         text1: "Could not load customers",
-        text2: error instanceof Error ? error.message : String(error),
+        text2: getUserVisibleHttpMessage(error),
       });
     }
   }, [error]);
@@ -97,7 +99,11 @@ const CustomersScreen = () => {
         setShowModal={setShowModal}
         populateCustomerList={populateCustomersList}
       />
-      <Pressable style={styles.buttonContainer} onPress={openModal}>
+      <Pressable
+        testID="customers-open-create"
+        style={styles.buttonContainer}
+        onPress={openModal}
+      >
         <Icon name="plus" size={20} />
       </Pressable>
     </View>

@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "eject": "expo eject",
     "test": "jest --watchAll",
+    "test:e2e": "node scripts/run-maestro-e2e.cjs",
     "ota": "npm version patch && eas update --branch preview --message",
     "ota:prod": "eas update --branch production --message",
     "build:apk": "eas build -p android --profile preview",

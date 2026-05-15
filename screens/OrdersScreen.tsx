@@ -12,12 +12,14 @@ import { OrderCard } from "../components";
 import { generateSkeletons } from "../components/Skeleton/Skeleton";
 import CreateOrderModal from "../components/modals/CreateOrderModal";
 import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
+import { resolveCustomersQueryData } from "../lib/customers/resolveCustomersQueryData";
 import { flattenOrdersFromCustomers } from "../lib/orders/flattenOrdersFromCustomers";
 
 const OrdersScreen = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean | null>(null);
-  const { data: customers = [], isPending, refetch } = useCustomersWithOrdersQuery();
+  const { data, isPending, refetch } = useCustomersWithOrdersQuery();
+  const customers = resolveCustomersQueryData(data);
 
   const { outstandingOrders, completedOrders } = useMemo(() => {
     const flat = flattenOrdersFromCustomers(customers);

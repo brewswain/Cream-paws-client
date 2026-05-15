@@ -2,8 +2,11 @@ import { Dispatch, SetStateAction } from "react";
 import { OrderFromSupabase, OrderCreateInput } from "../models/order";
 import { create, StateCreator } from "zustand";
 import { supabase } from "../utils/supabase";
-import { createOrder, getAllOrders } from "../api";
-import { getCustomersOrders } from "../api/routes/orders";
+import {
+  createOrder,
+  getAllOrders,
+  getCustomersOrders,
+} from "../api/routes/orders";
 import { createJSONStorage, persist, PersistOptions } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

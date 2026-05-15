@@ -10,7 +10,7 @@ import {
 
 import Dinero from "dinero.js";
 
-import { RootTabScreenProps } from "../types";
+import { RootStackScreenProps } from "../types";
 
 import { CollapsibleOrder, DetailsText } from "../components";
 import { OrderFromSupabase } from "../models/order";
@@ -18,14 +18,15 @@ import { clearCustomerOrders } from "../utils/orderUtils";
 import { Button } from "native-base";
 import { Customer } from "../models/customer";
 import { CustomerDetailsContext } from "../context/CustomerDetailsContext";
+import { resolveCustomersQueryData } from "../lib/customers/resolveCustomersQueryData";
 import { useCustomersWithOrdersQuery } from "../hooks/useCustomersWithOrdersQuery";
 import { partitionOrdersByPayment } from "../lib/customers/partitionOrdersByPayment";
 import { pickCustomerFromMergedList } from "../lib/customers/pickCustomerFromMergedList";
 import { useOrderStore } from "../store/orderStore";
 
 interface CustomerDetailProps {
-  navigation: RootTabScreenProps<"CustomerDetails">;
-  route: any;
+  navigation: RootStackScreenProps<"CustomerDetails">["navigation"];
+  route: RootStackScreenProps<"CustomerDetails">["route"];
 }
 
 export interface SelectedOrder {
@@ -56,7 +57,8 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
     selectedOrderIds,
   } = useOrderStore();
 
-  const { data: mergedList = [], refetch } = useCustomersWithOrdersQuery();
+  const { data, refetch } = useCustomersWithOrdersQuery();
+  const mergedList = resolveCustomersQueryData(data);
 
   const hydratedCustomer = useMemo(() => {
     const fromList = pickCustomerFromMergedList(mergedList, customer.id);
@@ -352,7 +354,7 @@ const CustomerDetailsScreen = ({ navigation, route }: CustomerDetailProps) => {
       style={[container, { height: height, width: width }]}
       contentContainerStyle={{ alignItems: "center" }}
     >
-      <Text style={header}>{capitalizedName(customer.name)}</Text>
+      <Text style={header}>{capitalizedName(customer.name ?? "")}</Text>
 
       {outstandingOrders.length > 0 ? (
         <View style={card}>

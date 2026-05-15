@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import Dinero from "dinero.js";
 
 import { useFocusEffect } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
 
 import { OrderFromSupabase } from "../../models/order";
 import { useFinanceStore } from "../../store/financeStore";
@@ -11,6 +18,8 @@ import { payDeliveryFees, payWarehouseOrders } from "../../api/routes/orders";
 import ItemizedList from "../TodayAtAGlance/atom/ItemizedList";
 import ConfirmMassPaymentModal from "../modals/ConfirmMassPaymentModal";
 import { useCustomersWithOrdersQuery } from "../../hooks/useCustomersWithOrdersQuery";
+import { resolveCustomersQueryData } from "../../lib/customers/resolveCustomersQueryData";
+import { getUserVisibleHttpMessage } from "../../lib/api/normalizedHttpError";
 import { flattenOrdersFromCustomers } from "../../lib/orders/flattenOrdersFromCustomers";
 
 interface ItemizedBreakdownCardProps {
@@ -26,8 +35,9 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   const isWarehouseOrders = mode === "warehouse";
   const isCourierFees = mode === "courier";
 
-  const { data: customers = [], isPending, isError, error, refetch } =
+  const { data, isPending, isError, error, refetch } =
     useCustomersWithOrdersQuery();
+  const customers = resolveCustomersQueryData(data);
 
   const { showModal } = useFinanceStore();
 
@@ -128,27 +138,81 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
   );
 
   const showInitialLoad = isPending && customers.length === 0;
+  const blockingLoadError = isError && customers.length === 0;
+  const warehouseListEmpty =
+    isWarehouseOrders && warehouseOrders.length === 0;
+  const courierListEmpty = isCourierFees && courierOrders.length === 0;
+  const showEmptyState =
+    !blockingLoadError &&
+    !showInitialLoad &&
+    (warehouseListEmpty || courierListEmpty);
+
+  const lastToastKey = useRef("");
+
+  useEffect(() => {
+    if (!isError) {
+      lastToastKey.current = "";
+    }
+  }, [isError]);
+
+  useEffect(() => {
+    if (!isError || customers.length === 0) return;
+    const key = getUserVisibleHttpMessage(error);
+    if (lastToastKey.current === key) return;
+    lastToastKey.current = key;
+    Toast.show({
+      type: "error",
+      text1: "Could not refresh finance data",
+      text2: key,
+    });
+  }, [isError, error, customers.length]);
 
   return (
     <View style={container}>
+      <Modal
+        visible={blockingLoadError}
+        transparent
+        animationType="fade"
+        onRequestClose={() => void refetch()}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Finance data unavailable</Text>
+            <Text style={styles.modalBody}>
+              {error != null
+                ? getUserVisibleHttpMessage(error)
+                : "Please try again."}
+            </Text>
+            <Pressable
+              style={styles.modalRetry}
+              onPress={() => void refetch()}
+            >
+              <Text style={styles.modalRetryText}>Retry</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View style={headerWrapper}>
         <Text style={header}>
           {!isCourierFees ? "Itemized Breakdown" : "Calculated Courier Fees"}
         </Text>
       </View>
-      {isError ? (
-        <View style={statusContainer}>
-          <Text style={status}>
-            {error instanceof Error ? error.message : "Error loading data. Please try again."}
-          </Text>
-        </View>
-      ) : showInitialLoad ? (
+      {blockingLoadError ? null : showInitialLoad ? (
         <View style={statusContainer}>
           <Text style={status}>Loading data...</Text>
         </View>
       ) : (
         <View style={tableContainer}>
-          {isCourierFees && courierOrders.length > 0 && courierChecked.length > 0 ? (
+          {showEmptyState ? (
+            <View style={styles.emptyStateBox} testID="finance-empty-state">
+              <Text style={styles.emptyStateTitle}>Nothing to pay here</Text>
+              <Text style={styles.emptyStateBody}>
+                {isCourierFees
+                  ? "No unpaid courier fees right now. Pull to refresh when you add deliveries."
+                  : "No unpaid warehouse orders in this list. Totals below stay blank until there is something due."}
+              </Text>
+            </View>
+          ) : isCourierFees && courierOrders.length > 0 && courierChecked.length > 0 ? (
             <ItemizedList
               targetOrders={courierOrders}
               checkBoxState={courierChecked}
@@ -178,30 +242,30 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
             <View style={priceWrapper}>
               <Text style={subTotalCost}>Subtotal:</Text>
               <Text style={subTotalCost}>
-                {mappedWarehouseCosts
-                  ? Dinero({
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({
                       amount: mappedWarehouseCosts * 100 || 0,
-                    }).toFormat("$0,0.00")
-                  : null}
+                    }).toFormat("$0,0.00")}
               </Text>
             </View>
             <View style={priceWrapper}>
               <Text style={vatCost}>VAT:</Text>
               <Text style={vatCost}>
-                {totalVat
-                  ? Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")
-                  : null}
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({ amount: totalVat || 0 }).toFormat("$0,0.00")}
               </Text>
             </View>
             <View style={priceWrapper}>
               <Text style={totalCost}>Total:</Text>
               <Text style={totalCost}>
-                {mappedWarehouseCosts && totalVat
-                  ? Dinero({
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({
                       amount: mappedWarehouseCosts * 100 + totalVat || 0,
                       precision: 2,
-                    }).toFormat("$0,0.00")
-                  : null}
+                    }).toFormat("$0,0.00")}
               </Text>
             </View>
           </View>
@@ -209,37 +273,37 @@ const ItemizedBreakdownCard = ({ mode }: ItemizedBreakdownCardProps) => {
 
         {isCourierFees ? (
           <View style={totalWrapper}>
-            {mappedCourierProfits ? (
-              <View style={priceWrapper}>
-                <Text style={deliveryCost}>Total Commission:</Text>
-                <Text style={deliveryCost}>
-                  {Dinero({
-                    amount: mappedCourierProfits * 100 || 0,
-                  }).toFormat("$0,0.00")}
-                </Text>
-              </View>
-            ) : null}
-            {totalCourierDeliveryFees ? (
-              <View style={priceWrapper}>
-                <Text style={deliveryCost}>Total Delivery Fees:</Text>
-                <Text style={deliveryCost}>
-                  {Dinero({
-                    amount: totalCourierDeliveryFees || 0,
-                  }).toFormat("$0,0.00")}
-                </Text>
-              </View>
-            ) : null}
-            {totalCourierDeliveryFees || mappedCourierProfits ? (
-              <View style={priceWrapper}>
-                <Text style={deliveryCost}>Total:</Text>
-                <Text style={deliveryCost}>
-                  {Dinero({
-                    amount:
-                      totalCourierDeliveryFees + mappedCourierProfits * 100,
-                  }).toFormat("$0,0.00")}
-                </Text>
-              </View>
-            ) : null}
+            <View style={priceWrapper}>
+              <Text style={deliveryCost}>Total Commission:</Text>
+              <Text style={deliveryCost}>
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({
+                      amount: mappedCourierProfits * 100 || 0,
+                    }).toFormat("$0,0.00")}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={deliveryCost}>Total Delivery Fees:</Text>
+              <Text style={deliveryCost}>
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({
+                      amount: totalCourierDeliveryFees || 0,
+                    }).toFormat("$0,0.00")}
+              </Text>
+            </View>
+            <View style={priceWrapper}>
+              <Text style={deliveryCost}>Total:</Text>
+              <Text style={deliveryCost}>
+                {showInitialLoad
+                  ? "—"
+                  : Dinero({
+                      amount:
+                        totalCourierDeliveryFees + mappedCourierProfits * 100,
+                    }).toFormat("$0,0.00")}
+              </Text>
+            </View>
           </View>
         ) : null}
       </View>
@@ -364,6 +428,63 @@ const styles = StyleSheet.create({
   deliveryCost: {
     color: "white",
     fontSize: 20,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: "#2d3333",
+    borderRadius: 12,
+    padding: 20,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  modalBody: {
+    color: "#e0e0e0",
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  modalRetry: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,94,94, 1)",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  modalRetryText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyStateBox: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
+  emptyStateTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyStateBody: {
+    color: "#e6e6e6",
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: "center",
   },
 });
 

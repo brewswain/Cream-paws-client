@@ -1,6 +1,5 @@
 /**
- * Learn more about deep linking with React Navigation
- * https://reactnavigation.org/docs/deep-linking
+ * Deep linking — tab routes live under `Root`; stack-only routes are siblings.
  * https://reactnavigation.org/docs/configuring-links
  */
 
@@ -15,39 +14,13 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Root: {
         screens: {
-          Home: {
-            screens: {
-              HomeScreen: "home",
-            },
-          },
-          TabTwo: {
-            screens: {
-              TabTwoScreen: "two",
-            },
-          },
-          Customers: {
-            screens: {
-              CustomersScreen: "customers",
-            },
-          },
-          Orders: {
-            screens: {
-              OrdersScreen: "orders",
-            },
-          },
-          Finance: {
-            screens: {
-              FinanceScreen: "finance",
-            },
-          },
-          Auth: {
-            screens: {
-              AuthScreen: "auth",
-            },
-          },
+          Home: "home",
+          Customers: "customers",
+          Orders: "orders",
+          Finance: "finance",
         },
       },
-      Modal: "modal",
+      Auth: "auth",
       NotFound: "*",
     },
   },

@@ -1,0 +1,12 @@
+# Smoke: finance tab + mode toggle + stable empty/loading copy (no payment assertion — data-dependent).
+appId: com.brewswain.karindogapp
+---
+- openLink: myapp://finance
+- assertVisible: "Total owed courier"
+- assertVisible: "Calculated Courier Fees"
+- tapOn:
+    id: "finance-mode-warehouse"
+- assertVisible: "Total owed Supplier"
+- assertVisible: "Itemized Breakdown"
+- tapOn:
+    id: "finance-mode-courier"

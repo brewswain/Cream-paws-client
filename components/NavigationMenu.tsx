@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { RootTabScreenProps } from "../types";
 
 import NavigationCard from "./cards/NavigationCard";
 

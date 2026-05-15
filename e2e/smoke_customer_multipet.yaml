@@ -1,0 +1,20 @@
+# Smoke: open create-customer modal, two pets, save (API must accept writes in target env).
+appId: com.brewswain.karindogapp
+---
+- openLink: myapp://customers
+- tapOn:
+    id: "customers-open-create"
+- assertVisible: "Create Customer"
+- tapOn:
+    id: "create-customer-name"
+- inputText: "E2E Customer"
+- tapOn:
+    id: "create-customer-pet-name-0"
+- inputText: "Rex"
+- tapOn:
+    id: "create-customer-append-pet"
+- tapOn:
+    id: "create-customer-pet-name-1"
+- inputText: "Fido"
+- tapOn:
+    id: "create-customer-save"

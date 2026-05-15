@@ -2,15 +2,17 @@ import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, FormControl, Input, Modal } from "native-base";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 
+import { getCustomerWriteValidationFieldMap } from "../../lib/customers/customerFormServerErrors";
 import { useCreateCustomerMutation } from "../../hooks/useCreateCustomerMutation";
 import {
   customerCreateFormSchema,
   formValuesToWriteRequest,
   type CustomerCreateFormValues,
 } from "../../schemas/customerWrite";
+import type { CustomerWritableFieldPath } from "../../lib/forms/validationResponseFields";
 
 const defaultValues: CustomerCreateFormValues = {
   name: "",
@@ -37,6 +39,7 @@ const CreateCustomerModal = ({
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<CustomerCreateFormValues>({
     resolver: zodResolver(customerCreateFormSchema),
@@ -61,8 +64,18 @@ const CreateCustomerModal = ({
       await createMutation.mutateAsync(body);
       populateCustomerList();
       closeModal();
-    } catch {
-      /* toast handled in mutation */
+    } catch (e) {
+      const map = getCustomerWriteValidationFieldMap(e);
+      const paths = Object.keys(map) as CustomerWritableFieldPath[];
+      if (paths.length === 0) return;
+      for (const path of paths) {
+        const msg = map[path];
+        if (msg) setError(path, { message: msg });
+      }
+      setError("root", {
+        type: "server",
+        message: "Please correct the highlighted fields.",
+      });
     }
   });
 
@@ -80,13 +93,22 @@ const CreateCustomerModal = ({
         <Modal.CloseButton />
         <Modal.Header>Create Customer</Modal.Header>
         <Modal.Body>
+          <ScrollView keyboardShouldPersistTaps="handled">
+          {errors.root?.message ? (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryTitle}>Could not save</Text>
+              <Text style={styles.summaryBody}>{errors.root.message}</Text>
+            </View>
+          ) : null}
+
           <FormControl isInvalid={!!errors.name} isRequired>
-            <FormControl.Label>Name</FormControl.Label>
+            <FormControl.Label>Name *</FormControl.Label>
             <Controller
               control={control}
               name="name"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
+                  testID="create-customer-name"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -143,13 +165,21 @@ const CreateCustomerModal = ({
                   control={control}
                   name={`pets.${index}.name`}
                   render={({ field: f }) => (
-                    <Input
-                      placeholder="Name"
-                      onBlur={f.onBlur}
-                      onChangeText={f.onChange}
-                      value={f.value}
-                      mb={2}
-                    />
+                    <FormControl isInvalid={!!errors.pets?.[index]?.name} isRequired>
+                      <FormControl.Label>Pet name *</FormControl.Label>
+                      <Input
+                        testID={`create-customer-pet-name-${index}`}
+                        placeholder="Name"
+                        onBlur={f.onBlur}
+                        onChangeText={f.onChange}
+                        value={f.value}
+                        mb={2}
+                        size="lg"
+                      />
+                      <FormControl.ErrorMessage>
+                        {errors.pets?.[index]?.name?.message}
+                      </FormControl.ErrorMessage>
+                    </FormControl>
                   )}
                 />
                 <Controller
@@ -161,11 +191,16 @@ const CreateCustomerModal = ({
                       onBlur={f.onBlur}
                       onChangeText={f.onChange}
                       value={f.value ?? ""}
+                      size="lg"
                     />
                   )}
                 />
                 <View style={buttonContainer}>
-                  <Button onPress={() => append({ name: "", breed: "" })} style={button}>
+                  <Button
+                    testID={index === 0 ? "create-customer-append-pet" : undefined}
+                    onPress={() => append({ name: "", breed: "" })}
+                    style={button}
+                  >
                     <Icon name="plus" size={10} />
                   </Button>
                   <Button
@@ -179,12 +214,14 @@ const CreateCustomerModal = ({
               </View>
             ))}
           </FormControl>
+          </ScrollView>
         </Modal.Body>
         <Button.Group space={2} style={confirmationButtonContainer}>
           <Button variant="ghost" onPress={closeModal}>
             Cancel
           </Button>
           <Button
+            testID="create-customer-save"
             onPress={() => void onSubmit()}
             style={confirmationButton}
             isLoading={createMutation.isPending}
@@ -213,6 +250,23 @@ const styles = StyleSheet.create({
   },
   confirmationButton: {
     backgroundColor: "hsl(213,74%,54%)",
+  },
+  summaryBox: {
+    backgroundColor: "#fff3cd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#c9a227",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  summaryTitle: {
+    fontWeight: "700",
+    marginBottom: 4,
+    fontSize: 15,
+  },
+  summaryBody: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 

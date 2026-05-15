@@ -1,0 +1,14 @@
+# Smoke: auth screen reachable + credential controls (requires running app + API for full submit).
+# Run: `yarn test:e2e` from repo root with a device/emulator connected.
+appId: com.brewswain.karindogapp
+---
+- openLink: myapp://auth
+- assertVisible: "Driver sign-in"
+- tapOn:
+    id: "auth-email-input"
+- inputText: "driver+e2e@example.com"
+- tapOn:
+    id: "auth-password-input"
+- inputText: "password12"
+- tapOn:
+    id: "auth-submit-primary"

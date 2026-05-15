@@ -6,13 +6,24 @@ export const customerPetFormSchema = z.object({
 });
 
 /** Form values (RHF) — allow empty pet rows; trim on submit. */
-export const customerCreateFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  contactNumber: z.string().optional(),
-  location: z.string().optional(),
-  city: z.string().optional(),
-  pets: z.array(customerPetFormSchema),
-});
+export const customerCreateFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    contactNumber: z.string().optional(),
+    location: z.string().optional(),
+    city: z.string().optional(),
+    pets: z.array(customerPetFormSchema),
+  })
+  .superRefine((data, ctx) => {
+    const namedPets = data.pets.filter((p) => p.name.trim().length > 0);
+    if (namedPets.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Add at least one pet with a name.",
+        path: ["pets", 0, "name"],
+      });
+    }
+  });
 
 export type CustomerCreateFormValues = z.infer<typeof customerCreateFormSchema>;
 

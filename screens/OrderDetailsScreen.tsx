@@ -14,7 +14,7 @@ import Toast from "react-native-toast-message";
 
 import { deleteOrder, updateOrder } from "../api";
 import { Header } from "../components/details/DetailScreenComponents";
-import { RootTabScreenProps } from "../types";
+import { RootStackScreenProps } from "../types";
 import {
   OrderFromSupabase,
   OrderUpdatePayload,
@@ -24,14 +24,11 @@ import {
 import Dinero from "dinero.js";
 import { isOrderConflictError } from "../lib/orders/isOrderConflictError";
 import { refetchCanonicalOrderAfterConflict } from "../lib/orders/refetchCanonicalOrderAfterConflict";
+import { getUserVisibleHttpMessage } from "../lib/api/normalizedHttpError";
 
 interface OrderDetailsProps {
-  navigation: RootTabScreenProps<"OrderDetails">;
-  route: {
-    params: {
-      order: OrderFromSupabase;
-    };
-  };
+  navigation: RootStackScreenProps<"OrderDetails">["navigation"];
+  route: RootStackScreenProps<"OrderDetails">["route"];
 }
 
 function buildPayload(order: OrderFromSupabase): OrderUpdatePayload {
@@ -84,7 +81,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         Toast.show({
           type: "error",
           text1: "Could not update order",
-          text2: err instanceof Error ? err.message : String(err),
+          text2: getUserVisibleHttpMessage(err),
         });
       }
     }
@@ -110,7 +107,7 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
         Toast.show({
           type: "error",
           text1: "Could not update order",
-          text2: err instanceof Error ? err.message : String(err),
+          text2: getUserVisibleHttpMessage(err),
         });
       }
     }
@@ -189,10 +186,15 @@ const OrderDetailsScreen = ({ navigation, route }: OrderDetailsProps) => {
           onCancel={toggleDatePickerVisibility}
         />
 
-        <Text style={styles.total}>
-          Total:{" "}
-          {Dinero({ amount: Math.round(total * 100) }).toFormat("$0,0.00")}
-        </Text>
+        <View style={styles.moneyBanner}>
+          <Text style={styles.moneyBannerLabel}>Order total</Text>
+          <Text style={styles.moneyBannerValue} accessibilityRole="text">
+            {Dinero({ amount: Math.round(total * 100) }).toFormat("$0,0.00")}
+          </Text>
+          <Text style={styles.moneyBannerHint}>
+            Retail × quantity + delivery (outdoor-friendly contrast)
+          </Text>
+        </View>
 
         <View style={styles.actions}>
           <Button colorScheme="teal" onPress={() => void handleUpdate()} marginBottom={3}>
@@ -239,9 +241,32 @@ const styles = StyleSheet.create({
     textAlign: "center",
     borderRadius: 4,
   },
-  total: {
-    fontSize: 18,
-    marginVertical: 12,
+  moneyBanner: {
+    backgroundColor: "#0f172a",
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+  moneyBannerLabel: {
+    color: "#94a3b8",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  moneyBannerValue: {
+    color: "#f8fafc",
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  moneyBannerHint: {
+    color: "#94a3b8",
+    fontSize: 12,
+    marginTop: 8,
   },
   actions: {
     gap: 12,

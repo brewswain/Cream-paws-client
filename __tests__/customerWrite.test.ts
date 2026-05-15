@@ -24,6 +24,22 @@ describe("customerCreateFormSchema", () => {
     });
     expect(r.success).toBe(false);
   });
+
+  it("rejects when no pet has a name", () => {
+    const r = customerCreateFormSchema.safeParse({
+      name: "Ann",
+      pets: [{ name: "", breed: "" }],
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it("accepts customer with at least one named pet", () => {
+    const r = customerCreateFormSchema.safeParse({
+      name: "Ann",
+      pets: [{ name: "Rex", breed: "" }],
+    });
+    expect(r.success).toBe(true);
+  });
 });
 
 describe("formValuesToWriteRequest", () => {
