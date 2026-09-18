@@ -1,10 +1,11 @@
-import { Skeleton } from "@rneui/themed";
 import { StyleSheet, View } from "react-native";
+
+import { PlainSkeletonBar } from "../PlainSkeletonBar";
 
 const CustomerSkeleton = () => {
 	return (
 		<View style={styles.container}>
-			<Skeleton width={"90%"} height={25} animation="wave" />
+			<PlainSkeletonBar width="90%" height={25} />
 		</View>
 	);
 };

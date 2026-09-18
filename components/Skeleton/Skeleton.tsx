@@ -1,4 +1,6 @@
-import { Skeleton } from "@rneui/themed";
+import { StyleSheet, View } from "react-native";
+
+import { PlainSkeletonBar } from "./PlainSkeletonBar";
 import CustomerSkeleton from "./varieties/CustomerSkeleton";
 import OrderSkeleton from "./varieties/OrderSkeleton";
 
@@ -23,8 +25,16 @@ const NativeSkeleton = ({ type }: SkeletonProps) => {
 			return <OrderSkeleton />;
 
 		default:
-			return <Skeleton width={300} height={200} animation="wave" />;
+			return (
+				<View style={fallbackStyles.box}>
+					<PlainSkeletonBar width={300} height={200} />
+				</View>
+			);
 	}
 };
+
+const fallbackStyles = StyleSheet.create({
+	box: { alignSelf: "center" },
+});
 
 export default NativeSkeleton;

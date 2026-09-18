@@ -1,12 +1,13 @@
-import { Skeleton } from "@rneui/themed";
 import { StyleSheet, View } from "react-native";
+
+import { PlainSkeletonBar } from "../PlainSkeletonBar";
 
 const OrderSkeleton = () => {
 	return (
 		<View style={styles.container}>
-			<Skeleton width={"30%"} height={25} animation="wave" />
-			<Skeleton width={"50%"} height={15} animation="wave" />
-			<Skeleton width={"20%"} height={23} animation="wave" />
+			<PlainSkeletonBar width="30%" height={25} />
+			<PlainSkeletonBar width="50%" height={15} />
+			<PlainSkeletonBar width="20%" height={23} />
 		</View>
 	);
 };
